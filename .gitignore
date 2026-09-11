@@ -1,0 +1,5 @@
+data/properties.json
+media/originales/
+*.mp4
+*.mov
+.DS_Store
