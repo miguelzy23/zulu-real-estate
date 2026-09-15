@@ -34,7 +34,7 @@ cubrir lotes dentro de parcelaciones cerradas, que no tienen construcción.
 | `legal` | object | Ver abajo |
 | `precio` | object | Ver abajo — reemplaza el antiguo valor plano |
 | `media` | object | Ver abajo |
-| `alertas` | string[] | Preguntas abiertas que bloquean publicación. Ver validación |
+| `alertas` | string[] | **Vive en `properties.private.json`, no aquí.** Ver sección de privacidad |
 | `fecha_visita` | string (ISO `YYYY-MM-DD`) | |
 | `fecha_creacion` | string (ISO `YYYY-MM-DD`) | |
 
@@ -108,10 +108,13 @@ partir de `escritura_m2`, nunca se editan a mano ni se derivan de
 
 | Campo | Tipo | Notas |
 |---|---|---|
-| `matricula_inmobiliaria` | string \| null | |
 | `levantamiento_topografico` | boolean \| null | Si existe |
 | `estrato` | number (entero 1–6) \| null | **Nuevo.** Fincas rurales suelen ser 1–2; parcelaciones pueden llegar a 6, y define el costo de servicios |
 | `uso_suelo` | string | |
+
+`matricula_inmobiliaria` ya no vive aquí — está en
+`properties.private.json` como `legal_privado.matricula_inmobiliaria`. Ver
+sección de privacidad.
 
 ---
 
@@ -143,10 +146,17 @@ como `precio_historico[precio_historico.length - 1].valor`. Cada entrada de
 | `fotos_dron` | number (entero) | |
 | `fotos_terrestres` | number (entero) | |
 | `plano_loteo` | boolean | |
+| `foto_principal` | string (ruta) | **Nuevo.** Ruta relativa a la raíz del sitio, ej. `assets/lote-222/01.jpg`. Es la que se ve en la tarjeta del catálogo. Se omite (no se pone `null`) mientras no haya foto real — la tarjeta cae al placeholder "Foto próximamente" |
+| `fotos` | string[] (rutas) | **Nuevo.** Todas las fotos de la propiedad, en el orden en que se muestran en la galería. Rutas relativas igual que `foto_principal`. Se omite mientras no haya fotos |
+
+Las fotos originales (sin procesar, tal como salen de la cámara o el dron)
+van en `media/originales/<slug>/` — esa carpeta está en `.gitignore`, nunca
+se sube. Las versiones optimizadas para web, que sí se suben y son las que
+referencian `foto_principal` y `fotos`, van en `assets/<slug>/`.
 
 ---
 
-## `alertas` (nuevo, nivel superior)
+## `alertas` (en `properties.private.json`, no en el archivo público)
 
 `string[]`. Preguntas abiertas o riesgos que bloquean o deberían bloquear
 la publicación (duplicados en otros portales, dudas sobre linderos,
@@ -181,7 +191,21 @@ precio sin confirmar, etc.). Se revisan antes de pasar `estado` a
 
 ---
 
-## Privacidad
+## Privacidad — separación público/privado
 
-`data/properties.json` puede contener ubicación y datos de contacto reales
-— no debe subirse al repositorio público. Ver `.gitignore`.
+`data/properties.json` es **público**: se sube al repositorio y lo lee el
+sitio. No debe contener nada sensible.
+
+Lo sensible vive en `data/properties.private.json` (en `.gitignore`, nunca
+se sube), un array de objetos ligados por `id` al registro público
+correspondiente:
+
+| Campo | Notas |
+|---|---|
+| `id` | Debe coincidir con el `id` del registro en `properties.json` |
+| `legal_privado.matricula_inmobiliaria` | Reemplaza a `legal.matricula_inmobiliaria` — ese campo ya no existe en el archivo público |
+| `alertas` | Notas internas sin confirmar (dudas de linderos, duplicados en otros portales, precio pendiente de verificar, etc.) |
+
+Antes de cargar una propiedad nueva: cualquier dato de propietario, número
+de matrícula, o nota interna sin confirmar va en `properties.private.json`,
+nunca en el archivo público.

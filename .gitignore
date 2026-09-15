@@ -1,4 +1,4 @@
-data/properties.json
+data/properties.private.json
 media/originales/
 *.mp4
 *.mov

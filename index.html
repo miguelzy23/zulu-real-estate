@@ -355,6 +355,7 @@ p{margin:0; text-wrap:pretty;}
   display:flex; align-items:center; justify-content:center;
 }
 .card-media svg{position:absolute; inset:0; width:100%; height:100%; opacity:.5;}
+.card-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
 .card-media b{
   position:relative; z-index:2;
   font-size:11.5px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
@@ -367,6 +368,88 @@ p{margin:0; text-wrap:pretty;}
   background:var(--ink); color:var(--cream);
   padding:5px 11px; border-radius:99px;
 }
+.tag-verified{
+  left:auto; right:13px;
+  background:var(--paper); color:var(--ink); border:1px solid var(--ink);
+}
+.tag-fotos{
+  left:auto; right:13px; top:auto; bottom:13px;
+  font:inherit; letter-spacing:.09em; text-transform:uppercase; cursor:pointer;
+  background:rgba(10,10,10,.72); border:0;
+}
+.tag-fotos:hover{background:var(--ink);}
+
+/* ============================================================
+   GALERÍA — lightbox de fotos por propiedad
+   ============================================================ */
+.lightbox{
+  position:fixed; inset:0; z-index:80;
+  background:rgba(10,10,10,.94);
+  display:flex; align-items:center; justify-content:center;
+}
+.lightbox[hidden]{display:none;}
+.lightbox img{max-width:min(90vw,1100px); max-height:80vh; object-fit:contain;}
+.lightbox-close{
+  position:absolute; top:22px; right:22px;
+  font-size:13.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--cream); background:transparent; border:1px solid rgba(250,238,218,.4);
+  padding:8px 16px; border-radius:99px;
+}
+.lightbox-close:hover{border-color:var(--cream);}
+.lightbox-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  font-size:13.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--cream); background:transparent; border:1px solid rgba(250,238,218,.4);
+  padding:10px 16px; border-radius:99px;
+}
+.lightbox-nav:hover{border-color:var(--cream);}
+.lightbox-prev{left:22px;}
+.lightbox-next{right:22px;}
+.lightbox-counter{
+  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  font-size:13px; letter-spacing:.05em; color:rgba(250,238,218,.75);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================
+   FICHA — panel de detalle de una propiedad
+   ============================================================ */
+.card{cursor:pointer;}
+.ficha-backdrop{
+  position:fixed; inset:0; z-index:70;
+  background:rgba(10,10,10,.72);
+  display:flex; align-items:center; justify-content:center;
+  padding:26px;
+}
+.ficha-backdrop[hidden]{display:none;}
+.ficha-panel{
+  position:relative; width:100%; max-width:620px; max-height:86vh;
+  overflow-y:auto; background:var(--paper); border-radius:5px;
+}
+.ficha-close{
+  position:absolute; top:16px; right:16px; z-index:2;
+  font-size:12.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--cream); background:rgba(10,10,10,.6); border:0;
+  padding:7px 15px; border-radius:99px;
+}
+.ficha-close:hover{background:var(--ink);}
+.ficha-media{position:relative; aspect-ratio:16/10; background:var(--cream); overflow:hidden;}
+.ficha-media img{width:100%; height:100%; object-fit:cover;}
+.ficha-media svg{position:absolute; inset:0; width:100%; height:100%; opacity:.5;}
+.ficha-body{padding:28px;}
+.ficha-body h3{font-size:24px; margin:0 0 6px;}
+.ficha-body .price{margin-top:2px;}
+.ficha-desc{
+  font-size:14.5px; line-height:1.6; color:var(--on-cream-dim);
+  margin-top:16px;
+}
+.ficha-caracteristicas{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px 20px;
+  margin:20px 0 0; padding-top:18px; border-top:1px solid var(--rule-hair);
+}
+.ficha-fila dt{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--on-cream-dim);}
+.ficha-fila dd{margin:3px 0 0; font-size:14.5px;}
+.ficha-body .more{margin-top:24px;}
 .card-body{padding:21px; display:flex; flex-direction:column; flex:1;}
 .price{
   font-family:'Fraunces',serif; font-size:22px; font-weight:500;
@@ -686,109 +769,13 @@ p{margin:0; text-wrap:pretty;}
       </div>
       <div class="filters" role="group" aria-label="Filtrar propiedades">
         <button class="chip" aria-pressed="true"  data-f="Todas">Todas</button>
-        <button class="chip" aria-pressed="false" data-f="Residencial">Residencial</button>
-        <button class="chip" aria-pressed="false" data-f="Inversión">Inversión</button>
-        <button class="chip" aria-pressed="false" data-f="Campestre">Campestre</button>
+        <button class="chip" aria-pressed="false" data-f="Lotes">Lotes</button>
+        <button class="chip" aria-pressed="false" data-f="Fincas">Fincas</button>
+        <button class="chip" aria-pressed="false" data-f="Casas">Casas</button>
       </div>
     </div>
 
-    <div class="grid" id="grid">
-      <article class="card reveal" data-cat="Residencial" data-d="1">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,46)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,92)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,138)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,184)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Residencial</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$850.000.000</div>
-          <div class="loc">El Poblado, Medellín</div>
-          <div class="meta"><span>3 habitaciones</span><span>230 m²</span><span>Apartamento</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="card reveal" data-cat="Campestre" data-d="2">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46"/><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46" transform="translate(0,46)"/><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46" transform="translate(0,92)"/><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46" transform="translate(0,138)"/><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46" transform="translate(0,184)"/><path d="M-20 42 C 90 72,160 10,250 42 C 330 70,372 22,420 46" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Campestre</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$1.200.000.000</div>
-          <div class="loc">Llanogrande, Rionegro</div>
-          <div class="meta"><span>4 habitaciones</span><span>410 m²</span><span>Casa campestre</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="card reveal" data-cat="Residencial" data-d="3">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28"/><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28" transform="translate(0,46)"/><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28" transform="translate(0,92)"/><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28" transform="translate(0,138)"/><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28" transform="translate(0,184)"/><path d="M-20 44 C 70 20,140 66,230 40 C 320 14,368 52,420 28" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Residencial</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$620.000.000</div>
-          <div class="loc">Laureles, Medellín</div>
-          <div class="meta"><span>2 habitaciones</span><span>140 m²</span><span>Apartamento</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="card reveal" data-cat="Inversión" data-d="1">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24"/><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24" transform="translate(0,46)"/><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24" transform="translate(0,92)"/><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24" transform="translate(0,138)"/><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24" transform="translate(0,184)"/><path d="M-20 38 C 100 8,150 68,245 36 C 330 10,378 46,420 24" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Inversión</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$430.000.000</div>
-          <div class="loc">Envigado, Antioquia</div>
-          <div class="meta"><span>1 habitación</span><span>62 m²</span><span>Renta corta</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="card reveal" data-cat="Inversión" data-d="2">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48"/><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48" transform="translate(0,46)"/><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48" transform="translate(0,92)"/><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48" transform="translate(0,138)"/><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48" transform="translate(0,184)"/><path d="M-20 46 C 85 76,165 14,255 46 C 335 74,375 26,420 48" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Inversión</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$980.000.000</div>
-          <div class="loc">Sabaneta, Antioquia</div>
-          <div class="meta"><span>Lote</span><span>1.100 m²</span><span>Proyecto</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-
-      <article class="card reveal" data-cat="Campestre" data-d="3">
-        <div class="card-media">
-          <svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22"/><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22" transform="translate(0,46)"/><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22" transform="translate(0,92)"/><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22" transform="translate(0,138)"/><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22" transform="translate(0,184)"/><path d="M-20 36 C 75 6,155 72,245 36 C 325 4,375 46,420 22" transform="translate(0,230)"/></g></svg>
-          <div class="tag">Campestre</div>
-          <b>Foto próximamente</b>
-        </div>
-        <div class="card-body">
-          <div class="price">$1.650.000.000</div>
-          <div class="loc">El Retiro, Antioquia</div>
-          <div class="meta"><span>5 habitaciones</span><span>620 m²</span><span>Finca</span></div>
-          <a href="#contacto" class="more">Quiero saber más
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </article>
-    </div>
+    <div class="grid" id="grid"></div>
     <p class="empty" id="empty" hidden>No hay propiedades en esta categoría todavía. Escríbenos y te avisamos apenas entre una.</p>
   </div>
 </section>
@@ -900,6 +887,21 @@ p{margin:0; text-wrap:pretty;}
   <span>WhatsApp</span>
 </a>
 
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Galería de fotos">
+  <button type="button" class="lightbox-close" id="lightbox-close">Cerrar</button>
+  <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Foto anterior">Anterior</button>
+  <img id="lightbox-img" src="" alt="">
+  <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Foto siguiente">Siguiente</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+<div class="ficha-backdrop" id="ficha-backdrop" hidden role="dialog" aria-modal="true" aria-label="Detalle de la propiedad">
+  <div class="ficha-panel" id="ficha-panel">
+    <button type="button" class="ficha-close" id="ficha-close" aria-label="Cerrar">Cerrar</button>
+    <div id="ficha-contenido"></div>
+  </div>
+</div>
+
 <script>
 (() => {
   'use strict';
@@ -959,23 +961,233 @@ p{margin:0; text-wrap:pretty;}
     ).observe(contacto);
   }
 
-  /* --- Filtros de propiedades ------------------------------------------ */
+  /* --- Propiedades: cargar desde data/properties.json ------------------- */
   const chips = document.querySelectorAll('.chip');
-  const cards = document.querySelectorAll('.card');
+  const grid  = document.getElementById('grid');
   const empty = document.getElementById('empty');
+
+  const TIPO_INFO = {
+    lote:  { categoria: 'Lotes',  etiqueta: 'Lote' },
+    finca: { categoria: 'Fincas', etiqueta: 'Finca' },
+    casa:  { categoria: 'Casas',  etiqueta: 'Casa' }
+  };
+  const MEDIA_PLACEHOLDER = '<svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,46)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,92)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,138)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,184)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,230)"/></g></svg>';
+  const FLECHA = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+  const formatoCOP = valor => '$' + valor.toLocaleString('es-CO');
+
+  function ultimoPrecio(propiedad) {
+    const historico = propiedad.precio.precio_historico;
+    return historico[historico.length - 1].valor;
+  }
+
+  function metaHTML(propiedad) {
+    if (propiedad.tipo === 'lote') {
+      return `<span>${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²</span>`;
+    }
+    const info = TIPO_INFO[propiedad.tipo];
+    return `<span>${propiedad.habitaciones} habitaciones</span><span>${propiedad.area_construida.toLocaleString('es-CO')} m²</span><span>${info.etiqueta}</span>`;
+  }
+
+  function mediaHTML(propiedad) {
+    const fotos = propiedad.media && propiedad.media.fotos;
+    const principal = propiedad.media && propiedad.media.foto_principal;
+    if (principal) {
+      const verFotos = fotos && fotos.length
+        ? `<button type="button" class="tag tag-fotos">Ver ${fotos.length} fotos</button>`
+        : '';
+      return `<img src="${principal}" alt="${propiedad.titulo}" loading="lazy">${verFotos}`;
+    }
+    return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
+  }
+
+  function tarjetaHTML(propiedad) {
+    const info = TIPO_INFO[propiedad.tipo];
+    const sello = propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '';
+    const fotos = (propiedad.media && propiedad.media.fotos) || [];
+    const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
+    return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}">
+        <div class="card-media"${dataFotos}>
+          ${mediaHTML(propiedad)}
+          <div class="tag">${info.etiqueta}</div>
+          ${sello}
+        </div>
+        <div class="card-body">
+          <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
+          <div class="loc">${propiedad.ubicacion.municipio}</div>
+          <div class="meta">${metaHTML(propiedad)}</div>
+          <a href="#contacto" class="more">Quiero saber más
+            ${FLECHA}
+          </a>
+        </div>
+      </article>`;
+  }
+
+  /* Lista de características de la ficha — para agregar un campo nuevo más
+     adelante, basta con sumar otro `push` aquí. Solo se muestra lo que
+     exista en el dato. */
+  function caracteristicasHTML(propiedad) {
+    const items = [];
+    if (propiedad.area) {
+      items.push(['Área de escritura', `${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²`]);
+    }
+    if (propiedad.terreno) {
+      if (propiedad.terreno.esquinero) items.push(['Esquinero', 'Sí']);
+      if (propiedad.terreno.frentes_via) items.push(['Frentes a vía', String(propiedad.terreno.frentes_via)]);
+      if (propiedad.terreno.explanacion_existente) items.push(['Explanación', 'Existente']);
+    }
+    if (propiedad.acceso && propiedad.acceso.tipo_via) {
+      items.push(['Vía de acceso', propiedad.acceso.tipo_via]);
+    }
+    if (propiedad.ubicacion.parcelacion) {
+      items.push(['Parcelación', propiedad.ubicacion.parcelacion.nombre]);
+      if (propiedad.ubicacion.parcelacion.regimen) items.push(['Régimen', propiedad.ubicacion.parcelacion.regimen]);
+    }
+    if (propiedad.legal && propiedad.legal.estrato) {
+      items.push(['Estrato', String(propiedad.legal.estrato)]);
+    }
+    if (propiedad.precio && propiedad.precio.valor_m2) {
+      items.push(['Valor por m²', formatoCOP(propiedad.precio.valor_m2)]);
+    }
+    return items.map(([etiqueta, valor]) =>
+      `<div class="ficha-fila"><dt>${etiqueta}</dt><dd>${valor}</dd></div>`
+    ).join('');
+  }
+
+  function fichaHTML(propiedad) {
+    const fotos = (propiedad.media && propiedad.media.fotos) || [];
+    const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
+    return `
+      <div class="ficha-media"${dataFotos}>
+        ${mediaHTML(propiedad)}
+      </div>
+      <div class="ficha-body">
+        <h3>${propiedad.titulo}</h3>
+        <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
+        <div class="loc">${propiedad.ubicacion.municipio}</div>
+        <p class="ficha-desc">${propiedad.descripcion_corta}</p>
+        <div class="ficha-caracteristicas">${caracteristicasHTML(propiedad)}</div>
+        <a href="#contacto" class="more" id="ficha-contacto">Quiero saber más
+          ${FLECHA}
+        </a>
+      </div>`;
+  }
+
+  function aplicarFiltro(filtro) {
+    let mostradas = 0;
+    grid.querySelectorAll('.card').forEach(card => {
+      const on = (filtro === 'Todas' || card.dataset.cat === filtro);
+      card.hidden = !on;
+      if (on) mostradas++;
+    });
+    empty.hidden = mostradas > 0;
+  }
+
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
-      const f = chip.dataset.f;
       chips.forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
-      let shown = 0;
-      cards.forEach(card => {
-        const on = (f === 'Todas' || card.dataset.cat === f);
-        card.hidden = !on;
-        if (on) shown++;
-      });
-      empty.hidden = shown > 0;
+      aplicarFiltro(chip.dataset.f);
     });
   });
+
+  /* --- Galería de fotos (lightbox) --------------------------------------- */
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  let fotosGaleria = [];
+  let indiceGaleria = 0;
+
+  function mostrarFotoGaleria() {
+    lightboxImg.src = fotosGaleria[indiceGaleria];
+    lightboxCounter.textContent = `${indiceGaleria + 1} / ${fotosGaleria.length}`;
+  }
+  function abrirGaleria(fotos) {
+    fotosGaleria = fotos;
+    indiceGaleria = 0;
+    mostrarFotoGaleria();
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrarGaleria() {
+    lightbox.hidden = true;
+    document.body.style.overflow = '';
+  }
+  function fotoAnterior() {
+    indiceGaleria = (indiceGaleria - 1 + fotosGaleria.length) % fotosGaleria.length;
+    mostrarFotoGaleria();
+  }
+  function fotoSiguiente() {
+    indiceGaleria = (indiceGaleria + 1) % fotosGaleria.length;
+    mostrarFotoGaleria();
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', cerrarGaleria);
+  document.getElementById('lightbox-prev').addEventListener('click', fotoAnterior);
+  document.getElementById('lightbox-next').addEventListener('click', fotoSiguiente);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) cerrarGaleria(); });
+
+  /* --- Ficha de la propiedad ---------------------------------------------- */
+  let propiedadesCargadas = [];
+  const fichaBackdrop = document.getElementById('ficha-backdrop');
+  const fichaContenido = document.getElementById('ficha-contenido');
+
+  function abrirFicha(id) {
+    const propiedad = propiedadesCargadas.find(p => p.id === id);
+    if (!propiedad) return;
+    fichaContenido.innerHTML = fichaHTML(propiedad);
+    fichaBackdrop.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrarFicha() {
+    fichaBackdrop.hidden = true;
+    document.body.style.overflow = '';
+  }
+  document.getElementById('ficha-close').addEventListener('click', cerrarFicha);
+  fichaBackdrop.addEventListener('click', e => { if (e.target === fichaBackdrop) cerrarFicha(); });
+  fichaContenido.addEventListener('click', e => {
+    if (e.target.closest('#ficha-contacto')) { cerrarFicha(); return; }
+    const botonFotos = e.target.closest('.tag-fotos');
+    if (botonFotos) {
+      const media = botonFotos.closest('.ficha-media[data-fotos]');
+      if (media) abrirGaleria(JSON.parse(media.dataset.fotos));
+    }
+  });
+
+  addEventListener('keydown', e => {
+    if (!lightbox.hidden) {
+      if (e.key === 'Escape') cerrarGaleria();
+      if (e.key === 'ArrowLeft') fotoAnterior();
+      if (e.key === 'ArrowRight') fotoSiguiente();
+    } else if (!fichaBackdrop.hidden && e.key === 'Escape') {
+      cerrarFicha();
+    }
+  });
+
+  grid.addEventListener('click', e => {
+    const botonFotos = e.target.closest('.tag-fotos');
+    if (botonFotos) {
+      const media = botonFotos.closest('.card-media[data-fotos]');
+      if (media) abrirGaleria(JSON.parse(media.dataset.fotos));
+      return;
+    }
+    if (e.target.closest('.more')) return;
+    const card = e.target.closest('.card');
+    if (card) abrirFicha(card.dataset.id);
+  });
+
+  fetch('data/properties.json')
+    .then(r => r.json())
+    .then(propiedades => {
+      propiedadesCargadas = propiedades;
+      const publicadas = propiedades.filter(p => p.estado === 'publicado');
+      grid.innerHTML = publicadas.map(tarjetaHTML).join('');
+      const chipActivo = document.querySelector('.chip[aria-pressed="true"]');
+      aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
+    })
+    .catch(err => {
+      console.error('No se pudieron cargar las propiedades:', err);
+      empty.hidden = false;
+    });
 
   /* --- Preguntas (acordeón) -------------------------------------------- */
   document.querySelectorAll('.q-item').forEach(item => {

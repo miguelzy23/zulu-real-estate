@@ -1,0 +1,123 @@
+[
+  {
+    "id": "ZUL-2026-001",
+    "slug": "lote-222-montesereno-el-retiro",
+    "tipo": "lote",
+    "operacion": "venta",
+    "estado": "borrador",
+    "verificado": false,
+
+    "titulo": "Lote 222 — Montesereno, El Retiro",
+    "descripcion_corta": "Lote esquinero de 3.562 m² en Montesereno, con doble frente a vía interna, explanación existente y bosque nativo en el lindero superior.",
+
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "El Retiro",
+      "vereda": "Pantanillo",
+      "subregion": "Oriente Antioqueño",
+      "parcelacion": {
+        "nombre": "Montesereno Refugio Campestre",
+        "lote_numero": "222",
+        "regimen": "propiedad horizontal",
+        "porteria_24h": true,
+        "cuota_administracion_cop": null,
+        "zonas_comunes": [
+          "portería 24 horas",
+          "salón social",
+          "restaurante",
+          "supermercado",
+          "gimnasio",
+          "cancha de tenis",
+          "cancha de fútbol",
+          "juegos infantiles",
+          "zona BBQ",
+          "senderos ecológicos",
+          "lagos",
+          "vías internas pavimentadas"
+        ],
+        "indice_ocupacion_pct": null,
+        "altura_maxima_pisos": null,
+        "retiros_m": null,
+        "restriccion_bosque_nativo": null
+      },
+      "coordenadas": { "lat": null, "lng": null },
+      "msnm": null,
+      "clima": null
+    },
+
+    "area": {
+      "escritura_m2": 3562,
+      "real_m2": null,
+      "aprovechable_m2": null,
+      "cuadras": 0.557,
+      "hectareas": 0.356
+    },
+
+    "terreno": {
+      "topografia": "explanación existente con pendiente en linderos",
+      "explanacion_existente": true,
+      "requiere_movimiento_tierra": false,
+      "cobertura": ["bosque nativo", "pasto", "vegetación baja"],
+      "frentes_via": 2,
+      "esquinero": true
+    },
+
+    "servicios": {
+      "energia": null,
+      "acueducto": null,
+      "alcantarillado": null,
+      "gas": null,
+      "internet": null
+    },
+
+    "acceso": {
+      "tipo_via": "pavimentada",
+      "via_interna_parcelacion": true,
+      "acceso_vehicular_directo": true
+    },
+
+    "legal": {
+      "levantamiento_topografico": null,
+      "estrato": 6,
+      "uso_suelo": "rural — parcelación aprobada"
+    },
+
+    "precio": {
+      "moneda": "COP",
+      "precio_historico": [
+        {
+          "fecha": "2026-09-05",
+          "valor": 1950000000,
+          "motivo": "Precio inicial informado por el propietario durante la visita. Recibido como '$1.950.000'; interpretado como $1.950.000.000 COP totales."
+        },
+        {
+          "fecha": "2026-09-14",
+          "valor": 1790000000,
+          "motivo": "Precio actualizado."
+        }
+      ],
+      "valor_m2": 502527,
+      "publicable": null,
+      "negociable": null
+    },
+
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 6,
+      "fotos_terrestres": 0,
+      "plano_loteo": false,
+      "foto_principal": "assets/lote-222/01.jpg",
+      "fotos": [
+        "assets/lote-222/01.jpg",
+        "assets/lote-222/02.jpg",
+        "assets/lote-222/03.jpg",
+        "assets/lote-222/04.jpg",
+        "assets/lote-222/05.jpg",
+        "assets/lote-222/06.jpg"
+      ]
+    },
+
+    "fecha_visita": "2026-09-05",
+    "fecha_creacion": "2026-09-06"
+  }
+]
