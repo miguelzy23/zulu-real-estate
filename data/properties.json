@@ -97,8 +97,8 @@
         }
       ],
       "valor_m2": 502527,
-      "publicable": null,
-      "negociable": null
+      "publicable": true,
+      "negociable": true
     },
 
     "media": {
