@@ -195,16 +195,11 @@ p{margin:0; text-wrap:pretty;}
 .hero-contours svg{width:100%; height:100%;}
 .contour-line{
   stroke-dasharray:2600; stroke-dashoffset:2600;
-  animation:draw 2.8s var(--ease-out) forwards, flow 18s ease-in-out infinite;
+  animation:draw 2.8s var(--ease-out) forwards;
 }
 @keyframes draw{to{stroke-dashoffset:0;}}
-/* Movimiento fluido continuo — muy sutil, para que las curvas de nivel
-   nunca queden del todo quietas. Cada línea tiene su propia duración
-   (ver el atributo style de cada <path>) para que no se sincronicen. */
-@keyframes flow{
-  0%,100%{transform:translate(0,0);}
-  50%{transform:translate(-14px,5px);}
-}
+/* Las curvas ondulan en bucle infinito con <animate> SMIL dentro de cada
+   <path> (cambia la forma, no solo la posición); duración distinta por línea. */
 
 /* Costuras — la misma curva de nivel del hero marca cada cambio real de
    tono (crema ↔ tinta) en el resto del scroll, en vez de perderse tras
@@ -708,12 +703,12 @@ p{margin:0; text-wrap:pretty;}
 <header class="hero on-ink" id="top">
   <div class="hero-contours" aria-hidden="true">
     <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-      <g class="contour-parallax" data-parallax=".05"><path class="contour-line" style="animation-delay:0s; animation-duration:2.8s,17s" d="M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
-      <g class="contour-parallax" data-parallax=".09"><path class="contour-line" style="animation-delay:.16s,-2.3s; animation-duration:2.8s,21s" d="M-50 660 C 220 600, 400 720, 640 640 C 880 560, 1000 680, 1250 600" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
-      <g class="contour-parallax" data-parallax=".13"><path class="contour-line" style="animation-delay:.32s,-4.7s; animation-duration:2.8s,15s" d="M-50 700 C 240 640, 420 760, 660 680 C 900 600, 1020 720, 1250 640" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
-      <g class="contour-parallax" data-parallax=".17"><path class="contour-line" style="animation-delay:.48s,-1.1s; animation-duration:2.8s,24s" d="M-50 740 C 260 680, 440 800, 680 720 C 920 640, 1040 760, 1250 680" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
-      <g class="contour-parallax" data-parallax=".08"><path class="contour-line" style="animation-delay:.64s,-3.5s; animation-duration:2.8s,19s" d="M-50 580 C 180 520, 340 640, 580 560 C 840 480, 960 600, 1250 520" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
-      <g class="contour-parallax" data-parallax=".12"><path class="contour-line" style="animation-delay:.8s,-5.9s; animation-duration:2.8s,26s" d="M-50 540 C 160 486, 320 600, 560 524 C 820 444, 940 560, 1250 480" fill="none" stroke="#FAEEDA" stroke-width="1"/></g>
+      <g class="contour-parallax" data-parallax=".05"><path class="contour-line" style="animation-delay:0s" d="M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="9s" begin="0s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560; M-50 620 C 200 594, 380 646, 620 634 C 860 486, 980 674, 1250 526; M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560; M-50 620 C 200 526, 380 714, 620 566 C 860 554, 980 606, 1250 594; M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560"/></path></g>
+      <g class="contour-parallax" data-parallax=".09"><path class="contour-line" style="animation-delay:0.16s" d="M-50 660 C 220 600, 400 720, 640 640 C 880 560, 1000 680, 1250 600" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="12s" begin="-4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 660 C 220 600, 400 720, 640 640 C 880 560, 1000 680, 1250 600; M-50 660 C 220 634, 400 686, 640 674 C 880 526, 1000 714, 1250 566; M-50 660 C 220 600, 400 720, 640 640 C 880 560, 1000 680, 1250 600; M-50 660 C 220 566, 400 754, 640 606 C 880 594, 1000 646, 1250 634; M-50 660 C 220 600, 400 720, 640 640 C 880 560, 1000 680, 1250 600"/></path></g>
+      <g class="contour-parallax" data-parallax=".13"><path class="contour-line" style="animation-delay:0.32s" d="M-50 700 C 240 640, 420 760, 660 680 C 900 600, 1020 720, 1250 640" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="10s" begin="-7s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 700 C 240 640, 420 760, 660 680 C 900 600, 1020 720, 1250 640; M-50 700 C 240 674, 420 726, 660 714 C 900 566, 1020 754, 1250 606; M-50 700 C 240 640, 420 760, 660 680 C 900 600, 1020 720, 1250 640; M-50 700 C 240 606, 420 794, 660 646 C 900 634, 1020 686, 1250 674; M-50 700 C 240 640, 420 760, 660 680 C 900 600, 1020 720, 1250 640"/></path></g>
+      <g class="contour-parallax" data-parallax=".17"><path class="contour-line" style="animation-delay:0.48s" d="M-50 740 C 260 680, 440 800, 680 720 C 920 640, 1040 760, 1250 680" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="14s" begin="-2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 740 C 260 680, 440 800, 680 720 C 920 640, 1040 760, 1250 680; M-50 740 C 260 714, 440 766, 680 754 C 920 606, 1040 794, 1250 646; M-50 740 C 260 680, 440 800, 680 720 C 920 640, 1040 760, 1250 680; M-50 740 C 260 646, 440 834, 680 686 C 920 674, 1040 726, 1250 714; M-50 740 C 260 680, 440 800, 680 720 C 920 640, 1040 760, 1250 680"/></path></g>
+      <g class="contour-parallax" data-parallax=".08"><path class="contour-line" style="animation-delay:0.64s" d="M-50 580 C 180 520, 340 640, 580 560 C 840 480, 960 600, 1250 520" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="11s" begin="-5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 580 C 180 520, 340 640, 580 560 C 840 480, 960 600, 1250 520; M-50 580 C 180 554, 340 606, 580 594 C 840 446, 960 634, 1250 486; M-50 580 C 180 520, 340 640, 580 560 C 840 480, 960 600, 1250 520; M-50 580 C 180 486, 340 674, 580 526 C 840 514, 960 566, 1250 554; M-50 580 C 180 520, 340 640, 580 560 C 840 480, 960 600, 1250 520"/></path></g>
+      <g class="contour-parallax" data-parallax=".12"><path class="contour-line" style="animation-delay:0.8s" d="M-50 540 C 160 486, 320 600, 560 524 C 820 444, 940 560, 1250 480" fill="none" stroke="#FAEEDA" stroke-width="1"><animate attributeName="d" dur="13s" begin="-9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" values="M-50 540 C 160 486, 320 600, 560 524 C 820 444, 940 560, 1250 480; M-50 540 C 160 520, 320 566, 560 558 C 820 410, 940 594, 1250 446; M-50 540 C 160 486, 320 600, 560 524 C 820 444, 940 560, 1250 480; M-50 540 C 160 452, 320 634, 560 490 C 820 478, 940 526, 1250 514; M-50 540 C 160 486, 320 600, 560 524 C 820 444, 940 560, 1250 480"/></path></g>
     </svg>
   </div>
 
@@ -959,6 +954,11 @@ p{margin:0; text-wrap:pretty;}
     nodes.forEach(n => revealObs.observe(n));
   };
   observeReveal(document.querySelectorAll('.reveal, .seam'));
+
+  if (reduce) {
+    const svgHero = document.querySelector('.hero-contours svg');
+    if (svgHero && svgHero.pauseAnimations) svgHero.pauseAnimations();
+  }
 
   /* --- Paralaje de las curvas de nivel del hero: cada línea se mueve a su
      propia velocidad al hacer scroll, como capas de profundidad. Se apaga
