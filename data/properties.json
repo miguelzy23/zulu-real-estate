@@ -116,5 +116,114 @@
     },
     "fecha_visita": "2026-09-05",
     "fecha_creacion": "2026-09-06"
+  },
+  {
+    "id": "ZUL-2026-002",
+    "slug": "finca-el-rincon-santa-fe-de-antioquia",
+    "tipo": "finca",
+    "operacion": "venta",
+    "estado": "proximamente",
+    "verificado": false,
+    "titulo": "Finca El Rincón — Santa Fe de Antioquia",
+    "descripcion_corta": "Casa de campo de estilo tradicional antioqueño en la Parcelación Hato Obregón, rodeada de árboles frutales y jardines amplios, con piscina propia de 14x7 m, a 68 km de Medellín vía Bolombolo.",
+    "casa_de_mayordomo": true,
+    "area_construida": 210,
+    "habitaciones": 4,
+    "banos": 3,
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "Santa Fe de Antioquia",
+      "vereda": null,
+      "subregion": "Occidente Antioqueño",
+      "parcelacion": {
+        "nombre": "Hato Obregón",
+        "lote_numero": "24",
+        "regimen": null,
+        "porteria_24h": null,
+        "cuota_administracion_cop": null,
+        "zonas_comunes": [],
+        "indice_ocupacion_pct": null,
+        "altura_maxima_pisos": null,
+        "retiros_m": null,
+        "restriccion_bosque_nativo": null
+      },
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      },
+      "msnm": null,
+      "clima": null
+    },
+    "area": {
+      "escritura_m2": 34900,
+      "real_m2": null,
+      "aprovechable_m2": null,
+      "cuadras": 5.453,
+      "hectareas": 3.49
+    },
+    "terreno": {
+      "topografia": "plana en el entorno de la casa, con arborización densa",
+      "explanacion_existente": true,
+      "requiere_movimiento_tierra": false,
+      "cobertura": [
+        "árboles frutales",
+        "bosque",
+        "jardines",
+        "pasto"
+      ],
+      "frentes_via": null,
+      "esquinero": null
+    },
+    "servicios": {
+      "energia": null,
+      "acueducto": null,
+      "alcantarillado": null,
+      "gas": null,
+      "internet": null
+    },
+    "acceso": {
+      "tipo_via": null,
+      "via_interna_parcelacion": null,
+      "acceso_vehicular_directo": null
+    },
+    "legal": {
+      "levantamiento_topografico": null,
+      "estrato": null,
+      "uso_suelo": null
+    },
+    "precio": {
+      "moneda": "COP",
+      "precio_historico": [
+        {
+          "fecha": "2026-09-24",
+          "valor": 2800000000,
+          "motivo": "Precio informado en el portafolio comercial de la propiedad."
+        }
+      ],
+      "valor_m2": 80229,
+      "publicable": true,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 5,
+      "fotos_terrestres": 5,
+      "plano_loteo": false,
+      "foto_principal": "assets/finca-el-rincon/01.jpg",
+      "fotos": [
+        "assets/finca-el-rincon/01.jpg",
+        "assets/finca-el-rincon/02.jpg",
+        "assets/finca-el-rincon/03.jpg",
+        "assets/finca-el-rincon/04.jpg",
+        "assets/finca-el-rincon/05.jpg",
+        "assets/finca-el-rincon/06.jpg",
+        "assets/finca-el-rincon/07.jpg",
+        "assets/finca-el-rincon/08.jpg",
+        "assets/finca-el-rincon/09.jpg",
+        "assets/finca-el-rincon/10.jpg"
+      ]
+    },
+    "fecha_visita": null,
+    "fecha_creacion": "2026-09-24"
   }
 ]

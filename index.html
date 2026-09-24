@@ -1163,8 +1163,15 @@ p{margin:0; text-wrap:pretty;}
      exista en el dato. */
   function caracteristicasHTML(propiedad) {
     const items = [];
+    if (propiedad.tipo !== 'lote' && propiedad.area_construida) {
+      items.push(['Área construida', `${propiedad.area_construida.toLocaleString('es-CO')} m²`]);
+    }
+    if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
+    if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
+    if (propiedad.casa_de_mayordomo) items.push(['Casa de mayordomo', 'Sí']);
     if (propiedad.area) {
-      items.push(['Área de escritura', `${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²`]);
+      const etiquetaArea = propiedad.tipo === 'lote' ? 'Área de escritura' : 'Área del lote';
+      items.push([etiquetaArea, `${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²`]);
     }
     if (propiedad.terreno) {
       if (propiedad.terreno.frentes_via) items.push(['Frentes a vía', String(propiedad.terreno.frentes_via)]);
