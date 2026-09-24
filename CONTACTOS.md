@@ -11,33 +11,10 @@ el script que recibe los datos.
    Ponle de nombre, por ejemplo, **"Zulu — Contactos web"**.
 2. En el menú, ve a **Extensiones → Apps Script**.
 3. Borra el código de ejemplo que aparece (`function myFunction() {...}`) y
-   pega este:
-
-   ```js
-   function doPost(e) {
-     const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Contactos')
-       || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Contactos');
-
-     if (hoja.getLastRow() === 0) {
-       hoja.appendRow(['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propiedad', 'Zona de interés', 'Notas', 'Página']);
-     }
-
-     const datos = JSON.parse(e.postData.contents);
-     hoja.appendRow([
-       new Date(),
-       datos.nombre || '',
-       datos.contacto || '',
-       datos.presupuesto || '',
-       datos.tipo || '',
-       datos.zona || '',
-       datos.notas || '',
-       datos.pagina || ''
-     ]);
-
-     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-       .setMimeType(ContentService.MimeType.JSON);
-   }
-   ```
+   pega el contenido de [`apps-script-contactos.gs`](apps-script-contactos.gs)
+   (además de guardar la fila, deja la hoja formateada: encabezado fijo y
+   resaltado, columnas con ancho legible, fecha con hora y texto largo con
+   salto de línea en vez de cortado).
 
 4. Guarda el proyecto (ícono de disquete o Ctrl/Cmd+S). Ponle un nombre si te
    lo pide, por ejemplo "Zulu contactos".
