@@ -3,3 +3,6 @@ media/originales/
 *.mp4
 *.mov
 .DS_Store
+
+# Estudio de mercado: interno, no debe publicarse con el sitio
+estudio-mercado/

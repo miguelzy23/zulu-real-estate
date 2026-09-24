@@ -4,12 +4,10 @@
     "slug": "lote-222-montesereno-el-retiro",
     "tipo": "lote",
     "operacion": "venta",
-    "estado": "borrador",
+    "estado": "proximamente",
     "verificado": false,
-
     "titulo": "Lote 222 — Montesereno, El Retiro",
     "descripcion_corta": "Lote esquinero de 3.562 m² en Montesereno, con doble frente a vía interna, explanación existente y bosque nativo en el lindero superior.",
-
     "ubicacion": {
       "departamento": "Antioquia",
       "municipio": "El Retiro",
@@ -40,11 +38,13 @@
         "retiros_m": null,
         "restriccion_bosque_nativo": null
       },
-      "coordenadas": { "lat": null, "lng": null },
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      },
       "msnm": null,
       "clima": null
     },
-
     "area": {
       "escritura_m2": 3562,
       "real_m2": null,
@@ -52,16 +52,18 @@
       "cuadras": 0.557,
       "hectareas": 0.356
     },
-
     "terreno": {
       "topografia": "explanación existente con pendiente en linderos",
       "explanacion_existente": true,
       "requiere_movimiento_tierra": false,
-      "cobertura": ["bosque nativo", "pasto", "vegetación baja"],
+      "cobertura": [
+        "bosque nativo",
+        "pasto",
+        "vegetación baja"
+      ],
       "frentes_via": 2,
       "esquinero": true
     },
-
     "servicios": {
       "energia": null,
       "acueducto": null,
@@ -69,19 +71,16 @@
       "gas": null,
       "internet": null
     },
-
     "acceso": {
       "tipo_via": "pavimentada",
       "via_interna_parcelacion": true,
       "acceso_vehicular_directo": true
     },
-
     "legal": {
       "levantamiento_topografico": null,
       "estrato": 6,
       "uso_suelo": "rural — parcelación aprobada"
     },
-
     "precio": {
       "moneda": "COP",
       "precio_historico": [
@@ -100,7 +99,6 @@
       "publicable": true,
       "negociable": true
     },
-
     "media": {
       "video_principal": null,
       "fotos_dron": 6,
@@ -116,7 +114,6 @@
         "assets/lote-222/06.jpg"
       ]
     },
-
     "fecha_visita": "2026-09-05",
     "fecha_creacion": "2026-09-06"
   }

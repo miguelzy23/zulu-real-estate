@@ -392,6 +392,13 @@ p{margin:0; text-wrap:pretty;}
   left:auto; right:13px;
   background:var(--paper); color:var(--ink); border:1px solid var(--ink);
 }
+.tag-proximamente{
+  left:auto; right:13px;
+  background:var(--acento, #8a5a1f); color:#fff;
+}
+.more[aria-disabled="true"]{
+  opacity:.6; cursor:default; pointer-events:none;
+}
 .tag-fotos{
   left:auto; right:13px; top:auto; bottom:13px;
   font:inherit; letter-spacing:.09em; text-transform:uppercase; cursor:pointer;
@@ -1127,9 +1134,15 @@ p{margin:0; text-wrap:pretty;}
 
   function tarjetaHTML(propiedad) {
     const info = TIPO_INFO[propiedad.tipo];
-    const sello = propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '';
+    const proximamente = propiedad.estado === 'proximamente';
+    const sello = proximamente
+      ? '<div class="tag tag-proximamente">Próximamente</div>'
+      : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '');
     const fotos = (propiedad.media && propiedad.media.fotos) || [];
     const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
+    const cta = proximamente
+      ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
+      : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}">
         <div class="card-media"${dataFotos}>
           ${mediaHTML(propiedad)}
@@ -1140,9 +1153,7 @@ p{margin:0; text-wrap:pretty;}
           <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
           <div class="loc">${propiedad.ubicacion.municipio}</div>
           <div class="meta">${metaHTML(propiedad)}</div>
-          <a href="#contacto" class="more">Quiero saber más
-            ${FLECHA}
-          </a>
+          ${cta}
         </div>
       </article>`;
   }
@@ -1180,6 +1191,13 @@ p{margin:0; text-wrap:pretty;}
   function fichaHTML(propiedad) {
     const fotos = (propiedad.media && propiedad.media.fotos) || [];
     const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
+    const proximamente = propiedad.estado === 'proximamente';
+    const cta = proximamente
+      ? `<span class="more" aria-disabled="true" id="ficha-contacto">Video en camino${FLECHA}</span>`
+      : `<a href="#contacto" class="more" id="ficha-contacto">Quiero saber más${FLECHA}</a>`;
+    const aviso = proximamente
+      ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
+      : '';
     return `
       <div class="ficha-media"${dataFotos}>
         ${mediaHTML(propiedad)}
@@ -1189,10 +1207,9 @@ p{margin:0; text-wrap:pretty;}
         <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
         <div class="loc">${propiedad.ubicacion.municipio}</div>
         <p class="ficha-desc">${propiedad.descripcion_corta}</p>
+        ${aviso}
         <div class="ficha-caracteristicas">${caracteristicasHTML(propiedad)}</div>
-        <a href="#contacto" class="more" id="ficha-contacto">Quiero saber más
-          ${FLECHA}
-        </a>
+        ${cta}
       </div>`;
   }
 
@@ -1302,7 +1319,7 @@ p{margin:0; text-wrap:pretty;}
     .then(r => r.json())
     .then(propiedades => {
       propiedadesCargadas = propiedades;
-      const publicadas = propiedades.filter(p => p.estado === 'publicado');
+      const publicadas = propiedades.filter(p => p.estado === 'publicado' || p.estado === 'proximamente');
       grid.innerHTML = publicadas.map(tarjetaHTML).join('');
       observeReveal(grid.querySelectorAll('.card-contour'));
       const chipActivo = document.querySelector('.chip[aria-pressed="true"]');

@@ -18,7 +18,7 @@ cubrir lotes dentro de parcelaciones cerradas, que no tienen construcción.
 | `slug` | string | Único, para URLs. Ej. `lote-222-montesereno-el-retiro` |
 | `tipo` | `"finca" \| "casa" \| "lote"` | `lote` no tiene construcción — ver sección de campos opcionales |
 | `operacion` | `"venta" \| "arriendo"` | |
-| `estado` | `"borrador" \| "publicado" \| "reservado" \| "vendido" \| "arrendado"` | Solo `publicado`, `reservado` aparecen en el catálogo. `borrador` es para propiedades que no cumplen las reglas de validación (ver abajo) |
+| `estado` | `"borrador" \| "publicado" \| "proximamente" \| "reservado" \| "vendido" \| "arrendado"` | Solo `publicado`, `proximamente`, `reservado` aparecen en el catálogo. `borrador` es para propiedades que no cumplen las reglas de validación (ver abajo). `proximamente` es una excepción deliberada: se muestra en el sitio (con sello "Próximamente" y sin botón de contacto activo) aunque todavía falte algo de la regla 1, solo si el equipo decidió mostrarla igual mientras se completa |
 | `verificado` | boolean | Visita física confirmada por Zulu |
 | `titulo` | string | Corto, sin mayúsculas sostenidas ni signos de exclamación |
 | `descripcion_corta` | string | Texto honesto, voz de Zulu |
@@ -180,7 +180,9 @@ precio sin confirmar, etc.). Se revisan antes de pasar `estado` a
 ## Reglas de validación
 
 1. **Sin video no se publica.** Ninguna propiedad llega a `estado: "publicado"`
-   sin `media.video_principal`.
+   sin `media.video_principal`. Si se quiere mostrar igual mientras llega el
+   video, se usa `estado: "proximamente"` (visible, sin CTA de contacto activo)
+   en vez de forzar `"publicado"`.
 2. **Un lote además necesita área y precio confirmado.** Si `tipo` es
    `"lote"`, tampoco puede llegar a `estado: "publicado"` sin
    `area.escritura_m2` (número, no `null`) y `precio.publicable === true`.
