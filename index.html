@@ -1346,7 +1346,11 @@ p{margin:0; text-wrap:pretty;}
     });
   });
 
-  /* --- Formulario (demo: no hay backend todavía) ----------------------- */
+  /* --- Formulario: guarda cada envío como fila en Google Sheets --------- */
+  // Reemplaza esta URL por la que te da "Implementar como aplicación web"
+  // en Apps Script (ver estudio-mercado/../CONTACTOS.md para los pasos).
+  const CONTACT_ENDPOINT = 'PON_AQUI_LA_URL_DE_APPS_SCRIPT';
+
   const form = document.getElementById('form');
   const ok   = document.getElementById('ok');
   const submit = document.getElementById('submit');
@@ -1359,9 +1363,48 @@ p{margin:0; text-wrap:pretty;}
       return;
     }
     submit.disabled = true;
-    submit.textContent = 'Enviado';
-    ok.hidden = false;
-    requestAnimationFrame(() => ok.classList.add('is-in'));
+    submit.textContent = 'Enviando…';
+
+    const datos = {
+      nombre,
+      contacto,
+      presupuesto: form.presupuesto.value,
+      tipo: form.tipo.value,
+      zona: form.zona.value.trim(),
+      notas: form.notas.value.trim(),
+      pagina: location.href
+    };
+
+    const marcarEnviado = () => {
+      submit.textContent = 'Enviado';
+      ok.hidden = false;
+      requestAnimationFrame(() => ok.classList.add('is-in'));
+    };
+
+    if (!CONTACT_ENDPOINT || CONTACT_ENDPOINT.includes('PON_AQUI')) {
+      // Todavía no está conectada la hoja de cálculo: no perdemos el envío
+      // silenciosamente, avisamos en consola para no confundir en producción.
+      console.warn('CONTACT_ENDPOINT sin configurar: el formulario no está guardando datos todavía.');
+      submit.disabled = false;
+      submit.textContent = 'Enviar';
+      return;
+    }
+
+    // Apps Script no responde con cabeceras CORS, así que usamos "no-cors":
+    // el envío llega igual, pero no podemos leer la respuesta desde aquí.
+    fetch(CONTACT_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(datos)
+    })
+      .then(marcarEnviado)
+      .catch(err => {
+        console.error('No se pudo guardar el contacto:', err);
+        submit.disabled = false;
+        submit.textContent = 'Enviar';
+        form.nombre.focus();
+      });
   });
 })();
 </script>
