@@ -463,6 +463,8 @@ p{margin:0; text-wrap:pretty;}
 .ficha-media{position:relative; aspect-ratio:16/10; background:var(--cream); overflow:hidden;}
 .ficha-media img{width:100%; height:100%; object-fit:cover;}
 .ficha-media svg{position:absolute; inset:0; width:100%; height:100%; opacity:.5;}
+.ficha-video{position:relative; width:100%; aspect-ratio:16/9; background:#000;}
+.ficha-video iframe,.ficha-video video{position:absolute; inset:0; width:100%; height:100%; border:0;}
 .ficha-body{padding:28px;}
 .ficha-body h3{font-size:24px; margin:0 0 6px;}
 .ficha-body .price{margin-top:2px;}
@@ -1200,6 +1202,21 @@ p{margin:0; text-wrap:pretty;}
     ).join('');
   }
 
+  /* Arma el reproductor del video principal — soporta YouTube, Vimeo o un
+     archivo de video directo (mp4, etc). Devuelve '' si no hay video. */
+  function videoEmbedHTML(url) {
+    if (!url) return '';
+    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+    if (yt) {
+      return `<div class="ficha-video"><iframe src="https://www.youtube.com/embed/${yt[1]}" title="Video de la propiedad" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    }
+    const vimeo = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/);
+    if (vimeo) {
+      return `<div class="ficha-video"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="Video de la propiedad" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    }
+    return `<div class="ficha-video"><video controls preload="metadata" src="${url}"></video></div>`;
+  }
+
   function fichaHTML(propiedad) {
     const fotos = (propiedad.media && propiedad.media.fotos) || [];
     const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
@@ -1210,10 +1227,12 @@ p{margin:0; text-wrap:pretty;}
     const aviso = proximamente
       ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
       : '';
+    const video = propiedad.media ? videoEmbedHTML(propiedad.media.video_principal) : '';
     return `
       <div class="ficha-media"${dataFotos}>
         ${mediaHTML(propiedad)}
       </div>
+      ${video}
       <div class="ficha-body">
         <h3>${propiedad.titulo}</h3>
         <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
