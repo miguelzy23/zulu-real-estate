@@ -26,7 +26,9 @@ function doPost(e) {
 
 /* Deja la hoja legible: encabezado fijo y resaltado, columnas con un
    ancho que alcance para el contenido, texto largo (notas/página) con
-   salto de línea en vez de cortado, y la fecha con hora legible. */
+   salto de línea en vez de cortado, la fecha con hora legible, y cada
+   fila separada con una línea gruesa para diferenciar un cliente del
+   siguiente de un vistazo. */
 function formatearHoja(hoja) {
   const columnas = 8;
   hoja.setFrozenRows(1);
@@ -42,5 +44,16 @@ function formatearHoja(hoja) {
     hoja.getRange(2, 1, filas - 1, 1).setNumberFormat('dd/mm/yyyy hh:mm');
     hoja.getRange(2, 7, filas - 1, 2).setWrap(true); // Notas y Página
     hoja.setRowHeightsForced(2, filas - 1, 21);
+  }
+
+  // Bordes: contorno grueso alrededor de toda la tabla, línea fina entre
+  // columnas, y una línea gruesa debajo de cada fila (incluido el
+  // encabezado) para separar visualmente un cliente del siguiente.
+  const tabla = hoja.getRange(1, 1, filas, columnas);
+  tabla.setBorder(true, true, true, true, false, false, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  tabla.setBorder(null, null, null, null, true, false, '#d8d2c2', SpreadsheetApp.BorderStyle.SOLID);
+  for (let f = 1; f <= filas; f++) {
+    hoja.getRange(f, 1, 1, columnas)
+      .setBorder(false, false, true, false, false, false, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
   }
 }
