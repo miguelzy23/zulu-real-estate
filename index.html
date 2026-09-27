@@ -378,7 +378,13 @@ p{margin:0; text-wrap:pretty;}
 /* ============================================================
    PROPIEDADES
    ============================================================ */
-.props{background:var(--paper); padding:var(--section) 0;}
+.props{
+  position:relative; overflow:hidden; padding:var(--section) 0;
+  background:radial-gradient(110% 80% at 14% 0%, rgba(138,90,31,.06), transparent 55%), var(--paper);
+}
+.props-topo{position:absolute; inset:-8% -5%; width:110%; height:116%; pointer-events:none; z-index:0;}
+.props-topo .topo-line{fill:none; stroke:var(--ink);}
+.props .wrap{position:relative; z-index:1;}
 .props-head{display:flex; justify-content:space-between; align-items:flex-end; gap:32px; flex-wrap:wrap;}
 .props-head h2{font-size:clamp(30px,4.2vw,48px); line-height:1.1; max-width:13ch;}
 .props-head p{margin-top:14px; color:var(--on-cream-dim); font-size:15.5px; max-width:38ch; line-height:1.65;}
@@ -395,9 +401,20 @@ p{margin:0; text-wrap:pretty;}
 .chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--cream);}
 
 .grid{
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:26px; margin-top:clamp(40px,5vw,62px);
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  justify-content:center; gap:26px; margin-top:clamp(40px,5vw,62px);
 }
+.grid > *{max-width:380px;}
+@media(max-width:700px){.grid > *{max-width:none;}}
+.card-cta{
+  border:1px dashed var(--rule-light); border-radius:3px;
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  gap:14px; padding:40px 30px; text-align:left; min-height:100%;
+}
+.card-cta svg{width:26px; height:26px; color:#8a5a1f;}
+.card-cta h3{font-family:'Fraunces',serif; font-weight:500; font-size:19px; line-height:1.35; color:var(--ink);}
+.card-cta p{color:var(--on-cream-dim); font-size:14.5px; line-height:1.6;}
+.card-cta .more{margin-top:2px;}
 .card{
   border:1px solid var(--rule-light); border-radius:3px; overflow:hidden;
   background:var(--paper); display:flex; flex-direction:column;
@@ -903,6 +920,10 @@ p{margin:0; text-wrap:pretty;}
 
 <!-- ===================== PROPIEDADES ===================== -->
 <section class="props" id="propiedades">
+  <svg class="props-topo" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g class="contour-parallax" data-parallax="-.03"><path class="topo-line" stroke-width="1.1" opacity=".07" d="M-60 180 C 170 110, 360 240, 600 160 C 840 80, 1000 210, 1260 130"/></g>
+    <g class="contour-parallax" data-parallax="-.05"><path class="topo-line" stroke-width="1.1" opacity=".06" d="M-60 780 C 190 720, 400 850, 640 780 C 880 710, 1040 840, 1260 770"/></g>
+  </svg>
   <div class="wrap">
     <div class="props-head reveal">
       <div>
@@ -1391,6 +1412,18 @@ p{margin:0; text-wrap:pretty;}
       <div class="card-dots">${puntos}</div>`;
   }
 
+  /* Mientras el catálogo sea corto, esta tarjeta ocupa el espacio que
+     quedaría vacío en el grid y lo convierte en una invitación a escribir,
+     en vez de dejar hueco en blanco. */
+  function tarjetaCtaHTML() {
+    return `<div class="card card-cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h3>¿Buscas algo que no ves aquí?</h3>
+        <p>Contamos con más propiedades que aún no publicamos. Cuéntanos qué necesitas y te avisamos apenas tengamos algo que encaje.</p>
+        <a href="#contacto" class="more">Escríbenos${FLECHA}</a>
+      </div>`;
+  }
+
   function tarjetaHTML(propiedad) {
     const info = TIPO_INFO[propiedad.tipo];
     const proximamente = propiedad.estado === 'proximamente';
@@ -1496,11 +1529,13 @@ p{margin:0; text-wrap:pretty;}
 
   function aplicarFiltro(filtro) {
     let mostradas = 0;
-    grid.querySelectorAll('.card').forEach(card => {
+    grid.querySelectorAll('.card:not(.card-cta)').forEach(card => {
       const on = (filtro === 'Todas' || card.dataset.cat === filtro);
       card.hidden = !on;
       if (on) mostradas++;
     });
+    const cta = grid.querySelector('.card-cta');
+    if (cta) cta.hidden = filtro !== 'Todas';
     empty.hidden = mostradas > 0;
   }
 
@@ -1640,7 +1675,8 @@ p{margin:0; text-wrap:pretty;}
     .then(propiedades => {
       propiedadesCargadas = propiedades;
       const publicadas = propiedades.filter(p => p.estado === 'publicado' || p.estado === 'proximamente');
-      grid.innerHTML = publicadas.map(tarjetaHTML).join('');
+      grid.innerHTML = publicadas.map(tarjetaHTML).join('')
+        + (publicadas.length < 3 ? tarjetaCtaHTML() : '');
       const chipActivo = document.querySelector('.chip[aria-pressed="true"]');
       aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
     })
