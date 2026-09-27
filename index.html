@@ -708,12 +708,41 @@ p{margin:0; text-wrap:pretty;}
 /* ============================================================
    PIE + WHATSAPP
    ============================================================ */
-.foot{padding:52px 0;}
-.foot-row{display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;}
-.foot-links{display:flex; gap:26px; font-size:14px; color:var(--on-cream-dim); flex-wrap:wrap;}
-.foot-links a{transition:color .24s var(--ease-out);}
-.foot-links a:hover{color:var(--ink);}
-.copy{font-size:13.5px; color:var(--on-cream-dim);}
+/* Franja de cierre, deliberadamente compacta: no lleva textura ni
+   ilustración propia — solo la costura de arriba (igual a la que separa
+   Preguntas de Contacto) para marcar el corte sin sumar un cuarto bloque
+   oscuro grande. */
+.foot{background:var(--ink); color:var(--on-ink); padding:40px 0 0;}
+.foot-top{display:flex; justify-content:space-between; align-items:flex-start; gap:40px; flex-wrap:wrap; padding-bottom:30px;}
+.foot-top .mark{color:var(--cream); font-size:19px;}
+.foot-channels{display:flex; flex-wrap:wrap; gap:8px 10px;}
+.chan{
+  display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px;
+  color:var(--on-ink); text-decoration:none; font-size:13.5px; font-weight:500;
+  border-radius:99px; background:rgba(250,238,218,.05);
+  transition:background .24s var(--ease-out), color .24s var(--ease-out);
+}
+.chan:hover{background:#d8ad6b; color:var(--ink);}
+.chan .ico{
+  width:24px; height:24px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(250,238,218,.1); color:inherit;
+  transition:background .24s var(--ease-out);
+}
+.chan:hover .ico{background:rgba(10,10,10,.15);}
+.chan .ico svg{width:13px; height:13px;}
+.foot-bottom{
+  border-top:1px solid var(--rule-dark); padding:18px 0 22px;
+  display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  font-size:12.5px; color:var(--on-ink-dim);
+}
+.foot-nav{display:flex; gap:20px; flex-wrap:wrap;}
+.foot-nav a{color:var(--on-ink-dim); text-decoration:none; transition:color .22s var(--ease-out);}
+.foot-nav a:hover{color:var(--cream);}
+@media(max-width:640px){
+  .foot-top{flex-direction:column; gap:20px;}
+  .foot-bottom{flex-direction:column; align-items:flex-start;}
+}
 
 .wa-group{
   position:fixed; right:22px; bottom:22px; z-index:58;
@@ -766,7 +795,6 @@ p{margin:0; text-wrap:pretty;}
   .filters{width:100%; overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; scrollbar-width:none;}
   .filters::-webkit-scrollbar{display:none;}
   .chip{flex:0 0 auto;}
-  .foot-row{flex-direction:column; align-items:flex-start; gap:16px;}
   .wa-group{right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); gap:8px;}
   .wa span{display:none;}
   .wa{padding:15px;}
@@ -1059,17 +1087,43 @@ p{margin:0; text-wrap:pretty;}
   </div>
 </section>
 
-<footer class="foot">
-  <div class="wrap foot-row">
-    <div class="mark" style="color:var(--ink)">ZULU</div>
-    <div class="foot-links">
-      <a href="#" rel="noopener">Instagram</a>
-      <a href="https://wa.me/573107311282" target="_blank" rel="noopener noreferrer">WhatsApp Miguel</a>
-      <a href="https://wa.me/573104057777" target="_blank" rel="noopener noreferrer">WhatsApp Pacho</a>
-      <a href="https://wa.me/573233645199" target="_blank" rel="noopener noreferrer">WhatsApp Martín</a>
-      <a href="mailto:zulurealstate@gmail.com">zulurealstate@gmail.com</a>
+<footer class="foot on-ink">
+  <div class="seam seam--dark" aria-hidden="true"><svg viewBox="0 0 1200 40" preserveAspectRatio="none"><path class="seam-line" d="M0 20 C 200 2, 400 38, 600 20 C 800 2, 1000 38, 1200 20" fill="none" stroke="currentColor" stroke-width="1"/></svg></div>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="mark">ZULU</div>
+      <div class="foot-channels">
+        <a class="chan" href="https://wa.me/573107311282" target="_blank" rel="noopener noreferrer">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.02.24-3.44-.72-2.9-1.15-4.72-4.16-4.86-4.36-.14-.2-1.14-1.52-1.14-2.9 0-1.38.72-2.06.98-2.34.26-.29.56-.36.75-.36.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.8 1.96.87 2.1.07.15.12.32.02.51-.1.2-.15.32-.29.5-.15.17-.31.39-.44.52-.15.14-.3.3-.13.59.17.29.75 1.24 1.61 2.01 1.11.99 2.04 1.29 2.33 1.44.29.14.46.12.63-.07.17-.2.73-.85.93-1.14.19-.29.39-.24.65-.15.27.1 1.7.8 1.99.95.29.14.48.22.55.34.07.13.07.75-.17 1.43Z"/></svg></span>
+          Miguel
+        </a>
+        <a class="chan" href="https://wa.me/573104057777" target="_blank" rel="noopener noreferrer">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.02.24-3.44-.72-2.9-1.15-4.72-4.16-4.86-4.36-.14-.2-1.14-1.52-1.14-2.9 0-1.38.72-2.06.98-2.34.26-.29.56-.36.75-.36.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.8 1.96.87 2.1.07.15.12.32.02.51-.1.2-.15.32-.29.5-.15.17-.31.39-.44.52-.15.14-.3.3-.13.59.17.29.75 1.24 1.61 2.01 1.11.99 2.04 1.29 2.33 1.44.29.14.46.12.63-.07.17-.2.73-.85.93-1.14.19-.29.39-.24.65-.15.27.1 1.7.8 1.99.95.29.14.48.22.55.34.07.13.07.75-.17 1.43Z"/></svg></span>
+          Pacho
+        </a>
+        <a class="chan" href="https://wa.me/573233645199" target="_blank" rel="noopener noreferrer">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.02.24-3.44-.72-2.9-1.15-4.72-4.16-4.86-4.36-.14-.2-1.14-1.52-1.14-2.9 0-1.38.72-2.06.98-2.34.26-.29.56-.36.75-.36.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.8 1.96.87 2.1.07.15.12.32.02.51-.1.2-.15.32-.29.5-.15.17-.31.39-.44.52-.15.14-.3.3-.13.59.17.29.75 1.24 1.61 2.01 1.11.99 2.04 1.29 2.33 1.44.29.14.46.12.63-.07.17-.2.73-.85.93-1.14.19-.29.39-.24.65-.15.27.1 1.7.8 1.99.95.29.14.48.22.55.34.07.13.07.75-.17 1.43Z"/></svg></span>
+          Martín
+        </a>
+        <a class="chan" href="#" rel="noopener" title="Muy pronto">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.2" cy="6.8" r="1"/></svg></span>
+          Instagram
+        </a>
+        <a class="chan" href="mailto:zulurealstate@gmail.com">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></span>
+          Correo
+        </a>
+      </div>
     </div>
-    <div class="copy">© 2026 Zulu Real Estate · Antioquia, Colombia</div>
+    <div class="foot-bottom">
+      <span>© 2026 Zulu Real Estate · Antioquia, Colombia</span>
+      <nav class="foot-nav">
+        <a href="#nosotros">Nosotros</a>
+        <a href="#propiedades">Propiedades</a>
+        <a href="#preguntas">Preguntas</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
   </div>
 </footer>
 
