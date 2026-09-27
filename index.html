@@ -641,6 +641,8 @@ p{margin:0; text-wrap:pretty;}
    CONTACTO
    ============================================================ */
 .intake{padding:var(--section) 0; position:relative; overflow:hidden;}
+.intake canvas.particles{position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none;}
+.intake > .wrap{position:relative; z-index:1;}
 .intake-grid{display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(44px,6vw,78px); align-items:start;}
 .intake h2{font-size:clamp(30px,4.2vw,46px); line-height:1.1; color:var(--paper); max-width:14ch;}
 .intake-lede{margin-top:20px; color:var(--on-ink-dim); font-size:16px; line-height:1.72; max-width:38ch;}
@@ -996,6 +998,7 @@ p{margin:0; text-wrap:pretty;}
 <!-- ===================== CONTACTO ===================== -->
 <section class="intake on-ink" id="contacto">
   <div class="seam seam--dark" aria-hidden="true"><svg viewBox="0 0 1200 40" preserveAspectRatio="none"><path class="seam-line" d="M0 24 C 180 4, 420 40, 620 18 C 860 -4, 1020 38, 1200 18" fill="none" stroke="currentColor" stroke-width="1"/></svg></div>
+  <canvas class="particles" id="contactoParticles" aria-hidden="true"></canvas>
   <div class="wrap intake-grid">
     <div class="reveal">
       <h2>Empecemos con una conversación.</h2>
@@ -1236,15 +1239,17 @@ p{margin:0; text-wrap:pretty;}
     }
   }
 
-  /* --- Partículas flotantes de "Preguntas frecuentes": puntos tipo
-     luciérnaga que suben despacio, se mecen un poco y titilan. Se
-     redibujan solo mientras la sección está a la vista, y con
-     reduced-motion quedan quietas (un solo cuadro, sin animar). */
-  (function () {
-    const canvas = document.getElementById('faqParticles');
+  /* --- Partículas flotantes tipo luciérnaga: puntos que suben despacio,
+     se mecen un poco y titilan. Se usan en las secciones oscuras que
+     cierran la página (Preguntas y Contacto) para que se sientan como un
+     mismo tramo de "cielo estrellado". Cada canvas corre su propia
+     animación, pausada fuera de vista, y con reduced-motion queda quieta
+     (un solo cuadro, sin animar). */
+  function iniciarParticulas(idCanvas) {
+    const canvas = document.getElementById(idCanvas);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const seccion = canvas.closest('.faq');
+    const seccion = canvas.parentElement;
     let W, H, dpr, particulas = [];
 
     const medir = () => {
@@ -1305,7 +1310,9 @@ p{margin:0; text-wrap:pretty;}
       requestAnimationFrame(paso);
     };
     requestAnimationFrame(paso);
-  })();
+  }
+  iniciarParticulas('faqParticles');
+  iniciarParticulas('contactoParticles');
 
   /* --- Riel numerado fijo de "Cuatro pasos": el número y el título
      quedan pegados (position:sticky, en CSS) mientras cada paso pasa al
