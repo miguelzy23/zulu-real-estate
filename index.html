@@ -1047,6 +1047,43 @@ p{margin:0; text-wrap:pretty;}
     requestAnimationFrame(bucle);
   }
 
+  /* --- Costuras onduladas: las líneas divisorias entre secciones ondulan
+     igual que las olas del hero (mismo tipo de onda viajera), cada una a
+     su propio ritmo. Cada una se anima solo mientras está visible. */
+  if (!reduce) {
+    const costuras = [...document.querySelectorAll('.seam-line')];
+    if (costuras.length) {
+      const olasCostura = costuras.map((_, i) => ({
+        y: 20, a: 8, l: 640 + i * 90, T: 9 + i * 1.6, f: i * 1.3, visible: true
+      }));
+      const XC0 = -20, XC1 = 1220, PASOC = 30;
+      const dibujarCostura = (p, o, t) => {
+        const w = 2 * Math.PI / o.T, k = 2 * Math.PI / o.l;
+        let d = '';
+        for (let x = XC0; x <= XC1; x += PASOC) {
+          const y = o.y + o.a * Math.sin(k * x - w * t + o.f);
+          d += (d ? ' L' : 'M') + x + ' ' + y.toFixed(1);
+        }
+        p.setAttribute('d', d);
+      };
+      if ('IntersectionObserver' in window) {
+        costuras.forEach((p, i) => {
+          new IntersectionObserver(([e]) => { olasCostura[i].visible = e.isIntersecting; })
+            .observe(p.closest('.seam'));
+        });
+      }
+      const t0c = performance.now();
+      const bucleCostura = (now) => {
+        if (!document.hidden) {
+          const t = (now - t0c) / 1000;
+          costuras.forEach((p, i) => { if (olasCostura[i].visible) dibujarCostura(p, olasCostura[i], t); });
+        }
+        requestAnimationFrame(bucleCostura);
+      };
+      requestAnimationFrame(bucleCostura);
+    }
+  }
+
   /* --- Paralaje de las curvas de nivel del hero: cada línea se mueve a su
      propia velocidad al hacer scroll, como capas de profundidad. Se apaga
      sola al salir del hero (overflow:hidden lo recorta) y con
