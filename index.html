@@ -408,16 +408,6 @@ p{margin:0; text-wrap:pretty;}
 }
 .card-media svg{position:absolute; inset:0; width:100%; height:100%; opacity:.5;}
 .card-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
-/* La curva de nivel se traza sobre la foto real — el mismo trazo del
-   hero, ahora leído literalmente como topografía del terreno */
-.card-contour{position:absolute; inset:0; z-index:2; width:100%; height:100%; pointer-events:none;}
-.card-contour-line{
-  stroke-dasharray:900; stroke-dashoffset:900;
-  transition:stroke-dashoffset 1.1s var(--ease-out);
-}
-.card-contour.is-in .card-contour-line,
-.card:hover .card-contour-line{stroke-dashoffset:0;}
-
 /* Carrusel de fotos en la tarjeta — navegar sin salir de la cuadrícula */
 .card-media img{opacity:0; transition:opacity .35s ease; z-index:0;}
 .card-media img.is-active{opacity:1; z-index:1; animation:kenburns 9s ease-in-out infinite alternate;}
@@ -1058,8 +1048,8 @@ p{margin:0; text-wrap:pretty;}
       revealObs.unobserve(e.target);
     });
   }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
-  /* .reveal/.seam ya existen en el HTML; .card-contour se crea al cargar
-     las propiedades, así que también se puede llamar después con nodos nuevos */
+  /* .reveal/.seam ya existen en el HTML; se puede llamar después con
+     nodos nuevos (ej. tarjetas que se agregan al cargar propiedades) */
   const observeReveal = (nodes) => {
     if (reduce || !revealObs) { nodes.forEach(n => n.classList.add('is-in')); return; }
     nodes.forEach(n => revealObs.observe(n));
@@ -1318,8 +1308,7 @@ p{margin:0; text-wrap:pretty;}
       const verFotos = fotos && fotos.length
         ? `<button type="button" class="tag tag-fotos">Ver ${fotos.length} fotos</button>`
         : '';
-      const contorno = `<svg class="card-contour" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path class="card-contour-line" d="M-20 190 C 80 150, 160 232, 260 182 C 340 146, 380 202, 420 172" fill="none" stroke="#FAEEDA" stroke-width="1.6"/></svg>`;
-      return `<img src="${principal}" alt="${propiedad.titulo}" loading="lazy">${contorno}${verFotos}`;
+      return `<img src="${principal}" alt="${propiedad.titulo}" loading="lazy">${verFotos}`;
     }
     return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
   }
@@ -1340,10 +1329,9 @@ p{margin:0; text-wrap:pretty;}
     const imgs = fotos.map((src, i) =>
       `<img src="${src}" alt="${propiedad.titulo}" loading="lazy" class="${i === 0 ? 'is-active' : ''}">`
     ).join('');
-    const contorno = `<svg class="card-contour" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path class="card-contour-line" d="M-20 190 C 80 150, 160 232, 260 182 C 340 146, 380 202, 420 172" fill="none" stroke="#FAEEDA" stroke-width="1.6"/></svg>`;
-    if (fotos.length < 2) return `${imgs}${contorno}`;
+    if (fotos.length < 2) return imgs;
     const puntos = fotos.map((_, i) => `<i data-i="${i}" class="${i === 0 ? 'is-active' : ''}"></i>`).join('');
-    return `${imgs}${contorno}
+    return `${imgs}
       <button type="button" class="card-arrow prev" aria-label="Foto anterior">${CHEV_IZQ}</button>
       <button type="button" class="card-arrow next" aria-label="Foto siguiente">${CHEV_DER}</button>
       <div class="card-dots">${puntos}</div>`;
@@ -1599,7 +1587,6 @@ p{margin:0; text-wrap:pretty;}
       propiedadesCargadas = propiedades;
       const publicadas = propiedades.filter(p => p.estado === 'publicado' || p.estado === 'proximamente');
       grid.innerHTML = publicadas.map(tarjetaHTML).join('');
-      observeReveal(grid.querySelectorAll('.card-contour'));
       const chipActivo = document.querySelector('.chip[aria-pressed="true"]');
       aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
     })
