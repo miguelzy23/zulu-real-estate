@@ -49,11 +49,14 @@ function formatearHoja(hoja) {
   // Bordes: contorno grueso alrededor de toda la tabla, línea fina entre
   // columnas, y una línea gruesa debajo de cada fila (incluido el
   // encabezado) para separar visualmente un cliente del siguiente.
+  // Importante: en setBorder, `null` significa "no tocar este lado" y
+  // `false` significa "bórralo" — hay que usar `null` en todo lo que no
+  // se quiere tocar, o cada llamada borra lo que puso la anterior.
   const tabla = hoja.getRange(1, 1, filas, columnas);
-  tabla.setBorder(true, true, true, true, false, false, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  tabla.setBorder(null, null, null, null, true, false, '#d8d2c2', SpreadsheetApp.BorderStyle.SOLID);
+  tabla.setBorder(true, true, true, true, null, null, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  tabla.setBorder(null, null, null, null, true, null, '#d8d2c2', SpreadsheetApp.BorderStyle.SOLID);
   for (let f = 1; f <= filas; f++) {
     hoja.getRange(f, 1, 1, columnas)
-      .setBorder(false, false, true, false, false, false, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+      .setBorder(null, null, true, null, null, null, '#0A0A0A', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
   }
 }
