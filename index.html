@@ -317,24 +317,53 @@ p{margin:0; text-wrap:pretty;}
 .steps{padding:var(--section) 0;}
 .steps h2{font-size:clamp(30px,4.4vw,50px); line-height:1.1; color:var(--paper); max-width:15ch;}
 .steps-lede{margin-top:18px; max-width:52ch; color:var(--on-ink-dim); font-size:16.5px; line-height:1.7;}
-.step-list{margin-top:clamp(48px,6vw,76px); border-top:1px solid var(--rule-dark);}
+.step-list{
+  margin-top:clamp(48px,6vw,76px); border-top:1px solid var(--rule-dark);
+  display:grid; grid-template-columns:220px 1fr; gap:48px;
+}
 .steps-cta{margin-top:clamp(36px,5vw,56px); display:flex; justify-content:center;}
-.step{
-  display:grid; grid-template-columns:104px 1fr 1.15fr; align-items:baseline;
-  gap:28px; padding:30px 0;
-  border-bottom:1px solid var(--rule-dark);
-  transition:background .45s var(--ease-out), padding-left .45s var(--ease-out);
+
+/* Riel fijo: número y título quedan pegados mientras los pasos pasan
+   al lado — ver JS "Riel numerado fijo". En pantallas chicas se
+   desactiva (ver media query) y cada paso lleva su propio número. */
+.step-rail{
+  position:sticky; top:110px; align-self:start;
+  padding-top:clamp(36px,5vw,52px);
+  display:flex; flex-direction:column; gap:20px;
 }
-.step:hover{background:rgba(250,238,218,.045); padding-left:14px;}
-.step-n{
-  font-family:'Fraunces',serif; font-size:clamp(34px,4.6vw,52px); font-weight:300;
-  line-height:1; color:var(--cream); opacity:.3;
-  font-variant-numeric:tabular-nums;
-  transition:opacity .45s var(--ease-out);
+.step-rail-count{font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--on-ink-dim);}
+.step-rail-num{
+  font-family:'Fraunces',serif; font-size:clamp(52px,6vw,76px); font-weight:300;
+  line-height:1; color:var(--cream); font-variant-numeric:tabular-nums;
 }
-.step:hover .step-n{opacity:.85;}
-.step h3{font-size:clamp(19px,2.1vw,24px); color:var(--paper); font-weight:400; line-height:1.25;}
-.step p{color:var(--on-ink-dim); font-size:15px; line-height:1.68; max-width:44ch;}
+.step-rail-heading{position:relative; height:64px;}
+.step-rail-heading span{
+  position:absolute; inset:0; opacity:0; transform:translateY(10px);
+  transition:opacity .45s var(--ease-out), transform .45s var(--ease-out);
+  font-size:clamp(19px,2.1vw,23px); color:var(--paper); line-height:1.25;
+}
+.step-rail-heading span.is-active{opacity:1; transform:translateY(0);}
+.step-rail-track{position:relative; width:2px; height:120px; background:var(--rule-dark); border-radius:2px; margin-top:4px;}
+.step-rail-track i{position:absolute; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--cream); transition:top .5s var(--ease-out);}
+
+.step-panels{display:flex; flex-direction:column;}
+.step-panel{
+  min-height:56vh; display:flex; flex-direction:column; justify-content:center;
+  padding:36px 0; border-bottom:1px solid var(--rule-dark);
+}
+.step-panel:last-child{border-bottom:0;}
+.step-panel-n{
+  font-family:'Fraunces',serif; font-size:13px; font-weight:600; letter-spacing:.03em;
+  color:var(--cream-deep); opacity:.75; margin-bottom:10px;
+}
+.step-panel h3{font-size:clamp(19px,2.1vw,24px); color:var(--paper); font-weight:400; line-height:1.25;}
+.step-panel p{color:var(--on-ink-dim); font-size:15px; line-height:1.68; max-width:44ch; margin-top:10px;}
+
+@media (max-width:760px){
+  .step-list{grid-template-columns:1fr; gap:0;}
+  .step-rail{display:none;}
+  .step-panel{min-height:auto; padding:26px 0;}
+}
 
 /* ============================================================
    PROPIEDADES
@@ -648,8 +677,6 @@ p{margin:0; text-wrap:pretty;}
   .about-grid{gap:44px;}
   .frame{aspect-ratio:16/10;}
   .grid{grid-template-columns:repeat(2,1fr);}
-  .step{grid-template-columns:76px 1fr; gap:20px 22px;}
-  .step p{grid-column:2; margin-top:8px;}
   .props-head h2,.faq h2,.intake h2,.steps h2{max-width:none;}
 }
 @media (max-width:720px){
@@ -786,25 +813,33 @@ p{margin:0; text-wrap:pretty;}
       <p class="steps-lede">Así te guiamos, sin que tengas que adivinar cuál es el siguiente paso.</p>
     </div>
     <div class="step-list">
-      <div class="step reveal" data-d="1">
-        <div class="step-n">01</div>
-        <h3>Cuéntanos qué buscas</h3>
-        <p>Un formulario corto y claro: presupuesto, zona y tipo de propiedad. Menos de 2 minutos.</p>
+      <div class="step-rail">
+        <div class="step-rail-count" id="stepCount">Paso 01 / 04</div>
+        <div class="step-rail-num"><span id="stepNumBig">01</span></div>
+        <div class="step-rail-heading" id="stepHeadingWrap"></div>
+        <div class="step-rail-track"><i id="stepDot"></i></div>
       </div>
-      <div class="step reveal" data-d="2">
-        <div class="step-n">02</div>
-        <h3>Te mandamos opciones reales</h3>
-        <p>Seleccionamos a mano solo lo que encaja contigo. Sin listas infinitas ni spam.</p>
-      </div>
-      <div class="step reveal" data-d="3">
-        <div class="step-n">03</div>
-        <h3>Visitamos juntos</h3>
-        <p>Te acompañamos en cada visita y te decimos con honestidad qué vale la pena.</p>
-      </div>
-      <div class="step reveal" data-d="4">
-        <div class="step-n">04</div>
-        <h3>Cerramos con confianza</h3>
-        <p>Revisamos papeles, negociación y firma. Estamos contigo hasta las llaves.</p>
+      <div class="step-panels" id="stepPanels">
+        <div class="step-panel" data-n="01" data-title="Cuéntanos qué buscas">
+          <div class="step-panel-n">01</div>
+          <h3>Cuéntanos qué buscas</h3>
+          <p>Un formulario corto y claro: presupuesto, zona y tipo de propiedad. Menos de 2 minutos.</p>
+        </div>
+        <div class="step-panel" data-n="02" data-title="Te mandamos opciones reales">
+          <div class="step-panel-n">02</div>
+          <h3>Te mandamos opciones reales</h3>
+          <p>Seleccionamos a mano solo lo que encaja contigo. Sin listas infinitas ni spam.</p>
+        </div>
+        <div class="step-panel" data-n="03" data-title="Visitamos juntos">
+          <div class="step-panel-n">03</div>
+          <h3>Visitamos juntos</h3>
+          <p>Te acompañamos en cada visita y te decimos con honestidad qué vale la pena.</p>
+        </div>
+        <div class="step-panel" data-n="04" data-title="Cerramos con confianza">
+          <div class="step-panel-n">04</div>
+          <h3>Cerramos con confianza</h3>
+          <p>Revisamos papeles, negociación y firma. Estamos contigo hasta las llaves.</p>
+        </div>
       </div>
     </div>
     <div class="steps-cta reveal">
@@ -1106,6 +1141,57 @@ p{margin:0; text-wrap:pretty;}
       }, { passive: true });
     }
   }
+
+  /* --- Riel numerado fijo de "Cuatro pasos": el número y el título
+     quedan pegados (position:sticky, en CSS) mientras cada paso pasa al
+     lado. Se calcula en cada scroll cuál paso está más cerca del centro
+     de la pantalla, en vez de usar IntersectionObserver — con varios
+     paneles altos, el observer puede marcar más de uno a la vez al
+     cargar la página, y este cálculo directo no tiene esa ambigüedad.
+     En pantallas chicas el riel se oculta por CSS y esto no hace nada. */
+  (() => {
+    const panels = [...document.querySelectorAll('.step-panel')];
+    const wrap = document.getElementById('stepHeadingWrap');
+    if (!panels.length || !wrap) return;
+    const bigNum = document.getElementById('stepNumBig');
+    const dot = document.getElementById('stepDot');
+    const count = document.getElementById('stepCount');
+    const track = document.querySelector('.step-rail-track');
+
+    panels.forEach((p, i) => {
+      const span = document.createElement('span');
+      span.textContent = p.dataset.title;
+      if (i === 0) span.classList.add('is-active');
+      wrap.appendChild(span);
+    });
+    const headings = [...wrap.children];
+
+    const activar = (i) => {
+      headings.forEach((h, hi) => h.classList.toggle('is-active', hi === i));
+      bigNum.textContent = panels[i].dataset.n;
+      count.textContent = `Paso ${panels[i].dataset.n} / ${String(panels.length).padStart(2, '0')}`;
+      dot.style.top = (i / (panels.length - 1)) * (track.offsetHeight - 8) + 'px';
+    };
+    activar(0);
+
+    let tick = false;
+    const actualizar = () => {
+      tick = false;
+      const centro = innerHeight / 2;
+      let mejorI = 0, mejorDist = Infinity;
+      panels.forEach((p, i) => {
+        const r = p.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.bottom) / 2 - centro);
+        if (dist < mejorDist) { mejorDist = dist; mejorI = i; }
+      });
+      activar(mejorI);
+    };
+    actualizar();
+    addEventListener('scroll', () => {
+      if (!tick) { tick = true; requestAnimationFrame(actualizar); }
+    }, { passive: true });
+    addEventListener('resize', actualizar);
+  })();
 
   /* --- Las cifras del hero cuentan hacia arriba en su primera aparición */
   if (!reduce) {
