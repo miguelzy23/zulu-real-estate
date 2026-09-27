@@ -417,6 +417,33 @@ p{margin:0; text-wrap:pretty;}
 }
 .card-contour.is-in .card-contour-line,
 .card:hover .card-contour-line{stroke-dashoffset:0;}
+
+/* Carrusel de fotos en la tarjeta — navegar sin salir de la cuadrícula */
+.card-media img{opacity:0; transition:opacity .35s ease; z-index:0;}
+.card-media img.is-active{opacity:1; z-index:1; animation:kenburns 9s ease-in-out infinite alternate;}
+@keyframes kenburns{from{transform:scale(1);} to{transform:scale(1.09);}}
+@media (prefers-reduced-motion:reduce){.card-media img.is-active{animation:none;}}
+.card-arrow{
+  position:absolute; z-index:4; top:50%; transform:translateY(-50%);
+  width:30px; height:30px; border-radius:50%; border:0;
+  background:rgba(10,10,10,.42); color:#fff; display:flex;
+  align-items:center; justify-content:center; cursor:pointer;
+  opacity:0; transition:opacity .2s ease, background .2s ease;
+}
+.card-media:hover .card-arrow{opacity:1;}
+.card-arrow:hover{background:rgba(10,10,10,.68);}
+.card-arrow.prev{left:9px;} .card-arrow.next{right:9px;}
+@media (hover:none){.card-arrow{opacity:.8;}}
+.card-dots{position:absolute; z-index:4; left:0; right:0; bottom:12px; display:flex; justify-content:center; gap:6px;}
+.card-dots i{
+  width:14px; height:14px; margin:-4px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.card-dots i::before{
+  content:''; width:5px; height:5px; border-radius:50%;
+  background:rgba(255,255,255,.55); transition:all .25s ease;
+}
+.card-dots i.is-active::before{background:#fff; width:14px; border-radius:3px;}
 .card-media b{
   position:relative; z-index:2;
   font-size:11.5px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
@@ -1297,20 +1324,43 @@ p{margin:0; text-wrap:pretty;}
     return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
   }
 
+  const CHEV_IZQ = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+  const CHEV_DER = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
+
+  /* Media de la tarjeta: a diferencia de mediaHTML() (una sola foto +
+     botón a la galería, usado en la ficha), aquí se navegan las fotos
+     directo encima de la tarjeta — flechas, puntos o deslizando en el
+     celular — sin salir de la cuadrícula. La galería completa sigue
+     disponible desde la ficha al abrir la propiedad. */
+  function cardMediaHTML(propiedad) {
+    const principal = propiedad.media && propiedad.media.foto_principal;
+    if (!principal) return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
+    const fotos = (propiedad.media && propiedad.media.fotos && propiedad.media.fotos.length)
+      ? propiedad.media.fotos : [principal];
+    const imgs = fotos.map((src, i) =>
+      `<img src="${src}" alt="${propiedad.titulo}" loading="lazy" class="${i === 0 ? 'is-active' : ''}">`
+    ).join('');
+    const contorno = `<svg class="card-contour" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path class="card-contour-line" d="M-20 190 C 80 150, 160 232, 260 182 C 340 146, 380 202, 420 172" fill="none" stroke="#FAEEDA" stroke-width="1.6"/></svg>`;
+    if (fotos.length < 2) return `${imgs}${contorno}`;
+    const puntos = fotos.map((_, i) => `<i data-i="${i}" class="${i === 0 ? 'is-active' : ''}"></i>`).join('');
+    return `${imgs}${contorno}
+      <button type="button" class="card-arrow prev" aria-label="Foto anterior">${CHEV_IZQ}</button>
+      <button type="button" class="card-arrow next" aria-label="Foto siguiente">${CHEV_DER}</button>
+      <div class="card-dots">${puntos}</div>`;
+  }
+
   function tarjetaHTML(propiedad) {
     const info = TIPO_INFO[propiedad.tipo];
     const proximamente = propiedad.estado === 'proximamente';
     const sello = proximamente
       ? '<div class="tag tag-proximamente">Próximamente</div>'
       : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '');
-    const fotos = (propiedad.media && propiedad.media.fotos) || [];
-    const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
       : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}">
-        <div class="card-media"${dataFotos}>
-          ${mediaHTML(propiedad)}
+        <div class="card-media">
+          ${cardMediaHTML(propiedad)}
           <div class="tag">${info.etiqueta}</div>
           ${sello}
         </div>
@@ -1492,17 +1542,56 @@ p{margin:0; text-wrap:pretty;}
     }
   });
 
+  /* --- Carrusel de fotos en la tarjeta: flechas, puntos y deslizar --- */
+  function mostrarFotoTarjeta(media, i) {
+    const imgs = [...media.querySelectorAll('img')];
+    if (!imgs.length) return;
+    const idx = ((i % imgs.length) + imgs.length) % imgs.length;
+    imgs.forEach((img, k) => img.classList.toggle('is-active', k === idx));
+    media.querySelectorAll('.card-dots i').forEach((p, k) => p.classList.toggle('is-active', k === idx));
+  }
+  function moverFotoTarjeta(media, delta) {
+    const activa = media.querySelector('img.is-active');
+    const imgs = [...media.querySelectorAll('img')];
+    mostrarFotoTarjeta(media, imgs.indexOf(activa) + delta);
+  }
+
+  let bloquearClicTarjeta = false;
   grid.addEventListener('click', e => {
-    const botonFotos = e.target.closest('.tag-fotos');
-    if (botonFotos) {
-      const media = botonFotos.closest('.card-media[data-fotos]');
-      if (media) abrirGaleria(JSON.parse(media.dataset.fotos));
+    if (bloquearClicTarjeta) { bloquearClicTarjeta = false; return; }
+    const flecha = e.target.closest('.card-arrow');
+    if (flecha) {
+      moverFotoTarjeta(flecha.closest('.card-media'), flecha.classList.contains('next') ? 1 : -1);
+      return;
+    }
+    const punto = e.target.closest('.card-dots i');
+    if (punto) {
+      mostrarFotoTarjeta(punto.closest('.card-media'), parseInt(punto.dataset.i, 10));
       return;
     }
     if (e.target.closest('.more')) return;
     const card = e.target.closest('.card');
     if (card) abrirFicha(card.dataset.id);
   });
+
+  /* Deslizar en celular para cambiar de foto — sin esto, tocar y
+     arrastrar solo movería la página, no la carrera. */
+  let inicioX = null, inicioY = null;
+  grid.addEventListener('touchstart', e => {
+    if (!e.target.closest('.card-media')) return;
+    inicioX = e.touches[0].clientX;
+    inicioY = e.touches[0].clientY;
+  }, { passive: true });
+  grid.addEventListener('touchend', e => {
+    if (inicioX === null) return;
+    const media = e.target.closest('.card-media');
+    const dx = e.changedTouches[0].clientX - inicioX;
+    const dy = e.changedTouches[0].clientY - inicioY;
+    inicioX = null;
+    if (!media || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    moverFotoTarjeta(media, dx < 0 ? 1 : -1);
+    bloquearClicTarjeta = true;
+  }, { passive: true });
 
   fetch('data/properties.json')
     .then(r => r.json())
