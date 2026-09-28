@@ -122,8 +122,8 @@
     "slug": "finca-el-rincon-santa-fe-de-antioquia",
     "tipo": "finca",
     "operacion": "venta",
-    "estado": "proximamente",
-    "verificado": false,
+    "estado": "publicado",
+    "verificado": true,
     "titulo": "Finca El Rincón — Santa Fe de Antioquia",
     "descripcion_corta": "Casa de campo de estilo tradicional antioqueño en la Parcelación Hato Obregón, rodeada de árboles frutales y jardines amplios, con piscina propia de 14x7 m, a 68 km de Medellín vía Bolombolo.",
     "casa_de_mayordomo": true,
@@ -205,7 +205,7 @@
       "negociable": null
     },
     "media": {
-      "video_principal": null,
+      "video_principal": "https://youtu.be/-F0y-D-ON8I",
       "fotos_dron": 5,
       "fotos_terrestres": 5,
       "plano_loteo": false,
@@ -223,7 +223,7 @@
         "assets/finca-el-rincon/10.jpg"
       ]
     },
-    "fecha_visita": null,
+    "fecha_visita": "2026-09-27",
     "fecha_creacion": "2026-09-24"
   }
 ]
