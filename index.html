@@ -565,15 +565,19 @@ p{margin:0; text-wrap:pretty;}
 .ficha-fila dd{margin:3px 0 0; font-size:14.5px;}
 .ficha-body .more{margin-top:24px;}
 .card-body{padding:21px; display:flex; flex-direction:column; flex:1;}
+.price-row{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;}
 .price{
   font-family:'Fraunces',serif; font-size:22px; font-weight:500;
   font-variant-numeric:tabular-nums; letter-spacing:-0.01em;
 }
+.price-m2{font-size:12px; color:var(--on-cream-dim); font-weight:500; font-variant-numeric:tabular-nums;}
 .loc{font-size:14px; color:var(--on-cream-dim); margin-top:5px;}
 .meta{
   display:flex; gap:15px; flex-wrap:wrap; font-size:13px; color:var(--on-cream-dim);
   margin-top:16px; padding-top:14px; border-top:1px solid var(--rule-hair);
 }
+.meta span{display:inline-flex; align-items:center; gap:6px;}
+.meta svg{width:14px; height:14px; color:#8a5a1f; flex:none;}
 .more{
   display:inline-flex; align-items:center; gap:8px; margin-top:16px;
   font-size:13.5px; font-weight:600; color:var(--ink);
@@ -1502,12 +1506,26 @@ p{margin:0; text-wrap:pretty;}
     return historico[historico.length - 1].valor;
   }
 
+  const ICO_AREA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="10" rx="1.5"/><path d="M3 15V7a2 2 0 0 1 2-2h4"/><path d="M9 9V6"/></svg>';
+  const ICO_CAMA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"/><path d="M2 11h20v6H2z"/><path d="M4 17v2M20 17v2"/></svg>';
+  const ICO_BANO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a1 1 0 0 1 1-1Z"/><path d="M6 12V6a2 2 0 0 1 3.5-1.3"/><path d="M4 21h16"/></svg>';
+
   function metaHTML(propiedad) {
     if (propiedad.tipo === 'lote') {
-      return `<span>${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²</span>`;
+      return `<span>${ICO_AREA}${propiedad.area.escritura_m2.toLocaleString('es-CO')} m² de escritura</span>`;
     }
     const info = TIPO_INFO[propiedad.tipo];
-    return `<span>${propiedad.habitaciones} habitaciones</span><span>${propiedad.area_construida.toLocaleString('es-CO')} m²</span><span>${info.etiqueta}</span>`;
+    const banos = propiedad.banos ? `<span>${ICO_BANO}${propiedad.banos}</span>` : '';
+    return `<span>${ICO_CAMA}${propiedad.habitaciones}</span>${banos}<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>`;
+  }
+
+  /* Precio por m² de escritura — solo tiene sentido comparativo en
+     lotes, donde es el dato que de verdad usan para comparar terrenos
+     entre zonas. */
+  function precioM2HTML(propiedad) {
+    if (propiedad.tipo !== 'lote' || !propiedad.area || !propiedad.area.escritura_m2) return '';
+    const valor = Math.round(ultimoPrecio(propiedad) / propiedad.area.escritura_m2);
+    return `<div class="price-m2">${formatoCOP(valor)} / m²</div>`;
   }
 
   function mediaHTML(propiedad) {
@@ -1574,7 +1592,10 @@ p{margin:0; text-wrap:pretty;}
           ${sello}
         </div>
         <div class="card-body">
-          <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
+          <div class="price-row">
+            <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
+            ${precioM2HTML(propiedad)}
+          </div>
           <div class="loc">${propiedad.ubicacion.municipio}</div>
           <div class="meta">${metaHTML(propiedad)}</div>
           ${cta}
