@@ -5,7 +5,7 @@
     "tipo": "lote",
     "operacion": "venta",
     "estado": "publicado",
-    "verificado": false,
+    "verificado": true,
     "titulo": "Lote 222 — Montesereno, El Retiro",
     "descripcion_corta": "Lote esquinero de 3.562 m² en Montesereno, con doble frente a vía interna, explanación existente y bosque nativo en el lindero superior.",
     "ubicacion": {
