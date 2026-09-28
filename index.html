@@ -1478,9 +1478,10 @@ p{margin:0; text-wrap:pretty;}
   const empty = document.getElementById('empty');
 
   const TIPO_INFO = {
-    lote:  { categoria: 'Lotes',  etiqueta: 'Lote' },
-    finca: { categoria: 'Fincas', etiqueta: 'Finca' },
-    casa:  { categoria: 'Casas',  etiqueta: 'Casa' }
+    lote:        { categoria: 'Lotes',        etiqueta: 'Lote' },
+    finca:       { categoria: 'Fincas',       etiqueta: 'Finca' },
+    casa:        { categoria: 'Casas',        etiqueta: 'Casa' },
+    apartamento: { categoria: 'Apartamentos', etiqueta: 'Apartamento' }
   };
   const MEDIA_PLACEHOLDER = '<svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,46)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,92)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,138)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,184)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,230)"/></g></svg>';
   const FLECHA = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -1505,13 +1506,23 @@ p{margin:0; text-wrap:pretty;}
     return `<span>${ICO_CAMA}${propiedad.habitaciones}</span>${banos}<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>`;
   }
 
-  /* Precio por m² de escritura — solo tiene sentido comparativo en
-     lotes, donde es el dato que de verdad usan para comparar terrenos
-     entre zonas. */
+  /* Precio por m² — solo tiene sentido comparativo en lotes (sobre el
+     área de escritura) y apartamentos (sobre el área construida), que
+     es el dato que de verdad se usa para comparar entre zonas. En
+     fincas y casas el valor está tanto en la construcción como en el
+     terreno, así que un solo precio/m² no representa bien el precio. */
   function precioM2HTML(propiedad) {
-    if (propiedad.tipo !== 'lote' || !propiedad.area || !propiedad.area.escritura_m2) return '';
-    const valor = Math.round(ultimoPrecio(propiedad) / propiedad.area.escritura_m2);
-    return `<div class="price-m2">${formatoCOP(valor)} / m²</div>`;
+    if (propiedad.tipo === 'lote') {
+      if (!propiedad.area || !propiedad.area.escritura_m2) return '';
+      const valor = Math.round(ultimoPrecio(propiedad) / propiedad.area.escritura_m2);
+      return `<div class="price-m2">${formatoCOP(valor)} / m²</div>`;
+    }
+    if (propiedad.tipo === 'apartamento') {
+      if (!propiedad.area_construida) return '';
+      const valor = Math.round(ultimoPrecio(propiedad) / propiedad.area_construida);
+      return `<div class="price-m2">${formatoCOP(valor)} / m²</div>`;
+    }
+    return '';
   }
 
   function mediaHTML(propiedad) {
