@@ -225,5 +225,104 @@
     },
     "fecha_visita": "2026-09-27",
     "fecha_creacion": "2026-09-24"
+  },
+  {
+    "id": "ZUL-2026-003",
+    "slug": "lote-pontezuela-la-ceja",
+    "tipo": "lote",
+    "operacion": "venta",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "Lote Pontezuela — La Ceja",
+    "descripcion_corta": "Lote campestre de 8.900 m² en el sector Pontezuela, frente a la panadería Pan Comido, con amplias zonas planas de pasto, árboles nativos, cercas vivas y vista abierta a las montañas del Oriente Antioqueño.",
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "La Ceja",
+      "vereda": "Pontezuela",
+      "subregion": "Oriente Antioqueño",
+      "parcelacion": {
+        "nombre": null,
+        "lote_numero": null,
+        "regimen": null,
+        "porteria_24h": null,
+        "cuota_administracion_cop": null,
+        "zonas_comunes": [],
+        "indice_ocupacion_pct": null,
+        "altura_maxima_pisos": null,
+        "retiros_m": null,
+        "restriccion_bosque_nativo": null
+      },
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      },
+      "msnm": null,
+      "clima": null
+    },
+    "area": {
+      "escritura_m2": 8900,
+      "real_m2": null,
+      "aprovechable_m2": null,
+      "cuadras": 1.391,
+      "hectareas": 0.89
+    },
+    "terreno": {
+      "topografia": "amplias zonas planas y de suave pendiente",
+      "explanacion_existente": null,
+      "requiere_movimiento_tierra": null,
+      "cobertura": [
+        "pasto",
+        "árboles nativos",
+        "cercas vivas"
+      ],
+      "frentes_via": 1,
+      "esquinero": null
+    },
+    "servicios": {
+      "energia": null,
+      "acueducto": null,
+      "alcantarillado": null,
+      "gas": null,
+      "internet": null
+    },
+    "acceso": {
+      "tipo_via": null,
+      "via_interna_parcelacion": null,
+      "acceso_vehicular_directo": null
+    },
+    "legal": {
+      "levantamiento_topografico": null,
+      "estrato": null,
+      "uso_suelo": "rural"
+    },
+    "precio": {
+      "moneda": "COP",
+      "precio_historico": [
+        {
+          "fecha": "2026-09-28",
+          "valor": 2200000000,
+          "motivo": "Precio inicial informado por el propietario en el portafolio comercial de la propiedad."
+        }
+      ],
+      "valor_m2": 247191,
+      "publicable": true,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 5,
+      "fotos_terrestres": 0,
+      "plano_loteo": false,
+      "foto_principal": "assets/lote-pontezuela/01.jpg",
+      "fotos": [
+        "assets/lote-pontezuela/01.jpg",
+        "assets/lote-pontezuela/02.jpg",
+        "assets/lote-pontezuela/03.jpg",
+        "assets/lote-pontezuela/04.jpg",
+        "assets/lote-pontezuela/05.jpg"
+      ]
+    },
+    "fecha_visita": "2026-09-28",
+    "fecha_creacion": "2026-09-28"
   }
 ]
