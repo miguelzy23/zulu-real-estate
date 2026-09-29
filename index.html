@@ -238,6 +238,13 @@ p{margin:0; text-wrap:pretty;}
 }
 @keyframes rise{to{transform:translateY(0);}}
 
+.hero-tag{
+  margin-top:22px; max-width:34ch;
+  font-family:'Inter',sans-serif; font-size:15.5px; font-weight:500; line-height:1.55;
+  color:var(--on-ink-dim);
+  opacity:0; animation:fadeUp .95s var(--ease-out) .36s forwards;
+}
+.hero-tag b{color:var(--cream); font-weight:600;}
 .hero-lede{
   font-family:'Fraunces',serif; font-style:italic; font-weight:400;
   font-size:clamp(21px,2.9vw,33px); line-height:1.34;
@@ -779,6 +786,7 @@ p{margin:0; text-wrap:pretty;}
   .nav-toggle{display:flex;}
   .hero{padding-top:112px;}
   .hero-lede{max-width:none;}
+  .hero-tag{max-width:none;}
   .rail-in{display:grid; grid-template-columns:1fr 1fr;}
   .rail-item{padding:16px 16px 16px 0; min-width:0;}
   .rail-item + .rail-item{padding-left:16px;}
@@ -811,7 +819,7 @@ p{margin:0; text-wrap:pretty;}
   }
   .reveal{opacity:1; transform:none; filter:none;}
   .word span{transform:none;}
-  .hero-lede,.hero-sub,.hero-actions,.rail{opacity:1;}
+  .hero-tag,.hero-lede,.hero-sub,.hero-actions,.rail{opacity:1;}
 }
 </style>
 </head>
@@ -856,6 +864,7 @@ p{margin:0; text-wrap:pretty;}
 
   <div class="wrap hero-inner">
     <h1 class="word"><span>ZULU</span></h1>
+    <p class="hero-tag">Inspirado en nuestro padre, <b>Pacho Zuluaga</b>. Su legado, nuestra manera de trabajar.</p>
     <p class="hero-lede">Relaciones de confianza, construidas por años.</p>
     <p class="hero-sub">Real estate residencial y de inversión en Antioquia, con la misma asesoría personal de siempre y una forma más rápida de encontrarla.</p>
     <div class="hero-actions">
