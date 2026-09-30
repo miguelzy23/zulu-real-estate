@@ -381,6 +381,37 @@ p{margin:0; text-wrap:pretty;}
 }
 
 /* ============================================================
+   INTENCIÓN — panel de calificación antes de las propiedades
+   ============================================================ */
+.intent{
+  position:relative; overflow:hidden; padding:var(--section) 0 calc(var(--section) * .7);
+  background:radial-gradient(110% 80% at 14% 0%, rgba(216,173,107,.08), transparent 55%), var(--ink);
+  color:var(--on-ink);
+}
+.intent-eyebrow{font-size:12.5px; letter-spacing:.09em; text-transform:uppercase; color:#d8ad6b; font-weight:600;}
+.intent h2{font-size:clamp(28px,4vw,42px); line-height:1.12; color:var(--cream); margin-top:12px; max-width:16ch;}
+.intent-sub{margin-top:14px; max-width:52ch; font-size:15.5px; line-height:1.65; color:var(--on-ink-dim);}
+.q-block{margin-top:32px;}
+.q-label{font-size:13px; font-weight:600; color:var(--cream); margin-bottom:11px; display:block;}
+.q-chips{display:flex; flex-wrap:wrap; gap:9px;}
+.qchip{
+  background:transparent; border:1px solid var(--rule-dark);
+  color:var(--on-ink-dim); padding:10px 18px; border-radius:99px;
+  font-size:13.5px; font-weight:500; cursor:pointer;
+  transition:border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.qchip:hover{border-color:var(--cream); color:var(--cream);}
+.qchip.is-active{background:var(--cream); border-color:var(--cream); color:var(--ink);}
+.zona-block{margin-top:26px; padding-top:22px; border-top:1px solid var(--rule-dark);}
+.zona-label{font-size:12px; letter-spacing:.04em; color:var(--on-ink-dim); margin-bottom:10px; display:flex; align-items:center; gap:7px;}
+.zona-label svg{width:13px; height:13px; color:#d8ad6b; flex:none;}
+.zona-chips .qchip{padding:7px 14px; font-size:12.5px;}
+.zona-chips .qchip.is-highlight{border-color:#d8ad6b; color:#d8ad6b;}
+.zona-chips .qchip.is-highlight.is-active{background:#d8ad6b; border-color:#d8ad6b; color:var(--ink);}
+.intent-foot{margin-top:34px;}
+@media(max-width:600px){.intent .btn{width:100%; justify-content:center;}}
+
+/* ============================================================
    PROPIEDADES
    ============================================================ */
 .props{
@@ -952,6 +983,67 @@ p{margin:0; text-wrap:pretty;}
   </div>
 </section>
 
+<!-- ===================== INTENCIÓN ===================== -->
+<section class="intent" id="que-buscas">
+  <div class="wrap">
+    <div class="intent-eyebrow reveal">Antes de seguir</div>
+    <h2 class="reveal">Cuéntanos qué buscas</h2>
+    <p class="intent-sub reveal">Así te mostramos justo lo que encaja contigo, no todo el catálogo de una vez.</p>
+
+    <div class="q-block reveal">
+      <label class="q-label">¿Qué buscas?</label>
+      <div class="q-chips" data-group="intencion">
+        <button class="qchip is-active" data-v="comprar">Comprar</button>
+        <button class="qchip" data-v="invertir">Invertir</button>
+        <button class="qchip" data-v="alquilar">Alquilar</button>
+      </div>
+    </div>
+
+    <div class="q-block reveal">
+      <label class="q-label">¿Qué tipo de propiedad?</label>
+      <div class="q-chips" data-group="tipo" data-multi="true">
+        <button class="qchip" data-v="finca">Finca</button>
+        <button class="qchip" data-v="lote">Lote</button>
+        <button class="qchip" data-v="casa">Casa</button>
+        <button class="qchip" data-v="apartamento">Apartamento</button>
+        <button class="qchip" data-v="local">Local</button>
+        <button class="qchip" data-v="oficina">Oficina</button>
+        <button class="qchip" data-v="bodega">Bodega</button>
+      </div>
+    </div>
+
+    <div class="q-block reveal">
+      <label class="q-label">¿Cuál es tu presupuesto?</label>
+      <div class="q-chips" data-group="presupuesto">
+        <button class="qchip" data-v="0-400">Hasta $400M</button>
+        <button class="qchip" data-v="400-800">$400M – $800M</button>
+        <button class="qchip" data-v="800-1500">$800M – $1.500M</button>
+        <button class="qchip" data-v="1500-2500">$1.500M – $2.500M</button>
+        <button class="qchip" data-v="2500-4000">$2.500M – $4.000M</button>
+        <button class="qchip" data-v="4000-999999">Más de $4.000M</button>
+        <button class="qchip is-active" data-v="todos">Sin límite</button>
+      </div>
+    </div>
+
+    <div class="zona-block reveal">
+      <div class="zona-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Zona de interés (opcional)</div>
+      <div class="q-chips zona-chips" data-group="zona">
+        <button class="qchip is-active" data-v="todas">Todas</button>
+        <button class="qchip is-highlight" data-v="llanogrande">Llanogrande</button>
+        <button class="qchip" data-v="oriente">Oriente antioqueño</button>
+        <button class="qchip" data-v="medellin">Medellín y Valle de Aburrá</button>
+        <button class="qchip" data-v="occidente">Occidente antioqueño</button>
+      </div>
+    </div>
+
+    <div class="intent-foot reveal">
+      <button class="btn btn-solid" id="btnVerPropiedades" type="button">Ver propiedades que encajan
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== PROPIEDADES ===================== -->
 <section class="props" id="propiedades">
   <div class="wrap">
@@ -1502,6 +1594,21 @@ p{margin:0; text-wrap:pretty;}
     return historico[historico.length - 1].valor;
   }
 
+  /* Zona ancha para el panel "Cuéntanos qué buscas" — deriva de la
+     subregión/ubicación real, con Llanogrande como caso especial
+     porque hoy no tenemos catálogo ahí (y eso es justo lo que
+     queremos detectar: demanda en una zona sin inventario). */
+  function zonaDe(propiedad) {
+    const u = propiedad.ubicacion || {};
+    const lugar = `${u.municipio || ''} ${u.vereda || ''} ${(u.parcelacion && u.parcelacion.nombre) || ''}`.toLowerCase();
+    const sub = (u.subregion || '').toLowerCase();
+    if (lugar.includes('llanogrande')) return 'llanogrande';
+    if (sub.includes('oriente')) return 'oriente';
+    if (sub.includes('occidente')) return 'occidente';
+    if (sub.includes('valle de aburrá') || sub.includes('valle de aburra') || /medell/.test(sub)) return 'medellin';
+    return 'otro';
+  }
+
   const ICO_AREA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="10" rx="1.5"/><path d="M3 15V7a2 2 0 0 1 2-2h4"/><path d="M9 9V6"/></svg>';
   const ICO_CAMA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"/><path d="M2 11h20v6H2z"/><path d="M4 17v2M20 17v2"/></svg>';
   const ICO_BANO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a1 1 0 0 1 1-1Z"/><path d="M6 12V6a2 2 0 0 1 3.5-1.3"/><path d="M4 21h16"/></svg>';
@@ -1591,7 +1698,7 @@ p{margin:0; text-wrap:pretty;}
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
       : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
-    return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}">
+    return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}">
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
           <div class="tag">${info.etiqueta}</div>
@@ -1688,16 +1795,62 @@ p{margin:0; text-wrap:pretty;}
       </div>`;
   }
 
+  /* --- Panel "Cuéntanos qué buscas" ---------------------------------- */
+  const intake = { tipo: new Set(), presupuesto: 'todos', zona: 'todas' };
+  const EMPTY_DEFAULT_HTML = empty.innerHTML;
+  let categoriaActiva = 'Todas';
+
   function aplicarFiltro(filtro) {
+    categoriaActiva = filtro;
     let mostradas = 0;
     grid.querySelectorAll('.card:not(.card-cta)').forEach(card => {
-      const on = (filtro === 'Todas' || card.dataset.cat === filtro);
+      let on = (filtro === 'Todas' || card.dataset.cat === filtro);
+      if (on && intake.tipo.size > 0) on = intake.tipo.has(card.dataset.tipo);
+      if (on && intake.presupuesto !== 'todos') {
+        const [min, max] = intake.presupuesto.split('-').map(Number);
+        const precio = +card.dataset.precio;
+        on = precio >= min && precio <= max;
+      }
+      if (on && intake.zona !== 'todas') on = card.dataset.zona === intake.zona;
       card.hidden = !on;
       if (on) mostradas++;
     });
+    const sinFiltrosDeIntencion = intake.tipo.size === 0 && intake.presupuesto === 'todos' && intake.zona === 'todas';
     const cta = grid.querySelector('.card-cta');
-    if (cta) cta.hidden = filtro !== 'Todas';
+    if (cta) cta.hidden = !(filtro === 'Todas' && sinFiltrosDeIntencion);
+    if (mostradas === 0) {
+      empty.innerHTML = intake.zona === 'llanogrande'
+        ? 'Todavía no tenemos catálogo publicado en <b>Llanogrande</b> — lo estamos consiguiendo. <a href="#contacto">Escríbenos</a> y te avisamos apenas tengamos algo.'
+        : EMPTY_DEFAULT_HTML;
+    }
     empty.hidden = mostradas > 0;
+  }
+
+  document.querySelectorAll('.q-chips[data-group]').forEach(grupo => {
+    const nombre = grupo.dataset.group;
+    const multi = grupo.dataset.multi === 'true';
+    grupo.querySelectorAll('.qchip').forEach(boton => {
+      boton.addEventListener('click', () => {
+        const v = boton.dataset.v;
+        if (multi) {
+          if (intake.tipo.has(v)) { intake.tipo.delete(v); boton.classList.remove('is-active'); }
+          else { intake.tipo.add(v); boton.classList.add('is-active'); }
+        } else {
+          grupo.querySelectorAll('.qchip').forEach(b => b.classList.remove('is-active'));
+          boton.classList.add('is-active');
+          if (nombre !== 'intencion') intake[nombre] = v;
+        }
+      });
+    });
+  });
+
+  const btnVerPropiedades = document.getElementById('btnVerPropiedades');
+  if (btnVerPropiedades) {
+    btnVerPropiedades.addEventListener('click', () => {
+      chips.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.f === 'Todas')));
+      aplicarFiltro('Todas');
+      document.getElementById('propiedades').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   chips.forEach(chip => {
