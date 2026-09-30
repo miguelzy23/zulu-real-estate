@@ -388,6 +388,8 @@ p{margin:0; text-wrap:pretty;}
   background:radial-gradient(110% 80% at 14% 0%, rgba(216,173,107,.08), transparent 55%), var(--ink);
   color:var(--on-ink);
 }
+.intent canvas.particles{position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none;}
+.intent .wrap{position:relative; z-index:1;}
 .intent-eyebrow{font-size:12.5px; letter-spacing:.09em; text-transform:uppercase; color:#d8ad6b; font-weight:600;}
 .intent h2{font-size:clamp(28px,4vw,42px); line-height:1.12; color:var(--cream); margin-top:12px; max-width:16ch;}
 .intent-sub{margin-top:14px; max-width:52ch; font-size:15.5px; line-height:1.65; color:var(--on-ink-dim);}
@@ -999,6 +1001,7 @@ p{margin:0; text-wrap:pretty;}
 
 <!-- ===================== INTENCIÓN ===================== -->
 <section class="intent" id="que-buscas">
+  <canvas class="particles" id="intentParticles" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="intent-eyebrow reveal">Antes de seguir</div>
     <h2 class="reveal">Cuéntanos qué buscas</h2>
@@ -1472,6 +1475,7 @@ p{margin:0; text-wrap:pretty;}
   }
   iniciarParticulas('faqParticles');
   iniciarParticulas('contactoParticles');
+  iniciarParticulas('intentParticles');
 
   /* --- Riel numerado fijo de "Cuatro pasos": el número y el título
      quedan pegados (position:sticky, en CSS) mientras cada paso pasa al
