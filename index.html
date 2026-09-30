@@ -623,6 +623,10 @@ p{margin:0; text-wrap:pretty;}
   color:var(--on-ink-dim); font-size:15px;
 }
 .empty a{color:var(--cream); font-weight:600; text-decoration:underline; text-underline-offset:2px;}
+.empty-reset{
+  background:none; border:none; padding:0; font:inherit; cursor:pointer;
+  color:var(--cream); font-weight:600; text-decoration:underline; text-underline-offset:2px;
+}
 
 /* ============================================================
    PREGUNTAS — grid-template-rows, sin max-height mágico
@@ -1015,12 +1019,11 @@ p{margin:0; text-wrap:pretty;}
     <div class="q-block reveal">
       <label class="q-label">¿Cuál es tu presupuesto?</label>
       <div class="q-chips" data-group="presupuesto">
-        <button class="qchip" data-v="0-400">Hasta $400M</button>
-        <button class="qchip" data-v="400-800">$400M – $800M</button>
-        <button class="qchip" data-v="800-1500">$800M – $1.500M</button>
-        <button class="qchip" data-v="1500-2500">$1.500M – $2.500M</button>
-        <button class="qchip" data-v="2500-4000">$2.500M – $4.000M</button>
-        <button class="qchip" data-v="4000-999999">Más de $4.000M</button>
+        <button class="qchip" data-v="400">Hasta $400M</button>
+        <button class="qchip" data-v="800">Hasta $800M</button>
+        <button class="qchip" data-v="1500">Hasta $1.500M</button>
+        <button class="qchip" data-v="2500">Hasta $2.500M</button>
+        <button class="qchip" data-v="4000">Hasta $4.000M</button>
         <button class="qchip is-active" data-v="todos">Sin límite</button>
       </div>
     </div>
@@ -1800,18 +1803,26 @@ p{margin:0; text-wrap:pretty;}
   const EMPTY_DEFAULT_HTML = empty.innerHTML;
   let categoriaActiva = 'Todas';
 
+  /* Llanogrande, El Retiro, La Ceja y Rionegro se sienten como "la misma
+     zona" para la mayoría de la gente, aunque técnicamente no lo sean —
+     así que el filtro los trata como un solo grupo en ambos sentidos. */
+  const GRUPO_ORIENTE = ['oriente', 'llanogrande'];
+  function zonaCoincide(zonaTarjeta, zonaFiltro) {
+    if (zonaFiltro === 'todas') return true;
+    if (zonaTarjeta === zonaFiltro) return true;
+    return GRUPO_ORIENTE.includes(zonaTarjeta) && GRUPO_ORIENTE.includes(zonaFiltro);
+  }
+
   function aplicarFiltro(filtro) {
     categoriaActiva = filtro;
     let mostradas = 0;
     grid.querySelectorAll('.card:not(.card-cta)').forEach(card => {
       let on = (filtro === 'Todas' || card.dataset.cat === filtro);
       if (on && intake.tipo.size > 0) on = intake.tipo.has(card.dataset.tipo);
-      if (on && intake.presupuesto !== 'todos') {
-        const [min, max] = intake.presupuesto.split('-').map(Number);
-        const precio = +card.dataset.precio;
-        on = precio >= min && precio <= max;
-      }
-      if (on && intake.zona !== 'todas') on = card.dataset.zona === intake.zona;
+      // "Hasta $X": acumulativo, no una banda cerrada — quien pone un
+      // techo alto también quiere ver lo más económico que le sirve.
+      if (on && intake.presupuesto !== 'todos') on = (+card.dataset.precio) <= Number(intake.presupuesto);
+      if (on) on = zonaCoincide(card.dataset.zona, intake.zona);
       card.hidden = !on;
       if (on) mostradas++;
     });
@@ -1819,8 +1830,8 @@ p{margin:0; text-wrap:pretty;}
     const cta = grid.querySelector('.card-cta');
     if (cta) cta.hidden = !(filtro === 'Todas' && sinFiltrosDeIntencion);
     if (mostradas === 0) {
-      empty.innerHTML = intake.zona === 'llanogrande'
-        ? 'Todavía no tenemos catálogo publicado en <b>Llanogrande</b> — lo estamos consiguiendo. <a href="#contacto">Escríbenos</a> y te avisamos apenas tengamos algo.'
+      empty.innerHTML = (intake.zona !== 'todas' || intake.presupuesto !== 'todos' || intake.tipo.size > 0)
+        ? 'Todavía no tenemos una propiedad así publicada — lo estamos consiguiendo. <a href="#contacto">Escríbenos</a> y te avisamos apenas tengamos algo, o <button type="button" class="empty-reset" data-reset-filtros>mira todo el catálogo</button>.'
         : EMPTY_DEFAULT_HTML;
     }
     empty.hidden = mostradas > 0;
@@ -1852,6 +1863,21 @@ p{margin:0; text-wrap:pretty;}
       document.getElementById('propiedades').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
+
+  function resetIntake() {
+    intake.tipo.clear();
+    intake.presupuesto = 'todos';
+    intake.zona = 'todas';
+    document.querySelectorAll('.q-chips[data-group] .qchip').forEach(b => b.classList.remove('is-active'));
+    document.querySelector('.q-chips[data-group="intencion"] [data-v="comprar"]')?.classList.add('is-active');
+    document.querySelector('.q-chips[data-group="presupuesto"] [data-v="todos"]')?.classList.add('is-active');
+    document.querySelector('.q-chips[data-group="zona"] [data-v="todas"]')?.classList.add('is-active');
+    chips.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.f === 'Todas')));
+    aplicarFiltro('Todas');
+  }
+  empty.addEventListener('click', (e) => {
+    if (e.target.closest('[data-reset-filtros]')) resetIntake();
+  });
 
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
