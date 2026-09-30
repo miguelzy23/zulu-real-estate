@@ -385,23 +385,23 @@ p{margin:0; text-wrap:pretty;}
    ============================================================ */
 .props{
   position:relative; overflow:hidden; padding:var(--section) 0;
-  background:radial-gradient(110% 80% at 14% 0%, rgba(138,90,31,.06), transparent 55%), var(--paper);
+  background:radial-gradient(110% 80% at 14% 0%, rgba(216,173,107,.09), transparent 55%), linear-gradient(165deg, var(--ink) 0%, #1a120a 55%, #3a2410 100%);
 }
 .props .wrap{position:relative; z-index:1;}
 .props-head{display:flex; justify-content:space-between; align-items:flex-end; gap:32px; flex-wrap:wrap;}
-.props-head h2{font-size:clamp(30px,4.2vw,48px); line-height:1.1; max-width:13ch;}
-.props-head p{margin-top:14px; color:var(--on-cream-dim); font-size:15.5px; max-width:38ch; line-height:1.65;}
+.props-head h2{font-size:clamp(30px,4.2vw,48px); line-height:1.1; max-width:13ch; color:var(--cream);}
+.props-head p{margin-top:14px; color:var(--on-ink-dim); font-size:15.5px; max-width:38ch; line-height:1.65;}
 .filters{display:flex; gap:8px; flex-wrap:wrap;}
 .chip{
-  background:transparent; border:1px solid var(--rule-light);
-  color:var(--on-cream-dim); padding:9px 18px; border-radius:99px;
+  background:transparent; border:1px solid var(--rule-dark);
+  color:var(--on-ink-dim); padding:9px 18px; border-radius:99px;
   font-size:13.5px; font-weight:500; cursor:pointer;
   transition:border-color .24s var(--ease-out), color .24s var(--ease-out),
              background .24s var(--ease-out), transform .16s var(--ease-out);
 }
-.chip:hover{border-color:var(--ink); color:var(--ink);}
+.chip:hover{border-color:var(--cream); color:var(--cream);}
 .chip:active{transform:scale(.97);}
-.chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--cream);}
+.chip[aria-pressed="true"]{background:var(--cream); border-color:var(--cream); color:var(--ink);}
 
 .grid{
   display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
@@ -410,14 +410,14 @@ p{margin:0; text-wrap:pretty;}
 .grid > *{max-width:380px;}
 @media(max-width:700px){.grid > *{max-width:none;}}
 .card-cta{
-  border:1px dashed var(--rule-light); border-radius:3px;
+  border:1px dashed var(--rule-dark); border-radius:3px;
   display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
   gap:14px; padding:40px 30px; text-align:left; min-height:100%;
 }
-.card-cta svg{width:26px; height:26px; color:#8a5a1f;}
-.card-cta h3{font-family:'Fraunces',serif; font-weight:500; font-size:19px; line-height:1.35; color:var(--ink);}
-.card-cta p{color:var(--on-cream-dim); font-size:14.5px; line-height:1.6;}
-.card-cta .more{margin-top:2px;}
+.card-cta svg{width:26px; height:26px; color:#d8ad6b;}
+.card-cta h3{font-family:'Fraunces',serif; font-weight:500; font-size:19px; line-height:1.35; color:var(--cream);}
+.card-cta p{color:var(--on-ink-dim); font-size:14.5px; line-height:1.6;}
+.card-cta .more{margin-top:2px; color:var(--cream);}
 .card{
   border:1px solid var(--rule-light); border-radius:3px; overflow:hidden;
   background:var(--paper); display:flex; flex-direction:column;
@@ -589,9 +589,9 @@ p{margin:0; text-wrap:pretty;}
 .card:hover .more svg{transform:translateX(5px);}
 .empty{
   grid-column:1/-1; padding:60px 0; text-align:center;
-  color:var(--on-cream-dim); font-size:15px;
+  color:var(--on-ink-dim); font-size:15px;
 }
-.empty a{color:var(--ink); font-weight:600; text-decoration:underline; text-underline-offset:2px;}
+.empty a{color:var(--cream); font-weight:600; text-decoration:underline; text-underline-offset:2px;}
 
 /* ============================================================
    PREGUNTAS — grid-template-rows, sin max-height mágico
