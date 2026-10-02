@@ -697,7 +697,10 @@ p{margin:0; text-wrap:pretty;}
 /* ============================================================
    CONTACTO
    ============================================================ */
-.intake{padding:var(--section) 0; position:relative; overflow:hidden;}
+.intake{
+  padding:var(--section) 0; position:relative; overflow:hidden;
+  background:radial-gradient(110% 80% at 14% 100%, rgba(216,173,107,.08), transparent 55%), var(--ink);
+}
 .intake canvas.particles{position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none;}
 .intake > .wrap{position:relative; z-index:1;}
 .intake-grid{display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(44px,6vw,78px); align-items:start;}
@@ -1159,18 +1162,24 @@ p{margin:0; text-wrap:pretty;}
         <div class="field">
           <label for="presupuesto">Presupuesto aproximado</label>
           <select id="presupuesto" name="presupuesto">
-            <option>Menos de $500M COP</option>
-            <option>$500M – $1.000M COP</option>
-            <option>$1.000M – $2.000M COP</option>
-            <option>Más de $2.000M COP</option>
+            <option>Hasta $400M COP</option>
+            <option>Hasta $800M COP</option>
+            <option>Hasta $1.500M COP</option>
+            <option>Hasta $2.500M COP</option>
+            <option>Hasta $4.000M COP</option>
+            <option>Sin límite</option>
           </select>
         </div>
         <div class="field">
           <label for="tipo">Tipo de propiedad</label>
           <select id="tipo" name="tipo">
-            <option>Residencial</option>
-            <option>Inversión</option>
-            <option>Finca / campestre</option>
+            <option>Finca</option>
+            <option>Lote</option>
+            <option>Casa</option>
+            <option>Apartamento</option>
+            <option>Local</option>
+            <option>Oficina</option>
+            <option>Bodega</option>
             <option>Aún no estoy seguro</option>
           </select>
         </div>
