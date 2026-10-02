@@ -468,7 +468,7 @@ p{margin:0; text-wrap:pretty;}
 .card{
   border:1px solid var(--rule-light); border-radius:3px; overflow:hidden;
   background:var(--paper); display:flex; flex-direction:column;
-  transition:transform .42s var(--ease-out), box-shadow .42s var(--ease-out), border-color .42s var(--ease-out);
+  transition:transform .15s ease-out, box-shadow .42s var(--ease-out), border-color .42s var(--ease-out);
 }
 .card:hover{
   transform:translateY(-5px);
@@ -2099,6 +2099,24 @@ p{margin:0; text-wrap:pretty;}
     bloquearClicTarjeta = true;
   }, { passive: true });
 
+  /* --- Tarjetas: leve inclinación 3D hacia el cursor ------------------
+     Nada en desktop con mouse real; se queda quieto en touch y con
+     prefers-reduced-motion. El ángulo es chico a propósito — se siente,
+     no se nota. */
+  function activarTiltTarjetas() {
+    if (reduce || !matchMedia('(hover: hover)').matches) return;
+    grid.querySelectorAll('.card:not(.card-cta)').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const rx = ((y - r.height / 2) / (r.height / 2)) * -4;
+        const ry = ((x - r.width / 2) / (r.width / 2)) * 4;
+        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-5px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  }
+
   fetch('data/properties.json')
     .then(r => r.json())
     .then(propiedades => {
@@ -2108,6 +2126,7 @@ p{margin:0; text-wrap:pretty;}
         + (publicadas.length < 3 ? tarjetaCtaHTML() : '');
       const chipActivo = document.querySelector('.chip[aria-pressed="true"]');
       aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
+      activarTiltTarjetas();
     })
     .catch(err => {
       console.error('No se pudieron cargar las propiedades:', err);
