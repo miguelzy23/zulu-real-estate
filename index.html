@@ -1231,7 +1231,7 @@ p{margin:0; text-wrap:pretty;}
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Zulu Real Estate · Antioquia, Colombia</span>
+      <span>© <span id="copyYear">2026</span> Zulu Real Estate · Antioquia, Colombia</span>
       <nav class="foot-nav">
         <a href="#nosotros">Nosotros</a>
         <a href="#propiedades">Propiedades</a>
@@ -1483,6 +1483,10 @@ p{margin:0; text-wrap:pretty;}
   iniciarParticulas('faqParticles');
   iniciarParticulas('contactoParticles');
   iniciarParticulas('intentParticles');
+
+  /* --- Año del copyright, siempre al día --- */
+  const copyYear = document.getElementById('copyYear');
+  if (copyYear) copyYear.textContent = new Date().getFullYear();
 
   /* --- Riel numerado fijo de "Cuatro pasos": el número y el título
      quedan pegados (position:sticky, en CSS) mientras cada paso pasa al
