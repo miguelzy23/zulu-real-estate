@@ -182,8 +182,15 @@ p{margin:0; text-wrap:pretty;}
 .sheet.is-open a:nth-child(5){transition-delay:.26s;}
 
 .progress{
-  position:fixed; inset:0 0 auto 0; height:2px; z-index:70;
-  background:var(--ink); transform:scaleX(0); transform-origin:0 50%;
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:70;
+  background:linear-gradient(90deg,#8a5a1f,#d8ad6b); transform:scaleX(0); transform-origin:0 50%;
+  pointer-events:none;
+}
+/* Con scroll-driven animations el navegador la mueve solo (sin JS en cada scroll).
+   El JS de abajo queda como respaldo para navegadores que no lo soporten. */
+@supports (animation-timeline: scroll()){
+  .progress{animation:progress-fill linear both; animation-timeline:scroll(root block);}
+  @keyframes progress-fill{from{transform:scaleX(0);} to{transform:scaleX(1);}}
 }
 
 /* ============================================================
@@ -431,9 +438,11 @@ p{margin:0; text-wrap:pretty;}
    PROPIEDADES
    ============================================================ */
 .props{
-  position:relative; overflow:hidden; padding:var(--section) 0;
+  position:relative; overflow:hidden; overflow:clip; padding:var(--section) 0;
   background:radial-gradient(110% 80% at 14% 0%, rgba(216,173,107,.09), transparent 55%), var(--ink);
 }
+/* overflow:clip (no hidden): clip recorta igual pero NO crea un contenedor de
+   scroll, así la animación de entrada de las tarjetas sigue el scroll de la página. */
 .props .wrap{position:relative; z-index:1;}
 .props-head{display:flex; justify-content:space-between; align-items:flex-end; gap:32px; flex-wrap:wrap;}
 .props-head h2{font-size:clamp(30px,4.2vw,48px); line-height:1.1; max-width:13ch; color:var(--cream);}
@@ -477,6 +486,20 @@ p{margin:0; text-wrap:pretty;}
 }
 /* Necesario: display:flex de autor gana sobre el [hidden] del navegador */
 .card[hidden]{display:none;}
+/* Entrada escalonada atada al scroll: cada tarjeta de una misma fila entra
+   un poco después de la anterior (--col lo asigna el JS según su columna).
+   'backwards' = al terminar no retiene estilos, así el hover y la inclinación
+   3D siguen funcionando. Sin soporte, las tarjetas simplemente se ven. */
+@supports (animation-timeline: view()){
+  .grid > .card{
+    animation:card-entra linear backwards; animation-timeline:view();
+    animation-range:entry calc(0% + var(--col,0) * 9%) entry calc(52% + var(--col,0) * 9%);
+  }
+  @keyframes card-entra{
+    from{opacity:0; transform:translateY(46px) scale(.97);}
+    to{opacity:1; transform:none;}
+  }
+}
 /* El motivo de curvas de nivel también sostiene los placeholders */
 .card-media{
   position:relative; aspect-ratio:4/3; overflow:hidden;
@@ -904,6 +927,8 @@ p{margin:0; text-wrap:pretty;}
     transition-duration:.01ms !important; scroll-behavior:auto !important;
   }
   .reveal{opacity:1; transform:none; filter:none;}
+  .grid > .card{animation:none;}
+  .progress{animation:none; display:none;}
   .word span{transform:none;}
   .hero-tag,.hero-lede,.hero-sub,.hero-actions,.rail{opacity:1;}
 }
@@ -1601,12 +1626,13 @@ p{margin:0; text-wrap:pretty;}
 
   /* --- Barra de progreso + nav sólida --------------------------------- */
   const bar = document.querySelector('.progress');
+  const SCROLL_TIMELINE_OK = window.CSS && CSS.supports('animation-timeline: scroll()');
   const nav = document.getElementById('nav');
   let ticking = false;
   let lastScrollY = scrollY;
   const onScroll = () => {
     const max = document.documentElement.scrollHeight - innerHeight;
-    bar.style.transform = 'scaleX(' + (max > 0 ? scrollY / max : 0) + ')';
+    if (!SCROLL_TIMELINE_OK) bar.style.transform = 'scaleX(' + (max > 0 ? scrollY / max : 0) + ')';
     nav.classList.toggle('is-stuck', scrollY > innerHeight * 0.72);
     // Se oculta solo bajando y ya pasado el hero — así no le quita
     // espacio a la pantalla mientras lees, y vuelve apenas subes.
@@ -1930,6 +1956,19 @@ p{margin:0; text-wrap:pretty;}
   /* Llanogrande, El Retiro, La Ceja y Rionegro se sienten como "la misma
      zona" para la mayoría de la gente, aunque técnicamente no lo sean —
      así que el filtro los trata como un solo grupo en ambos sentidos. */
+  /* Para la entrada escalonada: cada tarjeta visible recibe su número de
+     columna (0,1,2…) y entra un poco después que la de su izquierda. */
+  function asignarColumnas() {
+    const cols = Math.max(1, getComputedStyle(grid).gridTemplateColumns.split(' ').length);
+    let n = 0;
+    grid.querySelectorAll(':scope > .card').forEach(card => {
+      if (card.hidden) return;
+      card.style.setProperty('--col', n % cols);
+      n++;
+    });
+  }
+  addEventListener('resize', asignarColumnas);
+
   const GRUPO_ORIENTE = ['oriente', 'llanogrande'];
   function zonaCoincide(zonaTarjeta, zonaFiltro) {
     if (zonaFiltro === 'todas') return true;
@@ -1959,6 +1998,7 @@ p{margin:0; text-wrap:pretty;}
         : EMPTY_DEFAULT_HTML;
     }
     empty.hidden = mostradas > 0;
+    asignarColumnas();
   }
 
   document.querySelectorAll('.q-chips[data-group]').forEach(grupo => {
