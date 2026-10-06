@@ -316,12 +316,14 @@ p{margin:0; text-wrap:pretty;}
 @keyframes rise{to{transform:translateY(0);}}
 
 .hero-tag{
-  margin-top:22px; max-width:34ch;
+  margin-top:22px; max-width:42ch;
   font-family:'Inter',sans-serif; font-size:15.5px; font-weight:500; line-height:1.55;
   color:var(--on-ink-dim);
   opacity:0; animation:fadeUp .95s var(--ease-out) .36s forwards;
 }
 .hero-tag b{color:var(--cream); font-weight:600;}
+/* Salto de línea tras "Pacho Zuluaga." solo en pantallas anchas; en celular el texto fluye */
+@media (max-width:760px){.hero-tag .br-d{display:none;}}
 .hero-lede{
   font-family:'Fraunces',serif; font-style:italic; font-weight:400;
   font-size:clamp(21px,2.9vw,33px); line-height:1.34;
@@ -1086,7 +1088,7 @@ p{margin:0; text-wrap:pretty;}
 
   <div class="wrap hero-inner">
     <h1 class="word"><span>ZULU</span><i class="sr-only"> Real Estate — lotes, fincas y propiedades en Antioquia</i></h1>
-    <p class="hero-tag">Inspirado en nuestro padre, <b>Pacho Zuluaga</b>. Su legado, nuestra forma de hacer las cosas.</p>
+    <p class="hero-tag">Inspirado en nuestro padre, <b>Pacho Zuluaga</b>.<br class="br-d">Su legado, nuestra esencia para hacer las cosas.</p>
     <p class="hero-lede">Relaciones de confianza, construidas por años.</p>
     <p class="hero-sub">Real estate urbano, rural y comercial en Antioquia, con la trayectoria de años acompañando familias.</p>
     <div class="hero-actions">
