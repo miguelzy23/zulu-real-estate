@@ -3,9 +3,53 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zulu Real Estate — Propiedades en Antioquia</title>
-<meta name="description" content="Real estate residencial y de inversión en Antioquia. Asesoría personal, cercana y directa en Medellín, Rionegro y el Oriente antioqueño." />
+<title>Zulu Real Estate — Lotes, fincas y propiedades en Antioquia</title>
+<meta name="description" content="Lotes, fincas, casas y propiedades comerciales en Antioquia: Medellín, Llanogrande y el Oriente. Asesoría cercana de una familia con 35+ años de trayectoria." />
 <meta name="theme-color" content="#0A0A0A" />
+<link rel="canonical" href="https://www.zulurealstate.com/" />
+
+<!-- Íconos de pestaña / pantalla de inicio -->
+<link rel="icon" href="/favicon.ico" sizes="48x48" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<!-- Vista previa al compartir el link (WhatsApp, Instagram, Facebook, X, iMessage) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Zulu Real Estate" />
+<meta property="og:locale" content="es_CO" />
+<meta property="og:url" content="https://www.zulurealstate.com/" />
+<meta property="og:title" content="Zulu Real Estate — Lotes, fincas y propiedades en Antioquia" />
+<meta property="og:description" content="Asesoría cercana de una familia con 35+ años de trayectoria. Lotes, fincas, casas y propiedades comerciales en Medellín, Llanogrande y el Oriente antioqueño." />
+<meta property="og:image" content="https://www.zulurealstate.com/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Zulu Real Estate: paisaje de montañas en Antioquia" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Zulu Real Estate — Lotes, fincas y propiedades en Antioquia" />
+<meta name="twitter:description" content="Asesoría cercana de una familia con 35+ años de trayectoria. Medellín, Llanogrande y el Oriente antioqueño." />
+<meta name="twitter:image" content="https://www.zulurealstate.com/og-image.jpg" />
+
+<!-- Datos estructurados para buscadores -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "name": "Zulu Real Estate",
+  "url": "https://www.zulurealstate.com/",
+  "logo": "https://www.zulurealstate.com/icon-192.png",
+  "image": "https://www.zulurealstate.com/og-image.jpg",
+  "description": "Lotes, fincas, casas y propiedades comerciales en Antioquia. Asesoría cercana de una familia con más de 35 años de trayectoria.",
+  "email": "zulurealstate@gmail.com",
+  "areaServed": [
+    { "@type": "AdministrativeArea", "name": "Antioquia, Colombia" },
+    { "@type": "City", "name": "Medellín" },
+    { "@type": "City", "name": "Rionegro" },
+    { "@type": "City", "name": "El Retiro" },
+    { "@type": "City", "name": "La Ceja" }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" />
@@ -239,6 +283,8 @@ p{margin:0; text-wrap:pretty;}
 
 /* La palabra se revela desde detrás de un borde — máscara, no fade */
 .word{overflow:hidden; padding-bottom:.06em; margin:0;}
+/* Texto solo para lectores de pantalla y buscadores (el logo visual dice solo "ZULU") */
+.sr-only{position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0;}
 .word span{
   display:block;
   font-family:'Baloo 2',sans-serif; font-weight:800;
@@ -976,7 +1022,7 @@ p{margin:0; text-wrap:pretty;}
   </div>
 
   <div class="wrap hero-inner">
-    <h1 class="word"><span>ZULU</span></h1>
+    <h1 class="word"><span>ZULU</span><i class="sr-only"> Real Estate — lotes, fincas y propiedades en Antioquia</i></h1>
     <p class="hero-tag">Inspirado en nuestro padre, <b>Pacho Zuluaga</b>. Su legado, nuestra manera de trabajar.</p>
     <p class="hero-lede">Relaciones de confianza, construidas por años.</p>
     <p class="hero-sub">Real estate urbano, rural y comercial en Antioquia, con la trayectoria de años acompañando familias.</p>
