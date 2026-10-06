@@ -465,6 +465,11 @@ p{margin:0; text-wrap:pretty;}
   .step-panel{min-height:auto; padding:26px 0;}
 }
 
+/* Cuatro pasos con el riel numerado fijo, pero cada paso más bajo
+   (antes min-height:56vh, ~2.600px de scroll; ahora ~1.450px). */
+.step-panel{min-height:0; padding:44px 0;}
+@media (max-width:760px){ .step-panel{padding:26px 0;} }
+
 /* ============================================================
    INTENCIÓN — panel de calificación antes de las propiedades
    ============================================================ */
@@ -1151,9 +1156,9 @@ p{margin:0; text-wrap:pretty;}
         <div class="step-rail-track"><i id="stepDot"></i></div>
       </div>
       <div class="step-panels" id="stepPanels">
-        <div class="step-panel" data-n="01" data-title="Cuéntanos qué buscas">
+        <div class="step-panel" data-n="01" data-title="Cuéntanos qué tienes en mente">
           <div class="step-panel-n">01</div>
-          <h3>Cuéntanos qué buscas</h3>
+          <h3>Cuéntanos qué tienes en mente</h3>
           <p>Un formulario corto y claro: presupuesto, zona y tipo de propiedad. Menos de 2 minutos.</p>
         </div>
         <div class="step-panel" data-n="02" data-title="Te mandamos opciones reales">
