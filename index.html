@@ -254,6 +254,26 @@ p{margin:0; text-wrap:pretty;}
 .hero.tod-morning{background:linear-gradient(165deg, var(--ink) 0%, #16130d 55%, #2a2013 100%);}
 .hero.tod-afternoon{background:linear-gradient(165deg, var(--ink) 0%, #1a120a 55%, #3a2410 100%);}
 .hero.tod-night{background:linear-gradient(165deg, var(--ink) 0%, #0a0d14 55%, #10182a 100%);}
+/* Foto del hero: a la derecha, fundida con el negro hacia el texto; las
+   olas pasan por encima. Para cambiarla por una propiedad, basta reemplazar
+   assets/hero.jpg (idealmente cuadrada o 4:3, ~1000px, 200 KB o menos). */
+.hero-photo{
+  position:absolute; z-index:0; top:0; right:0; bottom:0; width:62%;
+  overflow:hidden; pointer-events:none;
+  -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 42%), linear-gradient(to bottom, #000 72%, transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right, transparent 0%, #000 42%), linear-gradient(to bottom, #000 72%, transparent 100%);
+  mask-composite:intersect;
+}
+.hero-photo img{width:100%; height:100%; object-fit:cover; display:block; opacity:.88;}
+.hero-tag, .hero-sub{color:#cfc6b2;}
+.rail{background:linear-gradient(to top, rgba(10,10,10,.75), rgba(10,10,10,.35));}
+@media (max-width:760px){
+  /* celular: la foto pasa a ser fondo oscurecido de todo el hero */
+  .hero-photo{width:auto; left:0; -webkit-mask-image:none; mask-image:none;}
+  .hero-photo img{opacity:1; filter:brightness(.55) saturate(.9);}
+  .hero-photo::after{content:''; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(10,10,10,.55) 0%, rgba(10,10,10,.35) 40%, rgba(10,10,10,.9) 100%);}
+}
 .hero-contours{position:absolute; inset:0; opacity:.4; pointer-events:none;}
 .hero-contours svg{width:100%; height:100%;}
 .contour-line{
@@ -1050,6 +1070,9 @@ p{margin:0; text-wrap:pretty;}
 
 <!-- ===================== HERO ===================== -->
 <header class="hero on-ink" id="top">
+  <div class="hero-photo" aria-hidden="true">
+    <img src="assets/hero.jpg" alt="" width="1024" height="1024" fetchpriority="high" decoding="async">
+  </div>
   <div class="hero-contours" aria-hidden="true">
     <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
       <g class="contour-parallax" data-parallax=".05"><path class="contour-line" style="animation-delay:0s" d="M-50 620 C 200 560, 380 680, 620 600 C 860 520, 980 640, 1250 560" fill="none" stroke="#FAEEDA" stroke-width="1"></path></g>
