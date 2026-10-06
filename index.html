@@ -74,7 +74,7 @@
   --on-cream-dim:#5F5849;
   /* Texto sobre tinta */
   --on-ink:#FAEEDA;
-  --on-ink-dim:#A79E8B;
+  --on-ink-dim:#BFB6A2;
 
   --rule-dark:rgba(250,238,218,.16);
   --rule-light:rgba(10,10,10,.14);
@@ -1051,6 +1051,18 @@ p{margin:0; text-wrap:pretty;}
   .progress{animation:none; display:none;}
   .word span{transform:none;}
   .hero-tag,.hero-lede,.hero-sub,.hero-actions,.rail{opacity:1;}
+}
+
+/* ---- Legibilidad: etiquetas más grandes (antes 10,5–12px) y celular sin líneas sobre las cifras ---- */
+.tag, .tag-verified, .tag-proximamente{font-size:12px;}
+.frame-cap, .step-rail-count, .zona-label, .price-m2, .fav-bar-count, .field label{font-size:13px;}
+.about-tag{font-size:13.5px;}
+.rail-t{font-size:14px;}
+.intent-eyebrow, .q-label{font-size:14px;}
+.intent .qchip{font-size:14.5px;}
+.intent .zona-chips .qchip{font-size:13.5px;}
+@media (max-width:760px){
+  .rail{background:rgba(10,10,10,.92);}
 }
 </style>
 </head>
