@@ -838,6 +838,26 @@ p{margin:0; text-wrap:pretty;}
 .submit:active{transform:scale(.985);}
 .submit[disabled]{opacity:.55; cursor:not-allowed; transform:none; box-shadow:none;}
 .note{margin-top:15px; font-size:13px; color:var(--on-ink-dim);}
+/* "Elige una opción" se ve apagado hasta que la persona escoja algo */
+.field select:has(option[value=""]:checked){color:var(--on-ink-dim);}
+
+/* Autorización de datos (Ley 1581): casilla obligatoria antes de enviar */
+.consent{margin:2px 0 22px;}
+.consent-row{display:flex; gap:12px; align-items:flex-start; cursor:pointer; position:relative;}
+.consent-row input{position:absolute; opacity:0; width:22px; height:22px; margin:0; cursor:pointer;}
+.consent-box{
+  flex:none; width:22px; height:22px; margin-top:1px; border:1px solid rgba(250,238,218,.45); border-radius:3px;
+  display:flex; align-items:center; justify-content:center; color:transparent;
+  transition:background .22s var(--ease-out), border-color .22s var(--ease-out), color .22s var(--ease-out);
+}
+.consent-box svg{width:14px; height:14px;}
+.consent-row:hover .consent-box{border-color:var(--cream);}
+.consent-row input:checked + .consent-box{background:#d8ad6b; border-color:#d8ad6b; color:var(--ink);}
+.consent-row input:focus-visible + .consent-box{outline:2px solid var(--cream); outline-offset:3px;}
+.consent-text{font-size:13.5px; line-height:1.55; color:var(--on-ink-dim);}
+.consent-text a{color:var(--cream); text-decoration:underline; text-underline-offset:2px;}
+.consent-error{margin:9px 0 0 34px; font-size:13px; color:#e8a07a;}
+.consent.has-error .consent-box{border-color:#e8a07a;}
 .ok{
   margin-top:22px; padding:18px 20px;
   border:1px solid var(--rule-dark); border-radius:3px;
@@ -1266,6 +1286,7 @@ p{margin:0; text-wrap:pretty;}
         <div class="field">
           <label for="presupuesto">Presupuesto aproximado</label>
           <select id="presupuesto" name="presupuesto">
+            <option value="" selected>Elige una opción</option>
             <option>Hasta $400M COP</option>
             <option>Hasta $800M COP</option>
             <option>Hasta $1.500M COP</option>
@@ -1277,6 +1298,7 @@ p{margin:0; text-wrap:pretty;}
         <div class="field">
           <label for="tipo">Tipo de propiedad</label>
           <select id="tipo" name="tipo">
+            <option value="" selected>Elige una opción</option>
             <option>Finca</option>
             <option>Lote</option>
             <option>Casa</option>
@@ -1295,6 +1317,14 @@ p{margin:0; text-wrap:pretty;}
       <div class="field">
         <label for="notas">Cuéntanos más</label>
         <textarea id="notas" name="notas" rows="3" placeholder="Qué buscas, para cuándo, cualquier detalle que nos ayude."></textarea>
+      </div>
+      <div class="consent">
+        <label class="consent-row" for="acepto">
+          <input type="checkbox" id="acepto" name="acepto" aria-describedby="aceptoError">
+          <span class="consent-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span class="consent-text">Autorizo a Zulu Real Estate a usar mis datos para contactarme, según la <a href="/privacidad" target="_blank" rel="noopener">política de tratamiento de datos</a>.</span>
+        </label>
+        <p class="consent-error" id="aceptoError" role="alert" hidden>Marca la casilla para poder enviar tu mensaje.</p>
       </div>
       <button type="submit" class="submit" id="submit">Enviar</button>
       <p class="note">Tu información solo la usamos para contactarte — nada de spam.</p>
@@ -1341,6 +1371,7 @@ p{margin:0; text-wrap:pretty;}
         <a href="#propiedades">Propiedades</a>
         <a href="#preguntas">Preguntas</a>
         <a href="#contacto">Contacto</a>
+        <a href="/privacidad">Privacidad</a>
       </nav>
     </div>
   </div>
@@ -2334,6 +2365,12 @@ p{margin:0; text-wrap:pretty;}
   const form = document.getElementById('form');
   const ok   = document.getElementById('ok');
   const submit = document.getElementById('submit');
+  document.getElementById('acepto').addEventListener('change', e => {
+    if (e.target.checked) {
+      e.target.closest('.consent').classList.remove('has-error');
+      document.getElementById('aceptoError').hidden = true;
+    }
+  });
   form.addEventListener('submit', e => {
     e.preventDefault();
     const nombre = form.nombre.value.trim();
@@ -2342,6 +2379,19 @@ p{margin:0; text-wrap:pretty;}
       (!nombre ? form.nombre : form.contacto).focus();
       return;
     }
+    // Ley 1581: sin autorización expresa no se guarda ningún dato.
+    const acepto = document.getElementById('acepto');
+    const consentBlock = acepto.closest('.consent');
+    const consentError = document.getElementById('aceptoError');
+    if (!acepto.checked) {
+      consentBlock.classList.add('has-error');
+      consentError.hidden = false;
+      acepto.focus();
+      return;
+    }
+    consentBlock.classList.remove('has-error');
+    consentError.hidden = true;
+
     submit.disabled = true;
     submit.textContent = 'Enviando…';
 
@@ -2352,7 +2402,9 @@ p{margin:0; text-wrap:pretty;}
       tipo: form.tipo.value,
       zona: form.zona.value.trim(),
       notas: form.notas.value.trim(),
-      pagina: location.href
+      // La columna "Página" también deja constancia de la autorización y de
+      // la versión de la política que aceptó la persona.
+      pagina: location.href + ' | Autorizó datos (política 2026-10-05)'
     };
 
     const marcarEnviado = () => {

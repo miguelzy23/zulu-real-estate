@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "redirects": [
     {
       "source": "/:archivo(CONTACTOS\\.md|SESSION-SUMMARY\\.md|PROPERTY_MODEL\\.md|apps-script-contactos\\.gs)",
