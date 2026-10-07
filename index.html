@@ -1134,6 +1134,26 @@ p{margin:0; text-wrap:pretty;}
 @media (max-width:760px){.mp-mini{left:auto; right:16px; top:84px; width:58px;} .mp-mini figcaption{display:none;}}
 @media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-cap{bottom:44px;}}
 @media (prefers-reduced-motion:reduce){.mp-pin i{animation:none;} .card.mp-destello{animation:none;}}
+
+/* ============================================================
+   VENTANA — ZULU como ventana a una foto real (scroll)
+   ============================================================ */
+.vent{position:relative; height:520vh; background:var(--cream);}
+.vt-stage{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--cream);}
+.vt-ph{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; will-change:transform;}
+#vtSvg{position:absolute; inset:0; width:100%; height:100%; display:block;}
+.vt-veil{position:absolute; inset:0; pointer-events:none; opacity:0; background:linear-gradient(to top,rgba(10,10,10,.82),rgba(10,10,10,.25) 45%,transparent 70%);}
+.vt-intro{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(54px,11vh,110px); margin:0; color:var(--ink); max-width:40ch; font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(18px,1.9vw,24px); line-height:1.35;}
+.vt-baje{position:absolute; left:50%; bottom:22px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink);}
+.vt-baje span{width:1px; height:38px; background:linear-gradient(var(--ink),transparent); animation:vt-cae 2.2s var(--ease-out) infinite; transform-origin:top;}
+@keyframes vt-cae{0%{transform:scaleY(0);}60%{transform:scaleY(1);}100%{transform:scaleY(1); opacity:0;}}
+.vt-fin{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(40px,9vh,96px); opacity:0; transform:translateY(24px); pointer-events:none; color:var(--cream);}
+.vt-k{margin:0 0 18px; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#d8ad6b; font-weight:600; display:flex; align-items:center; gap:12px;}
+.vt-k::before{content:""; width:34px; height:1px; background:#d8ad6b;}
+.vt-big{margin:0; font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(40px,7.4vw,112px); line-height:.98; letter-spacing:-.025em; font-variation-settings:'opsz' 144; text-wrap:balance;}
+.vt-big em{font-style:italic; color:#d8ad6b;}
+@media (max-width:760px){.vent{height:440vh;}}
+@media (prefers-reduced-motion:reduce){.vt-baje span{animation:none;} .vent{height:100vh;}}
 </style>
 </head>
 <body>
@@ -1268,9 +1288,18 @@ p{margin:0; text-wrap:pretty;}
   </div>
 </section>
 
-<section class="pausa" aria-label="Fotos reales">
-  <img src="assets/pausa-valle.jpg" alt="" width="1600" height="1199" loading="lazy" decoding="async">
-  <div class="wrap pausa-in"><div class="pausa-line"></div><p>Fotos reales, tomadas por nosotros.</p></div>
+<section class="vent" id="ventana" aria-label="Fotos reales, tomadas por nosotros">
+  <div class="vt-stage">
+    <img class="vt-ph" id="vtPh" src="assets/pausa-valle.jpg" alt="Foto aérea, tomada por nosotros, de fincas y bosque en Antioquia" width="1600" height="1199" loading="lazy" decoding="async">
+    <svg id="vtSvg" aria-hidden="true"><defs><mask id="vtMk" maskUnits="userSpaceOnUse"><rect id="vtMr" fill="#fff"/><g id="vtG"><text id="vtT" fill="#000" font-family="'Baloo 2',sans-serif" font-weight="800">ZULU</text></g></mask></defs><rect id="vtCr" fill="#FAEEDA" mask="url(#vtMk)"/></svg>
+    <div class="vt-veil" id="vtVl"></div>
+    <p class="vt-intro" id="vtIn">Mira por la ventana.<br>Todas las fotos son nuestras.</p>
+    <div class="vt-baje" id="vtBj" aria-hidden="true"><span></span>Baje</div>
+    <div class="vt-fin" id="vtFin">
+      <p class="vt-k">Fotos reales, tomadas por nosotros</p>
+      <p class="vt-big">Antioquia,<br><em>vista desde arriba.</em></p>
+    </div>
+  </div>
 </section>
 
 <!-- ===================== MAPA ===================== -->
@@ -2894,6 +2923,65 @@ p{margin:0; text-wrap:pretty;}
     }
     montar(); ready = true; dibujar(0, 0); requestAnimationFrame(bucle);
   });
+})();
+</script>
+<script>
+/* --- Ventana: la palabra ZULU deja ver una foto real; al bajar, la cámara entra por la letra L --- */
+(function () {
+  const sec = document.getElementById('ventana');
+  if (!sec) return;
+  const sv = document.getElementById('vtSvg'), zt = document.getElementById('vtT'), zg = document.getElementById('vtG'), cr = document.getElementById('vtCr'), mr = document.getElementById('vtMr');
+  const ph = document.getElementById('vtPh'), vl = document.getElementById('vtVl'), tIn = document.getElementById('vtIn'), bj = document.getElementById('vtBj'), fin = document.getElementById('vtFin');
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const sstep = (a, b, x) => { x = clamp((x - a) / (b - a)); return x * x * (3 - 2 * x); };
+  let A = { W: 0, H: 0, ax: 0, ay: 0, w0: 1, smax: 20 }, cur = 0, tgt = 0, listo = false;
+
+  function montar() {
+    const W = innerWidth, H = innerHeight;
+    sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    [mr, cr].forEach(e => { e.setAttribute('width', W); e.setAttribute('height', H); });
+    zt.setAttribute('font-size', 100); zt.setAttribute('x', 0); zt.setAttribute('y', 0);
+    const L100 = zt.getComputedTextLength(), fs = 100 * Math.min(W * .9 / L100, (H * .5) / 70);
+    zt.setAttribute('font-size', fs);
+    const L = zt.getComputedTextLength(), x0 = (W - L) / 2, mc = document.createElement('canvas').getContext('2d');
+    mc.font = `800 ${fs}px "Baloo 2"`;
+    const m = mc.measureText('L'), capH = m.actualBoundingBoxAscent, base = H * .46 + capH / 2;
+    zt.setAttribute('x', x0); zt.setAttribute('y', base);
+    const ext = zt.getExtentOfChar(2);
+    // ancho real del palo de la L: se escanea la letra en un canvas
+    const cw = Math.ceil(m.width + 20), ch = Math.ceil(fs * 1.3), cc = document.createElement('canvas'); cc.width = cw; cc.height = ch;
+    const g = cc.getContext('2d'); g.font = mc.font; g.textBaseline = 'alphabetic'; g.fillText('L', 4, fs);
+    const row = g.getImageData(0, Math.round(fs - capH * .5), cw, 1).data; let s = -1, e = -1;
+    for (let i = 0; i < cw; i++) { if (row[i * 4 + 3] > 128) { if (s < 0) s = i; e = i; } }
+    const w0 = Math.max(4, e - s);
+    A = { W, H, ax: ext.x + (s + e) / 2 - 4, ay: base - capH * .5, w0, smax: 1.25 * W / w0 };
+  }
+
+  function dibujar(z0) {
+    const z = clamp(z0 / .82), { W, H, ax, ay, smax } = A, k = Math.pow(z, 1.4), s = Math.exp(Math.log(smax) * k), w = sstep(0, .7, z);
+    const tx = ax + (W / 2 - ax) * w, ty = ay + (H / 2 - ay) * w;
+    zg.setAttribute('transform', `translate(${tx} ${ty}) scale(${s}) translate(${-ax} ${-ay})`);
+    cr.style.display = z > .99 ? 'none' : '';
+    ph.style.transform = `scale(${1 + .1 * z})`;
+    tIn.style.opacity = clamp(1 - z * 8); bj.style.opacity = clamp(1 - z * 14);
+    const q = clamp((z0 - .86) / .08);
+    vl.style.opacity = q; fin.style.opacity = q; fin.style.transform = `translateY(${(1 - q) * 24}px)`;
+  }
+
+  function enVista() { const r = sec.getBoundingClientRect(); return r.bottom > -50 && r.top < innerHeight + 50; }
+  function bucle() {
+    if (listo && enVista()) {
+      const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
+      tgt = m > 0 ? clamp(-r.top / m) : 1;
+      cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
+      dibujar(cur);
+    }
+    requestAnimationFrame(bucle);
+  }
+  addEventListener('resize', () => { if (listo) montar(); });
+  const fuentes = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('800 100px "Baloo 2"'), document.fonts.ready]) : Promise.resolve();
+  fuentes.then(() => { montar(); listo = true; if (reduce) { cur = tgt = 1; } dibujar(cur); requestAnimationFrame(bucle); });
 })();
 </script>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
