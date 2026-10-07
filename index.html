@@ -1087,6 +1087,11 @@ p{margin:0; text-wrap:pretty;}
   .more{padding:12px 0; margin-top:4px;}
   .mark{display:inline-flex; align-items:center; min-height:44px;}
 }
+
+/* Sin resultados en el panel: un mensaje que convierte en contacto (antes: un simple "Escríbenos") */
+.empty-t{display:block; font-family:'Fraunces',serif; font-weight:500; font-size:21px; line-height:1.3; color:var(--cream); margin-bottom:6px;}
+.empty-acts{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:14px 22px; margin-top:18px;}
+.empty-aviso{padding:13px 22px;}
 </style>
 </head>
 <body>
@@ -2018,7 +2023,7 @@ p{margin:0; text-wrap:pretty;}
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
       : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
-    return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}">
+    return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
           <div class="tag">${info.etiqueta}</div>
@@ -2184,6 +2189,8 @@ p{margin:0; text-wrap:pretty;}
       // techo alto también quiere ver lo más económico que le sirve.
       if (on && intake.presupuesto !== 'todos') on = (+card.dataset.precio) <= Number(intake.presupuesto);
       if (on) on = zonaCoincide(card.dataset.zona, intake.zona);
+      // Comprar e Invertir = propiedades en venta; Alquilar = en alquiler
+      if (on) on = card.dataset.op === (intencionActiva === 'alquilar' ? 'alquiler' : 'venta');
       card.hidden = !on;
       if (on) mostradas++;
     });
@@ -2191,9 +2198,13 @@ p{margin:0; text-wrap:pretty;}
     const cta = grid.querySelector('.card-cta');
     if (cta) cta.hidden = !(filtro === 'Todas' && sinFiltrosDeIntencion);
     if (mostradas === 0) {
-      empty.innerHTML = (intake.zona !== 'todas' || intake.presupuesto !== 'todos' || intake.tipo.size > 0)
-        ? 'Todavía no tenemos una propiedad así publicada — lo estamos consiguiendo. <a href="#contacto">Escríbenos</a> y te avisamos apenas tengamos algo, o <button type="button" class="empty-reset" data-reset-filtros>mira todo el catálogo</button>.'
-        : EMPTY_DEFAULT_HTML;
+      const hayFiltros = intake.zona !== 'todas' || intake.presupuesto !== 'todos' || intake.tipo.size > 0 || intencionActiva === 'alquilar';
+      if (hayFiltros) {
+        const que = intencionActiva === 'alquilar' ? 'propiedades en alquiler publicadas' : 'una propiedad así publicada';
+        empty.innerHTML = `<strong class="empty-t">Todavía no tenemos ${que}.</strong> Lo estamos consiguiendo. <span class="empty-acts"><button type="button" class="btn btn-solid empty-aviso" data-avisame>Avísame cuando haya algo así</button><button type="button" class="empty-reset" data-reset-filtros>o mira todo el catálogo</button></span>`;
+      } else {
+        empty.innerHTML = EMPTY_DEFAULT_HTML;
+      }
     }
     empty.hidden = mostradas > 0;
     asignarColumnas();
@@ -2246,8 +2257,31 @@ p{margin:0; text-wrap:pretty;}
     aplicarFiltro('Todas');
     actualizarFrase();
   }
+  /* "Avísame cuando haya algo así": lleva al formulario con lo que la persona ya contó (tipo, presupuesto, zona y frase) */
+  function prellenarContacto() {
+    const sel = (id) => document.getElementById(id);
+    const tipoV = [...intake.tipo][0];
+    if (tipoV) {
+      const txt = document.querySelector(`[data-group="tipo"] [data-v="${tipoV}"]`).textContent.trim();
+      const o = [...sel('tipo').options].find(x => x.text.trim().toLowerCase() === txt.toLowerCase());
+      if (o) sel('tipo').value = o.value;
+    }
+    if (intake.presupuesto !== 'todos') {
+      const txt = document.querySelector(`[data-group="presupuesto"] [data-v="${intake.presupuesto}"]`).textContent.trim() + ' COP';
+      const o = [...sel('presupuesto').options].find(x => x.text.trim() === txt);
+      if (o) sel('presupuesto').value = o.value;
+    }
+    if (intake.zona !== 'todas') {
+      sel('zona').value = document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).textContent.trim();
+    }
+    const resto = [...intake.tipo].length > 1 ? ' (También me interesan otros tipos de propiedad.)' : '';
+    sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(/^Buscas/, 'Busco') : '') + resto + ' Avísenme cuando tengan algo así.';
+    sel('contacto').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => sel('nombre').focus({ preventScroll: true }), 700);
+  }
   empty.addEventListener('click', (e) => {
     if (e.target.closest('[data-reset-filtros]')) resetIntake();
+    if (e.target.closest('[data-avisame]')) prellenarContacto();
   });
 
   chips.forEach(chip => {
