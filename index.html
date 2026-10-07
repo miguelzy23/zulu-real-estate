@@ -1103,7 +1103,8 @@ p{margin:0; text-wrap:pretty;}
 .mp-pin{position:absolute; width:0; height:0; padding:0; border:0; background:none; opacity:0; pointer-events:none; transition:opacity .6s var(--ease-out); cursor:pointer; color:var(--cream); font:inherit;}
 .mp-pin.is-on{opacity:1; pointer-events:auto;}
 .mp-pin i{position:absolute; left:-5px; top:-5px; width:10px; height:10px; border-radius:50%; background:#d8ad6b; box-shadow:0 0 0 0 rgba(216,173,107,.6); animation:mp-pulso 2.2s infinite;}
-.mp-pin::after{content:""; position:absolute; left:-20px; top:-20px; width:40px; height:40px; border-radius:50%;}
+.mp-pin::after{content:""; position:absolute; left:-8px; top:-8px; width:16px; height:16px; border-radius:50%;}
+.mp-pin span{cursor:pointer;}
 .mp-pin.is-ref{pointer-events:none;}
 .mp-pin.is-ref i{background:transparent; border:1px solid var(--on-ink-dim); animation:none; width:8px; height:8px; left:-4px; top:-4px;}
 .mp-pin span{position:absolute; white-space:nowrap; font-size:12px; letter-spacing:.1em; text-transform:uppercase; line-height:1.35; text-align:left; transition:color .25s;}
@@ -1121,7 +1122,7 @@ p{margin:0; text-wrap:pretty;}
 .mp-big small{font-size:.34em; letter-spacing:0; margin-left:.15em; font-style:normal; color:var(--cream);}
 .mp-txt{font-family:'Fraunces',Georgia,serif; font-size:clamp(19px,2vw,27px); line-height:1.3; max-width:30ch; margin-top:20px; font-weight:300; color:var(--cream);}
 .mp-cap .btn{margin-top:28px;}
-.mp-cap.is-on{pointer-events:auto;}
+.mp-cap.is-on .btn{pointer-events:auto;}
 .card.mp-destello{animation:mp-destello 1.8s var(--ease-out);}
 @keyframes mp-destello{0%,100%{box-shadow:0 0 0 0 rgba(216,173,107,0);}30%{box-shadow:0 0 0 4px rgba(216,173,107,.85);}}
 @media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-cap{bottom:44px;}}
