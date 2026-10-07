@@ -1092,6 +1092,40 @@ p{margin:0; text-wrap:pretty;}
 .empty-t{display:block; font-family:'Fraunces',serif; font-weight:500; font-size:21px; line-height:1.3; color:var(--cream); margin-bottom:6px;}
 .empty-acts{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:14px 22px; margin-top:18px;}
 .empty-aviso{padding:13px 22px;}
+
+/* ============================================================
+   MAPA — las curvas de nivel se vuelven Antioquia (scroll)
+   ============================================================ */
+.mapa{position:relative; height:540vh; background:var(--ink);}
+.mp-stage{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--ink);}
+#mpCanvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+#mpLines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+.mp-pin{position:absolute; width:0; height:0; padding:0; border:0; background:none; opacity:0; pointer-events:none; transition:opacity .6s var(--ease-out); cursor:pointer; color:var(--cream); font:inherit;}
+.mp-pin.is-on{opacity:1; pointer-events:auto;}
+.mp-pin i{position:absolute; left:-5px; top:-5px; width:10px; height:10px; border-radius:50%; background:#d8ad6b; box-shadow:0 0 0 0 rgba(216,173,107,.6); animation:mp-pulso 2.2s infinite;}
+.mp-pin::after{content:""; position:absolute; left:-20px; top:-20px; width:40px; height:40px; border-radius:50%;}
+.mp-pin.is-ref{pointer-events:none;}
+.mp-pin.is-ref i{background:transparent; border:1px solid var(--on-ink-dim); animation:none; width:8px; height:8px; left:-4px; top:-4px;}
+.mp-pin span{position:absolute; white-space:nowrap; font-size:12px; letter-spacing:.1em; text-transform:uppercase; line-height:1.35; text-align:left; transition:color .25s;}
+.mp-pin span small{display:block; color:var(--on-ink-dim); letter-spacing:.06em; text-transform:none; font-size:12.5px;}
+.mp-pin.is-ref span{color:var(--on-ink-dim);}
+.mp-pin:not(.is-ref):hover span,.mp-pin:focus-visible span{color:#d8ad6b;}
+.mp-pin:focus-visible{outline:none;}
+.mp-pin:focus-visible i{outline:2px solid #d8ad6b; outline-offset:4px;}
+@keyframes mp-pulso{70%{box-shadow:0 0 0 12px rgba(216,173,107,0);}100%{box-shadow:0 0 0 0 rgba(216,173,107,0);}}
+.mp-cap{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(40px,10vh,100px); max-width:1100px; opacity:0; transform:translateY(24px); will-change:opacity,transform; pointer-events:none;}
+.mp-k{font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#d8ad6b; font-weight:600; margin-bottom:18px; display:flex; align-items:center; gap:12px;}
+.mp-k::before{content:""; width:34px; height:1px; background:#d8ad6b;}
+.mp-big{font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(40px,7.4vw,112px); line-height:.98; letter-spacing:-.025em; font-variation-settings:'opsz' 144; text-wrap:balance; color:var(--cream);}
+.mp-big em{font-style:italic; color:#d8ad6b;}
+.mp-big small{font-size:.34em; letter-spacing:0; margin-left:.15em; font-style:normal; color:var(--cream);}
+.mp-txt{font-family:'Fraunces',Georgia,serif; font-size:clamp(19px,2vw,27px); line-height:1.3; max-width:30ch; margin-top:20px; font-weight:300; color:var(--cream);}
+.mp-cap .btn{margin-top:28px;}
+.mp-cap.is-on{pointer-events:auto;}
+.card.mp-destello{animation:mp-destello 1.8s var(--ease-out);}
+@keyframes mp-destello{0%,100%{box-shadow:0 0 0 0 rgba(216,173,107,0);}30%{box-shadow:0 0 0 4px rgba(216,173,107,.85);}}
+@media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-cap{bottom:44px;}}
+@media (prefers-reduced-motion:reduce){.mp-pin i{animation:none;} .card.mp-destello{animation:none;}}
 </style>
 </head>
 <body>
@@ -1229,6 +1263,18 @@ p{margin:0; text-wrap:pretty;}
 <section class="pausa" aria-label="Fotos reales">
   <img src="assets/pausa-valle.jpg" alt="" width="1600" height="1199" loading="lazy" decoding="async">
   <div class="wrap pausa-in"><div class="pausa-line"></div><p>Fotos reales, tomadas por nosotros.</p></div>
+</section>
+
+<!-- ===================== MAPA ===================== -->
+<section class="mapa on-ink" id="mapa" aria-label="Mapa de Antioquia con las propiedades publicadas">
+  <div class="mp-stage">
+    <canvas id="mpCanvas" aria-hidden="true"></canvas>
+    <svg id="mpLines" aria-hidden="true"></svg>
+    <div id="mpPins"></div>
+    <div class="mp-cap" data-a="-1" data-b=".24"><p class="mp-k">Antioquia</p><p class="mp-big">Cada lugar tiene <em>su historia.</em></p></div>
+    <div class="mp-cap" data-a=".30" data-b=".60"><p class="mp-k">Curva por curva</p><p class="mp-big">Nos gusta conocerla <em>antes de contarla.</em></p></div>
+    <div class="mp-cap" data-a=".68" data-b="2"><p class="mp-k">Propiedades publicadas</p><p class="mp-big"><span id="mpN">3</span><small id="mpS">propiedades,<br>2 subregiones</small></p><p class="mp-txt">Toca un punto del mapa para ver la ficha.</p><a class="btn btn-solid" href="#propiedades">Ver propiedades</a></div>
+  </div>
 </section>
 
 <!-- ===================== INTENCIÓN ===================== -->
@@ -2618,6 +2664,159 @@ p{margin:0; text-wrap:pretty;}
 })();
 </script>
 <!-- Analítica de visitas (Vercel Web Analytics): anónima, sin cookies, no identifica a las personas -->
+<script>
+/* --- Mapa: curvas de nivel -> silueta de Antioquia (guiado por el scroll) --- */
+(function () {
+  const sec = document.getElementById('mapa');
+  const cv = document.getElementById('mpCanvas');
+  if (!sec || !cv || !cv.getContext) return;
+  const cx = cv.getContext('2d'), ov = document.getElementById('mpLines'), pinsEl = document.getElementById('mpPins');
+  const caps = [...sec.querySelectorAll('.mp-cap')];
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const sstep = (a, b, x) => { x = clamp((x - a) / (b - a)); return x * x * (3 - 2 * x); };
+  const POLY = [[-74.83, 8.2], [-74.785, 8.132], [-74.725, 8.117], [-74.605, 8.038], [-74.519, 7.901], [-74.508, 7.724], [-74.561, 7.646], [-74.568, 7.519], [-74.599, 7.462], [-74.491, 7.343], [-74.414, 7.399], [-74.413, 7.46], [-74.32, 7.44], [-74.398, 7.348], [-74.41, 7.202], [-74.322, 7.019], [-74.246, 7.003], [-73.916, 7.295], [-73.939, 7.182], [-73.888, 7.071], [-73.897, 6.986], [-74.011, 6.913], [-74.115, 6.766], [-74.232, 6.71], [-74.256, 6.675], [-74.359, 6.633], [-74.409, 6.586], [-74.397, 6.452], [-74.451, 6.332], [-74.527, 6.274], [-74.612, 6.126], [-74.562, 6.078], [-74.563, 6.002], [-74.612, 5.966], [-74.59, 5.894], [-74.638, 5.866], [-74.665, 5.768], [-74.714, 5.769], [-74.74, 5.7], [-74.807, 5.7], [-74.866, 5.747], [-74.993, 5.716], [-75.099, 5.643], [-75.091, 5.586], [-75.147, 5.53], [-75.221, 5.503], [-75.276, 5.419], [-75.377, 5.674], [-75.479, 5.664], [-75.599, 5.737], [-75.57, 5.523], [-75.69, 5.519], [-75.73, 5.564], [-75.868, 5.49], [-75.983, 5.519], [-76.009, 5.567], [-76.007, 5.623], [-76.087, 5.689], [-76.063, 5.727], [-76.098, 5.85], [-76.057, 5.896], [-76.105, 6.018], [-76.16, 6.004], [-76.191, 6.059], [-76.21, 6.185], [-76.238, 6.208], [-76.378, 6.193], [-76.42, 6.166], [-76.602, 6.192], [-76.717, 6.171], [-76.718, 6.215], [-76.79, 6.318], [-76.778, 6.489], [-76.899, 6.58], [-76.954, 6.675], [-76.972, 6.798], [-76.876, 6.851], [-76.794, 6.865], [-76.824, 7.005], [-76.676, 7.03], [-76.548, 7.001], [-76.5, 7.169], [-76.531, 7.255], [-76.615, 7.312], [-76.662, 7.449], [-76.801, 7.571], [-76.936, 7.584], [-76.96, 7.64], [-77.123, 7.79], [-77.026, 7.89], [-76.997, 8.019], [-76.938, 8.068], [-76.98, 8.256], [-76.925, 8.025], [-76.922, 7.917], [-76.828, 7.902], [-76.748, 7.922], [-76.734, 8.071], [-76.739, 8.174], [-76.774, 8.268], [-76.758, 8.392], [-76.824, 8.496], [-76.927, 8.542], [-76.886, 8.623], [-76.649, 8.671], [-76.631, 8.73], [-76.544, 8.763], [-76.413, 8.874], [-76.34, 8.641], [-76.266, 8.639], [-76.21, 8.523], [-76.227, 8.381], [-76.288, 8.329], [-76.352, 8.204], [-76.348, 8.155], [-76.429, 8.059], [-76.412, 8.007], [-76.482, 7.821], [-76.494, 7.542], [-76.381, 7.392], [-75.845, 7.347], [-75.742, 7.612], [-75.712, 7.581], [-75.605, 7.585], [-75.474, 7.777], [-75.33, 7.927], [-75.221, 8.066], [-75.193, 8.047], [-75.057, 8.047], [-74.966, 8.09], [-74.928, 8.075], [-74.83, 8.2]];
+  // Centro de cada municipio (lon, lat) y hacia dónde cae su etiqueta. Agregar aquí al publicar propiedades en otro municipio.
+  const MUN = {
+    'El Retiro': { c: [-75.503, 6.060], o: [44, -34] },
+    'La Ceja': { c: [-75.430, 6.028], o: [44, 22] },
+    'Santa Fe de Antioquia': { c: [-75.828, 6.556], o: [30, -24] },
+    'Rionegro': { c: [-75.374, 6.155], o: [44, -20] }
+  };
+  const REF = { n: 'Medellín', c: [-75.581, 6.244], o: [-12, -4] };
+  let pines = [{ ref: true, n: REF.n, s: '', c: REF.c, o: REF.o }];
+  let B = { W: 0, H: 0, gx: 0, gy: 0, cell: 10, sdf: null, pts: [], proj: null };
+  let cur = 0, tgt = 0, t0 = performance.now(), ready = false;
+
+  function hash(i, j) { let h = Math.imul(i, 374761393) + Math.imul(j, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+  function vn(x, y) { const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy); return (hash(i, j) * (1 - u) + hash(i + 1, j) * u) * (1 - v) + (hash(i, j + 1) * (1 - u) + hash(i + 1, j + 1) * u) * v; }
+  function fbm(x, y) { return (vn(x, y) * .55 + vn(x * 2.1 + 7, y * 2.1 + 3) * .3 + vn(x * 4.3 + 1, y * 4.3 + 9) * .15) - .5; }
+
+  function montar() {
+    const dpr = Math.min(devicePixelRatio || 1, 2), W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const mob = W < 760, rx = mob ? W * .04 : W * .42, ry = mob ? H * .13 : H * .09, rw = mob ? W * .92 : W * .55, rh = mob ? H * .46 : H * .80;
+    const lons = POLY.map(p => p[0]), lats = POLY.map(p => p[1]);
+    const lo0 = Math.min(...lons), lo1 = Math.max(...lons), la0 = Math.min(...lats), la1 = Math.max(...lats);
+    const sc = Math.min(rw / (lo1 - lo0), rh / (la1 - la0)), ox = rx + (rw - (lo1 - lo0) * sc) / 2, oy = ry + (rh - (la1 - la0) * sc) / 2;
+    const proj = (lo, la) => [ox + (lo - lo0) * sc, oy + (la1 - la) * sc];
+    const pts = POLY.map(p => proj(p[0], p[1]));
+    const cell = mob ? 11 : 9, gx = Math.ceil(W / cell) + 1, gy = Math.ceil(H / cell) + 1;
+    const unit = Math.max(15, H * .021), sdf = new Float32Array(gx * gy), n = pts.length;
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++) {
+      const x = i * cell, y = j * cell; let d = 1e9, inside = false;
+      for (let k = 0, l = n - 1; k < n; l = k++) {
+        const ax = pts[l][0], ay = pts[l][1], bx = pts[k][0], by = pts[k][1], dx = bx - ax, dy = by - ay;
+        let t = ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1); t = clamp(t);
+        const px = ax + t * dx - x, py = ay + t * dy - y, dd = px * px + py * py; if (dd < d) d = dd;
+        if (((ay > y) !== (by > y)) && (x < (bx - ax) * (y - ay) / (by - ay) + ax)) inside = !inside;
+      }
+      sdf[j * gx + i] = (inside ? -1 : 1) * Math.sqrt(d) / unit;
+    }
+    B = { W, H, gx, gy, cell, sdf, pts, proj };
+    pintar();
+  }
+
+  function pintar() {
+    ov.setAttribute('viewBox', `0 0 ${B.W} ${B.H}`); ov.innerHTML = ''; pinsEl.innerHTML = '';
+    pines.forEach((p, i) => {
+      const [x, y] = B.proj(p.c[0], p.c[1]);
+      const d = document.createElement(p.ref ? 'div' : 'button');
+      d.className = 'mp-pin' + (p.ref ? ' is-ref' : ''); d.style.left = x + 'px'; d.style.top = y + 'px';
+      if (!p.ref) { d.type = 'button'; d.setAttribute('aria-label', 'Ver ' + p.n + ' en ' + p.mun); d.dataset.id = p.id; }
+      const izq = p.o[0] < 0;
+      d.innerHTML = '<i></i><span style="left:' + p.o[0] + 'px;top:' + (p.o[1] - 9) + 'px' + (izq ? ';transform:translateX(-100%);text-align:right' : '') + '">' + p.n + (p.s ? '<small>' + p.s + '</small>' : '') + '</span>';
+      pinsEl.appendChild(d);
+      if (!p.ref) {
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', x); l.setAttribute('y1', y); l.setAttribute('x2', x + p.o[0] - 4); l.setAttribute('y2', y + p.o[1]);
+        l.setAttribute('stroke', '#D8AD6B'); l.setAttribute('stroke-opacity', '.7'); l.dataset.i = i; l.style.opacity = 0; l.style.transition = 'opacity .6s';
+        ov.appendChild(l);
+      }
+    });
+  }
+
+  const LV = []; for (let k = -6; k <= 13; k++) LV.push(k);
+  function dibujar(p, t) {
+    const { W, H, gx, gy, cell, sdf, pts } = B, w = sstep(.2, .58, p), mob = W < 760;
+    const F = new Float32Array(gx * gy), dx = p * 2.6 + t * .015, dy = p * 1.1 + t * .006, k = .0075 * (mob ? 1.7 : 1);
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++) {
+      F[j * gx + i] = fbm(i * cell * k + dx, j * cell * k + dy) * 17 * (1 - w) + clamp(sdf[j * gx + i], -8, 16) * w;
+    }
+    cx.fillStyle = '#0A0A0A'; cx.fillRect(0, 0, W, H);
+    if (w > 0) { cx.beginPath(); pts.forEach((q, i) => i ? cx.lineTo(q[0], q[1]) : cx.moveTo(q[0], q[1])); cx.closePath(); cx.fillStyle = 'rgba(216,173,107,' + (.07 * w) + ')'; cx.fill(); }
+    cx.lineCap = 'round'; cx.lineJoin = 'round';
+    for (const L of LV) {
+      cx.beginPath();
+      for (let j = 0; j < gy - 1; j++) for (let i = 0; i < gx - 1; i++) {
+        const a = F[j * gx + i] - L, b = F[j * gx + i + 1] - L, c = F[(j + 1) * gx + i + 1] - L, d = F[(j + 1) * gx + i] - L;
+        const m = (a > 0 ? 8 : 0) | (b > 0 ? 4 : 0) | (c > 0 ? 2 : 0) | (d > 0 ? 1 : 0); if (m === 0 || m === 15) continue;
+        const x = i * cell, y = j * cell, T = [x + cell * a / (a - b), y], R = [x + cell, y + cell * b / (b - c)], Bt = [x + cell * d / (d - c), y + cell], Lf = [x, y + cell * a / (a - d)];
+        const seg = (P, Q) => { cx.moveTo(P[0], P[1]); cx.lineTo(Q[0], Q[1]); };
+        switch (m) { case 1: case 14: seg(Lf, Bt); break; case 2: case 13: seg(Bt, R); break; case 3: case 12: seg(Lf, R); break; case 4: case 11: seg(T, R); break;
+          case 5: seg(T, Lf); seg(Bt, R); break; case 6: case 9: seg(T, Bt); break; case 7: case 8: seg(T, Lf); break; case 10: seg(T, R); seg(Lf, Bt); break; }
+      }
+      const major = (L % 5 === 0), zero = L === 0;
+      if (zero && w > .35) { cx.strokeStyle = 'rgba(216,173,107,' + (.35 + .65 * w) + ')'; cx.lineWidth = 1.2 + 1.6 * w; }
+      else { const fade = 1 - Math.max(0, L - 4) / 14 * w; cx.strokeStyle = 'rgba(250,238,218,' + ((major ? .5 : .2) * fade) + ')'; cx.lineWidth = major ? 1.1 : .8; }
+      cx.stroke();
+    }
+    pinsEl.querySelectorAll('.mp-pin').forEach((e, i) => e.classList.toggle('is-on', p > .64 + i * .045));
+    ov.querySelectorAll('line').forEach(l => l.style.opacity = p > .64 + (+l.dataset.i) * .045 + .03 ? 1 : 0);
+    const E = .035;
+    caps.forEach(c => {
+      const a = +c.dataset.a, b = +c.dataset.b; let o = Math.min((p - a) / E, (b - p) / E); if (a < 0) o = (b - p) / E; o = clamp(o);
+      c.style.opacity = o; c.style.transform = 'translateY(' + ((1 - o) * (p < (a + b) / 2 ? 24 : -18)) + 'px)'; c.classList.toggle('is-on', o > .5);
+      c.setAttribute('aria-hidden', o > .5 ? 'false' : 'true');
+    });
+  }
+
+  function enVista() { const r = sec.getBoundingClientRect(); return r.bottom > -50 && r.top < innerHeight + 50; }
+  function bucle(now) {
+    if (ready && enVista()) {
+      const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
+      tgt = clamp(-r.top / m);
+      cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
+      dibujar(cur, (now - t0) / 1000);
+    }
+    requestAnimationFrame(bucle);
+  }
+
+  // Un clic en un punto lleva a la ficha de esa propiedad.
+  pinsEl.addEventListener('click', e => {
+    const b = e.target.closest('.mp-pin'); if (!b || !b.dataset.id) return;
+    let card = document.querySelector('.card[data-id="' + b.dataset.id + '"]');
+    if (card && card.offsetParent === null) {
+      const t = document.createElement('button'); t.setAttribute('data-reset-filtros', ''); document.body.appendChild(t); t.click(); t.remove();
+      const todas = document.querySelector('.chip[data-f="Todas"]'); if (todas) todas.click();
+    }
+    card = card && document.querySelector('.card[data-id="' + b.dataset.id + '"]');
+    const destino = card || document.getElementById('propiedades');
+    destino.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: card ? 'center' : 'start' });
+    if (card) { card.classList.remove('mp-destello'); void card.offsetWidth; card.classList.add('mp-destello'); }
+  });
+
+  addEventListener('resize', () => { if (ready) montar(); });
+  const fuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  Promise.all([
+    fetch('data/properties.json').then(r => r.json()).catch(() => []),
+    fuentes
+  ]).then(([props]) => {
+    const pub = (props || []).filter(p => p.estado === 'publicado');
+    const subs = new Set();
+    pub.forEach(p => {
+      const u = p.ubicacion || {}, m = MUN[u.municipio]; if (!m) return;
+      if (u.subregion) subs.add(u.subregion);
+      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, c: m.c, o: m.o });
+    });
+    if (pub.length) {
+      document.getElementById('mpN').textContent = pub.length;
+      document.getElementById('mpS').innerHTML = (pub.length === 1 ? 'propiedad' : 'propiedades') + (subs.size ? ',<br>' + subs.size + (subs.size === 1 ? ' subregión' : ' subregiones') : '');
+    }
+    montar(); ready = true; dibujar(0, 0); requestAnimationFrame(bucle);
+  });
+})();
+</script>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
