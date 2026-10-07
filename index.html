@@ -1075,6 +1075,18 @@ p{margin:0; text-wrap:pretty;}
 .pausa-in{position:relative; z-index:2;}
 .pausa-line{width:56px; height:3px; background:#d8ad6b; margin-bottom:22px;}
 .pausa p{margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:clamp(28px,4.4vw,52px); line-height:1.15; color:var(--cream); max-width:18ch; text-wrap:balance;}
+
+/* ---- Zonas táctiles de 44px en celular/táctil (el dibujo casi no cambia) ---- */
+@media (max-width:760px), (pointer:coarse){
+  .card-arrow{width:36px; height:36px;}
+  .card-arrow::before{content:''; position:absolute; inset:-4px;}
+  .fav-btn{width:40px; height:40px; right:8px; bottom:8px;}
+  .fav-btn::before{content:''; position:absolute; inset:-2px;}
+  .fav-btn svg{width:19px; height:19px;}
+  .nav-toggle{padding:0; width:44px; height:44px; align-items:center; justify-content:center;}
+  .more{padding:12px 0; margin-top:4px;}
+  .mark{display:inline-flex; align-items:center; min-height:44px;}
+}
 </style>
 </head>
 <body>
