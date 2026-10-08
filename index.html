@@ -1138,14 +1138,14 @@ p{margin:0; text-wrap:pretty;}
 /* ============================================================
    VENTANA — ZULU como ventana a una foto real (scroll)
    ============================================================ */
-.vent{position:relative; height:520vh; background:var(--cream);}
-.vt-stage{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--cream);}
+.vent{--vt-bg:#0A0A0A; --vt-fg:#FAEEDA; position:relative; height:520vh; background:var(--vt-bg);}
+.vt-stage{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--vt-bg);}
 .vt-ph{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; will-change:transform;}
 #vtSvg{position:absolute; inset:0; width:100%; height:100%; display:block;}
 .vt-veil{position:absolute; inset:0; pointer-events:none; opacity:0; background:linear-gradient(to top,rgba(10,10,10,.82),rgba(10,10,10,.25) 45%,transparent 70%);}
-.vt-intro{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(54px,11vh,110px); margin:0; color:var(--ink); max-width:40ch; font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(18px,1.9vw,24px); line-height:1.35;}
-.vt-baje{position:absolute; left:50%; bottom:22px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--ink);}
-.vt-baje span{width:1px; height:38px; background:linear-gradient(var(--ink),transparent); animation:vt-cae 2.2s var(--ease-out) infinite; transform-origin:top;}
+.vt-intro{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(54px,11vh,110px); margin:0; color:var(--vt-fg); max-width:40ch; font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(18px,1.9vw,24px); line-height:1.35;}
+.vt-baje{position:absolute; left:50%; bottom:22px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--vt-fg);}
+.vt-baje span{width:1px; height:38px; background:linear-gradient(var(--vt-fg),transparent); animation:vt-cae 2.2s var(--ease-out) infinite; transform-origin:top;}
 @keyframes vt-cae{0%{transform:scaleY(0);}60%{transform:scaleY(1);}100%{transform:scaleY(1); opacity:0;}}
 .vt-fin{position:absolute; left:clamp(18px,4vw,40px); right:clamp(18px,4vw,40px); bottom:clamp(40px,9vh,96px); opacity:0; transform:translateY(24px); pointer-events:none; color:var(--cream);}
 .vt-k{margin:0 0 18px; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#d8ad6b; font-weight:600; display:flex; align-items:center; gap:12px;}
@@ -1291,7 +1291,7 @@ p{margin:0; text-wrap:pretty;}
 <section class="vent" id="ventana" aria-label="Fotos reales, tomadas por nosotros">
   <div class="vt-stage">
     <img class="vt-ph" id="vtPh" src="assets/pausa-valle.jpg" alt="Foto aérea, tomada por nosotros, de fincas y bosque en Antioquia" width="1600" height="1199" loading="lazy" decoding="async">
-    <svg id="vtSvg" aria-hidden="true"><defs><mask id="vtMk" maskUnits="userSpaceOnUse"><rect id="vtMr" fill="#fff"/><g id="vtG"><text id="vtT" fill="#000" font-family="'Baloo 2',sans-serif" font-weight="800">ZULU</text></g></mask></defs><rect id="vtCr" fill="#FAEEDA" mask="url(#vtMk)"/></svg>
+    <svg id="vtSvg" aria-hidden="true"><defs><mask id="vtMk" maskUnits="userSpaceOnUse"><rect id="vtMr" fill="#fff"/><g id="vtG"><text id="vtT" fill="#000" font-family="'Baloo 2',sans-serif" font-weight="800">ZULU</text></g></mask></defs><rect id="vtCr" style="fill:var(--vt-bg)" mask="url(#vtMk)"/></svg>
     <div class="vt-veil" id="vtVl"></div>
     <p class="vt-intro" id="vtIn">Mira por la ventana.<br>Todas las fotos son nuestras.</p>
     <div class="vt-baje" id="vtBj" aria-hidden="true"><span></span>Baje</div>
