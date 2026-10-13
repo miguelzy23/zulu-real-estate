@@ -1154,6 +1154,24 @@ p{margin:0; text-wrap:pretty;}
 .vt-big em{font-style:italic; color:#d8ad6b;}
 @media (max-width:760px){.vent{height:440vh;}}
 @media (prefers-reduced-motion:reduce){.vt-baje span{animation:none;} .vent{height:100vh;}}
+
+/* ---- Recorrido por propiedad (ficha y tarjeta) ---- */
+.ficha-reco{position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden;}
+.ficha-reco .reco-clip{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.ficha-reco iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+.reco-veil{position:absolute; inset:0; pointer-events:none; background:linear-gradient(to top,rgba(10,10,10,.78),transparent 52%);}
+.reco-tag{position:absolute; left:16px; top:16px; display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:99px; background:rgba(10,10,10,.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;}
+.reco-tag::before{content:""; width:6px; height:6px; border-radius:50%; background:#d8ad6b; animation:reco-pulso 2s infinite;}
+@keyframes reco-pulso{70%{box-shadow:0 0 0 7px rgba(216,173,107,0);} 100%{box-shadow:0 0 0 0 rgba(216,173,107,0);}}
+.reco-play{position:absolute; left:16px; bottom:16px; display:inline-flex; align-items:center; gap:12px; padding:0; border:0; background:none; color:#FAEEDA; font:600 14px/1.2 Inter,sans-serif; cursor:pointer;}
+.reco-play i{width:48px; height:48px; border-radius:50%; background:#FAEEDA; display:grid; place-items:center; transition:transform .3s var(--ease-out);}
+.reco-play i::before{content:""; margin-left:4px; border-left:14px solid #0A0A0A; border-top:9px solid transparent; border-bottom:9px solid transparent;}
+.reco-play:hover i{transform:scale(1.08);}
+.reco-play:active i{transform:scale(.96);}
+.reco-play:focus-visible{outline:2px solid #d8ad6b; outline-offset:6px; border-radius:6px;}
+.card-reco{position:absolute; z-index:3; left:12px; bottom:12px; display:inline-flex; align-items:center; gap:7px; padding:6px 11px 6px 9px; border-radius:99px; background:rgba(10,10,10,.6); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; pointer-events:none;}
+.card-reco::before{content:""; border-left:7px solid #FAEEDA; border-top:4.5px solid transparent; border-bottom:4.5px solid transparent;}
+@media (prefers-reduced-motion:reduce){.reco-tag::before{animation:none;}}
 </style>
 </head>
 <body>
@@ -2111,6 +2129,7 @@ p{margin:0; text-wrap:pretty;}
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
           <div class="tag">${info.etiqueta}</div>
+          ${propiedad.media && propiedad.media.clip ? '<span class="card-reco">Recorrido</span>' : ''}
           ${sello}
           <button type="button" class="fav-btn${esFavorita ? ' is-fav' : ''}" aria-label="Guardar en favoritos" aria-pressed="${esFavorita}">${ICO_CORAZON}</button>
         </div>
@@ -2178,6 +2197,26 @@ p{margin:0; text-wrap:pretty;}
     return `<div class="ficha-video"><video controls preload="metadata" src="${url}"></video></div>`;
   }
 
+  /* Recorrido de la ficha: un clip corto, mudo y en bucle (arranca al instante, sin
+     cookies ni anuncios) y, si la propiedad tiene video largo, un botón que carga
+     YouTube solo cuando la persona lo pide. Sin clip ni YouTube cae al comportamiento de antes.
+     El clip se declara en data/properties.json (media.clip) y vive en assets/<slug>/recorrido.mp4. */
+  function recorridoHTML(propiedad) {
+    const m = propiedad.media || {}, clip = m.clip, url = m.video_principal;
+    const yt = url && url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+    if (!clip && !yt) return videoEmbedHTML(url);
+    const foto = m.foto_principal || '';
+    const vista = clip
+      ? `<video class="reco-clip" src="${clip}" poster="${foto}" autoplay muted loop playsinline></video>`
+      : `<img class="reco-clip" src="${foto}" alt="">`;
+    const boton = yt ? `<button type="button" class="reco-play" data-yt="${yt[1]}"><i></i>Ver el video completo</button>` : '';
+    return `<div class="ficha-reco" role="group" aria-label="Recorrido de la propiedad">${vista}<div class="reco-veil"></div><span class="reco-tag">Recorrido</span>${boton}</div>`;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.reco-play'); if (!b) return;
+    b.closest('.ficha-reco').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1&rel=0" title="Video de la propiedad" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  });
+
   function fichaHTML(propiedad) {
     const fotos = (propiedad.media && propiedad.media.fotos) || [];
     const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
@@ -2188,12 +2227,12 @@ p{margin:0; text-wrap:pretty;}
     const aviso = proximamente
       ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
       : '';
-    const video = propiedad.media ? videoEmbedHTML(propiedad.media.video_principal) : '';
+    const video = propiedad.media ? recorridoHTML(propiedad) : '';
     return `
+      ${video}
       <div class="ficha-media"${dataFotos}>
         ${mediaHTML(propiedad)}
       </div>
-      ${video}
       <div class="ficha-body">
         <h3>${propiedad.titulo}</h3>
         <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>

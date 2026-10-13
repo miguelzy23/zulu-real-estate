@@ -105,6 +105,7 @@
       "fotos_terrestres": 0,
       "plano_loteo": false,
       "foto_principal": "assets/lote-222/01.jpg",
+      "clip": "assets/lote-222/recorrido.mp4",
       "fotos": [
         "assets/lote-222/01.jpg",
         "assets/lote-222/02.jpg",
@@ -210,6 +211,7 @@
       "fotos_terrestres": 5,
       "plano_loteo": false,
       "foto_principal": "assets/finca-el-rincon/01.jpg",
+      "clip": "assets/finca-el-rincon/recorrido.mp4",
       "fotos": [
         "assets/finca-el-rincon/01.jpg",
         "assets/finca-el-rincon/02.jpg",
