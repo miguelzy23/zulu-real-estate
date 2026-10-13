@@ -1131,7 +1131,7 @@ p{margin:0; text-wrap:pretty;}
 .mp-mini path{fill:rgba(250,238,218,.07); stroke:rgba(250,238,218,.38); stroke-width:.5; stroke-linejoin:round;}
 .mp-mini path.es-ant{fill:rgba(216,173,107,.85); stroke:#d8ad6b;}
 .mp-mini figcaption{margin-top:8px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--on-ink-dim); line-height:1.35;}
-@media (max-width:760px){.mp-mini{left:auto; right:16px; top:84px; width:58px;} .mp-mini figcaption{display:none;}}
+@media (max-width:760px), (max-aspect-ratio:11/10){.mp-mini{left:auto; right:16px; top:84px; width:58px;} .mp-mini figcaption{display:none;}}
 @media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-cap{bottom:44px;}}
 @media (prefers-reduced-motion:reduce){.mp-pin i{animation:none;} .card.mp-destello{animation:none;}}
 
@@ -2498,13 +2498,22 @@ p{margin:0; text-wrap:pretty;}
   function abrirFicha(id) {
     const propiedad = propiedadesCargadas.find(p => p.id === id);
     if (!propiedad) return;
+    focoPrevio = document.activeElement;
     fichaContenido.innerHTML = fichaHTML(propiedad);
     fichaBackdrop.hidden = false;
     document.body.style.overflow = 'hidden';
+    const cerrar = document.getElementById('ficha-close');
+    if (cerrar) cerrar.focus({ preventScroll: true });
   }
+  let focoPrevio = null;
   function cerrarFicha() {
     fichaBackdrop.hidden = true;
     document.body.style.overflow = '';
+    // Se vacía después del clic para no romper el enlace "Quiero saber más"; así el clip o el
+    // video de YouTube dejan de reproducirse (antes seguía sonando oculto).
+    setTimeout(() => { if (fichaBackdrop.hidden) fichaContenido.innerHTML = ''; }, 60);
+    if (focoPrevio && document.contains(focoPrevio)) focoPrevio.focus({ preventScroll: true });
+    focoPrevio = null;
   }
   document.getElementById('ficha-close').addEventListener('click', cerrarFicha);
   fichaBackdrop.addEventListener('click', e => { if (e.target === fichaBackdrop) cerrarFicha(); });
@@ -2790,7 +2799,7 @@ p{margin:0; text-wrap:pretty;}
   function montar() {
     const dpr = Math.min(devicePixelRatio || 1, 2), W = innerWidth, H = innerHeight;
     cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const mob = W < 760, rx = mob ? W * .04 : W * .42, ry = mob ? H * .13 : H * .09, rw = mob ? W * .92 : W * .55, rh = mob ? H * .46 : H * .80;
+    const mob = W < 760 || H > W * 1.1, rx = mob ? W * .04 : W * .42, ry = mob ? H * .13 : H * .09, rw = mob ? W * .92 : W * .55, rh = mob ? H * .46 : H * .80;
     const lons = POLY.map(p => p[0]), lats = POLY.map(p => p[1]);
     const lo0 = Math.min(...lons), lo1 = Math.max(...lons), la0 = Math.min(...lats), la1 = Math.max(...lats);
     const sc = Math.min(rw / (lo1 - lo0), rh / (la1 - la0)), ox = rx + (rw - (lo1 - lo0) * sc) / 2, oy = ry + (rh - (la1 - la0) * sc) / 2;
@@ -2857,7 +2866,7 @@ p{margin:0; text-wrap:pretty;}
 
   const LV = []; for (let k = -6; k <= 13; k++) LV.push(k);
   function dibujar(p, t) {
-    const { W, H, gx, gy, cell, sdf, pts, dpr } = B, w = sstep(.2, .58, p), mob = W < 760;
+    const { W, H, gx, gy, cell, sdf, pts, dpr } = B, w = sstep(.2, .58, p), mob = W < 760 || H > W * 1.1;
     const zu = sstep(.80, .94, p), g = camara(zu), Zk = g.Zk, av = sstep(.46, .64, p), kv = 1 - zu * .95;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     cx.fillStyle = '#0A0A0A'; cx.fillRect(0, 0, W, H);
@@ -2912,14 +2921,13 @@ p{margin:0; text-wrap:pretty;}
     }
     if (B.lastU !== zu) { colocar(zu); B.lastU = zu; }
     let kp = 0;
-    pinsEl.querySelectorAll('.mp-pin').forEach(e => e.classList.toggle('is-on', e.dataset.z === '1' ? zu > .4 : p > .64 + (kp++) * .045));
+    pinsEl.querySelectorAll('.mp-pin').forEach(e => { const on = e.dataset.z === '1' ? zu > .4 : p > .64 + (kp++) * .045; e.classList.toggle('is-on', on); e.inert = !on; });
     ov.querySelectorAll('line').forEach(l => l.style.opacity = p > .64 + (+l.dataset.i) * .045 + .03 ? 1 : 0);
     mini.classList.toggle('is-on', p > .5);
     const E = .035;
     caps.forEach(c => {
       const a = +c.dataset.a, b = +c.dataset.b; let o = Math.min((p - a) / E, (b - p) / E); if (a < 0) o = (b - p) / E; o = clamp(o);
-      c.style.opacity = o; c.style.transform = 'translateY(' + ((1 - o) * (p < (a + b) / 2 ? 24 : -18)) + 'px)'; c.classList.toggle('is-on', o > .5);
-      c.setAttribute('aria-hidden', o > .5 ? 'false' : 'true');
+      c.style.opacity = o; c.style.transform = 'translateY(' + ((1 - o) * (p < (a + b) / 2 ? 24 : -18)) + 'px)'; c.classList.toggle('is-on', o > .5); c.inert = o <= .5;
     });
   }
 
