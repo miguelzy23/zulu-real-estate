@@ -1172,6 +1172,10 @@ p{margin:0; text-wrap:pretty;}
 .card-reco{position:absolute; z-index:3; left:12px; bottom:12px; display:inline-flex; align-items:center; gap:7px; padding:6px 11px 6px 9px; border-radius:99px; background:rgba(10,10,10,.6); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; pointer-events:none;}
 .card-reco::before{content:""; border-left:7px solid #FAEEDA; border-top:4.5px solid transparent; border-bottom:4.5px solid transparent;}
 @media (prefers-reduced-motion:reduce){.reco-tag::before{animation:none;}}
+
+/* Teclado: la tarjeta se abre con Tab + Enter (el botón es invisible; al enfocarlo se resalta la tarjeta) */
+.card-open{position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+.card:has(.card-open:focus-visible){outline:2px solid #d8ad6b; outline-offset:4px;}
 </style>
 </head>
 <body>
@@ -2126,6 +2130,7 @@ p{margin:0; text-wrap:pretty;}
       : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
+        <button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
           <div class="tag">${info.etiqueta}</div>
