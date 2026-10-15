@@ -326,5 +326,64 @@
     },
     "fecha_visita": "2026-09-28",
     "fecha_creacion": "2026-09-28"
+  },
+  {
+    "id": "ZUL-2026-004",
+    "slug": "oficina-indiana-mall-alto-de-las-palmas-envigado",
+    "tipo": "oficina",
+    "operacion": "gestionada",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "Oficina Indiana Mall — Alto de las Palmas, Envigado",
+    "descripcion_corta": "Oficina de dos niveles con ventanal hacia el verde, piso laminado tipo madera, cocina integral con alacena e iluminación empotrada, en el Indiana Mall de Alto de las Palmas.",
+    "edificio": "Indiana Mall",
+    "unidad": "292",
+    "estado_inmueble": "Reformada",
+    "pisos": 2,
+    "banos": 2,
+    "cocina": "Integral, con alacena",
+    "parqueaderos": 2,
+    "parqueaderos_detalle": "privados, bajo techo",
+    "area_construida": 86.31,
+    "gestion": {
+      "situacion": "arrendada",
+      "por": "Zulu Real Estate",
+      "motivo_publicacion": "Muestra de gestión: propiedad familiar arrendada por Zulu; se publica sin precio ni oferta."
+    },
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "Envigado",
+      "sector": "Alto de las Palmas",
+      "subregion": "Valle de Aburrá",
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "precio": {
+      "moneda": "COP",
+      "precio_historico": [],
+      "publicable": false,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 0,
+      "fotos_terrestres": 8,
+      "plano_loteo": false,
+      "foto_principal": "assets/oficina-indiana/01.jpg",
+      "fotos": [
+        "assets/oficina-indiana/01.jpg",
+        "assets/oficina-indiana/02.jpg",
+        "assets/oficina-indiana/03.jpg",
+        "assets/oficina-indiana/04.jpg",
+        "assets/oficina-indiana/05.jpg",
+        "assets/oficina-indiana/06.jpg",
+        "assets/oficina-indiana/07.jpg",
+        "assets/oficina-indiana/08.jpg"
+      ]
+    },
+    "fecha_visita": "2026-10-14",
+    "fecha_creacion": "2026-10-14"
   }
 ]

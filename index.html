@@ -1190,6 +1190,10 @@ p{margin:0; text-wrap:pretty;}
 /* Teclado: la tarjeta se abre con Tab + Enter (el botón es invisible; al enfocarlo se resalta la tarjeta) */
 .card-open{position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
 .card:has(.card-open:focus-visible){outline:2px solid #d8ad6b; outline-offset:4px;}
+
+/* ---- Propiedades arrendadas por Zulu (sin precio): sello y aviso ---- */
+.price.price-gest{font-size:17px; font-style:italic; font-weight:500; letter-spacing:0; line-height:1.3;}
+.ficha-gest{margin:16px 0 0; padding:14px 16px; border-left:3px solid var(--acento,#8a5a1f); background:rgba(138,90,31,.08); font-size:14.5px; line-height:1.55;}
 </style>
 </head>
 <body>
@@ -1426,6 +1430,7 @@ p{margin:0; text-wrap:pretty;}
         <button class="chip" aria-pressed="false" data-f="Lotes">Lotes</button>
         <button class="chip" aria-pressed="false" data-f="Fincas">Fincas</button>
         <button class="chip" aria-pressed="false" data-f="Casas">Casas</button>
+        <button class="chip" aria-pressed="false" data-f="Oficinas">Oficinas</button>
       </div>
     </div>
 
@@ -2019,7 +2024,8 @@ p{margin:0; text-wrap:pretty;}
     lote:        { categoria: 'Lotes',        etiqueta: 'Lote' },
     finca:       { categoria: 'Fincas',       etiqueta: 'Finca' },
     casa:        { categoria: 'Casas',        etiqueta: 'Casa' },
-    apartamento: { categoria: 'Apartamentos', etiqueta: 'Apartamento' }
+    apartamento: { categoria: 'Apartamentos', etiqueta: 'Apartamento' },
+    oficina:     { categoria: 'Oficinas',     etiqueta: 'Oficina' }
   };
   const MEDIA_PLACEHOLDER = '<svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,46)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,92)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,138)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,184)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,230)"/></g></svg>';
   const FLECHA = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -2027,9 +2033,13 @@ p{margin:0; text-wrap:pretty;}
   const formatoCOP = valor => '$' + valor.toLocaleString('es-CO');
 
   function ultimoPrecio(propiedad) {
-    const historico = propiedad.precio.precio_historico;
-    return historico[historico.length - 1].valor;
+    const historico = (propiedad.precio && propiedad.precio.precio_historico) || [];
+    return historico.length ? historico[historico.length - 1].valor : 0;
   }
+  /* Propiedades que Zulu ya arrendó: se publican como muestra de lo que hacemos, sin precio ni venta/alquiler. */
+  const esGestionada = p => p.operacion === 'gestionada';
+  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : formatoCOP(ultimoPrecio(p));
+  const precioDivHTML = p => `<div class="price${esGestionada(p) ? ' price-gest' : ''}">${precioTexto(p)}</div>`;
 
   /* Zona ancha para el panel "Cuéntanos qué buscas" — deriva de la
      subregión/ubicación real, con Llanogrande como caso especial
@@ -2051,7 +2061,13 @@ p{margin:0; text-wrap:pretty;}
   const ICO_BANO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a1 1 0 0 1 1-1Z"/><path d="M6 12V6a2 2 0 0 1 3.5-1.3"/><path d="M4 21h16"/></svg>';
   const ICO_CORAZON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 7.9 2 4.5 5.4 4c2-.3 3.8.7 4.6 2.3.3.5.6 1.1.8 1.5.2.3.6.3.8 0 .2-.4.5-1 .8-1.5C13.2 4.7 15 3.7 17 4c3.4.5 5 3.9 3.4 7.2-2.5 4.7-10 9.3-10 9.3Z"/></svg>';
 
+  const ICO_CARRO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M3 13l2-6h14l2 6v4H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>';
   function metaHTML(propiedad) {
+    if (propiedad.tipo === 'oficina') {
+      const pq = propiedad.parqueaderos ? `<span>${ICO_CARRO}${propiedad.parqueaderos}</span>` : '';
+      const bn = propiedad.banos ? `<span>${ICO_BANO}${propiedad.banos}</span>` : '';
+      return `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>${bn}${pq}`;
+    }
     if (propiedad.tipo === 'lote') {
       return `<span>${ICO_AREA}${propiedad.area.escritura_m2.toLocaleString('es-CO')} m² de escritura</span>`;
     }
@@ -2133,15 +2149,16 @@ p{margin:0; text-wrap:pretty;}
       </div>`;
   }
 
+  const lugarTexto = p => (p.ubicacion.sector ? p.ubicacion.sector + ', ' : '') + p.ubicacion.municipio;
   function tarjetaHTML(propiedad) {
     const info = TIPO_INFO[propiedad.tipo];
     const proximamente = propiedad.estado === 'proximamente';
     const sello = proximamente
       ? '<div class="tag tag-proximamente">Próximamente</div>'
-      : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '');
+      : (esGestionada(propiedad) ? '' : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : ''));
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more">Quiero saber más${FLECHA}</a>`;
+      : `<a href="#contacto" class="more">${esGestionada(propiedad) ? 'Quiero algo así' : 'Quiero saber más'}${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
         <button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>
@@ -2154,10 +2171,10 @@ p{margin:0; text-wrap:pretty;}
         </div>
         <div class="card-body">
           <div class="price-row">
-            <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
+            ${precioDivHTML(propiedad)}
             ${precioM2HTML(propiedad)}
           </div>
-          <div class="loc">${propiedad.ubicacion.municipio}</div>
+          <div class="loc">${lugarTexto(propiedad)}</div>
           <div class="meta">${metaHTML(propiedad)}</div>
           ${cta}
         </div>
@@ -2172,8 +2189,13 @@ p{margin:0; text-wrap:pretty;}
     if (propiedad.tipo !== 'lote' && propiedad.area_construida) {
       items.push(['Área construida', `${propiedad.area_construida.toLocaleString('es-CO')} m²`]);
     }
+    if (propiedad.edificio) items.push(['Edificio', propiedad.edificio + (propiedad.unidad ? ' · Oficina ' + propiedad.unidad : '')]);
+    if (propiedad.estado_inmueble) items.push(['Estado', propiedad.estado_inmueble]);
+    if (propiedad.pisos) items.push(['Niveles', String(propiedad.pisos)]);
     if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
     if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
+    if (propiedad.cocina) items.push(['Cocina', propiedad.cocina]);
+    if (propiedad.parqueaderos) items.push(['Parqueaderos', propiedad.parqueaderos + (propiedad.parqueaderos_detalle ? ' · ' + propiedad.parqueaderos_detalle : '')]);
     if (propiedad.casa_de_mayordomo) items.push(['Casa de mayordomo', 'Sí']);
     if (propiedad.area) {
       const etiquetaArea = propiedad.tipo === 'lote' ? 'Área de escritura' : 'Área del lote';
@@ -2242,10 +2264,12 @@ p{margin:0; text-wrap:pretty;}
     const proximamente = propiedad.estado === 'proximamente';
     const cta = proximamente
       ? `<span class="more" aria-disabled="true" id="ficha-contacto">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more" id="ficha-contacto">Quiero saber más${FLECHA}</a>`;
+      : `<a href="#contacto" class="more" id="ficha-contacto">${esGestionada(propiedad) ? 'Quiero arrendar la mía' : 'Quiero saber más'}${FLECHA}</a>`;
     const aviso = proximamente
       ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
-      : '';
+      : (esGestionada(propiedad)
+        ? '<p class="ficha-gest"><b>Una propiedad que manejamos nosotros.</b> La mostramos para que veas cómo trabajamos. Si tienes una oficina, un local o una casa que quieras poner en arriendo, escríbenos.</p>'
+        : '');
     const video = propiedad.media ? recorridoHTML(propiedad) : '';
     return `
       ${video}
@@ -2254,8 +2278,8 @@ p{margin:0; text-wrap:pretty;}
       </div>
       <div class="ficha-body">
         <h3>${propiedad.titulo}</h3>
-        <div class="price">${formatoCOP(ultimoPrecio(propiedad))}</div>
-        <div class="loc">${propiedad.ubicacion.municipio}</div>
+        ${precioDivHTML(propiedad)}
+        <div class="loc">${lugarTexto(propiedad)}</div>
         <p class="ficha-desc">${propiedad.descripcion_corta}</p>
         ${aviso}
         <div class="ficha-caracteristicas">${caracteristicasHTML(propiedad)}</div>
@@ -2329,10 +2353,10 @@ p{margin:0; text-wrap:pretty;}
       if (on && intake.tipo.size > 0) on = intake.tipo.has(card.dataset.tipo);
       // "Hasta $X": acumulativo, no una banda cerrada — quien pone un
       // techo alto también quiere ver lo más económico que le sirve.
-      if (on && intake.presupuesto !== 'todos') on = (+card.dataset.precio) <= Number(intake.presupuesto);
+      if (on && intake.presupuesto !== 'todos') on = card.dataset.op !== 'gestionada' && (+card.dataset.precio) <= Number(intake.presupuesto);
       if (on) on = zonaCoincide(card.dataset.zona, intake.zona);
       // Comprar e Invertir = propiedades en venta; Alquilar = en alquiler
-      if (on) on = card.dataset.op === (intencionActiva === 'alquilar' ? 'alquiler' : 'venta');
+      if (on) on = card.dataset.op === 'gestionada' ? intencionActiva !== 'alquilar' : card.dataset.op === (intencionActiva === 'alquilar' ? 'alquiler' : 'venta');
       card.hidden = !on;
       if (on) mostradas++;
     });
@@ -2497,7 +2521,7 @@ p{margin:0; text-wrap:pretty;}
     favBarCount.textContent = favoritos.size;
     favBar.classList.toggle('is-visible', favoritos.size > 0);
     const elegidas = propiedadesCargadas.filter(p => favoritos.has(p.id));
-    const lineas = elegidas.map(p => `• ${p.titulo} — ${formatoCOP(ultimoPrecio(p))}`).join('\n');
+    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + formatoCOP(ultimoPrecio(p))}`).join('\n');
     const msg = `Hola, me interesan estas propiedades de Zulu:\n${lineas}\n¿Me cuentan más?`;
     favBarWa.href = `https://wa.me/573107311282?text=${encodeURIComponent(msg)}`;
   }
@@ -2793,7 +2817,8 @@ p{margin:0; text-wrap:pretty;}
     'El Retiro': { c: [-75.503, 6.060], o: [44, -34] },
     'La Ceja': { c: [-75.430, 6.028], o: [44, 22] },
     'Santa Fe de Antioquia': { c: [-75.828, 6.556], o: [30, -24] },
-    'Rionegro': { c: [-75.374, 6.155], o: [44, -20] }
+    'Rionegro': { c: [-75.374, 6.155], o: [44, -20] },
+    'Envigado': { c: [-75.540, 6.172], o: [52, -52] }
   };
   const SIN_ROTULO = ['BOGOTÁ, D.C.', 'QUINDIO', 'ATLÁNTICO', 'ANTIOQUIA', 'CUNDINAMARCA', 'SUCRE'];
   const NOMBRE = { 'NORTE DE SANTANDER': 'Norte de Santander', 'VALLE DEL CAUCA': 'Valle del Cauca', 'LA GUAJIRA': 'La Guajira' };
@@ -2802,7 +2827,7 @@ p{margin:0; text-wrap:pretty;}
   let pines = [{ ref: true, n: REF.n, s: '', c: REF.c, o: REF.o }];
   // Lugares de referencia: aparecen en el acercamiento final. Etiqueta a la izquierda si o[0] < 0.
   const LUGARES = [
-    { n: 'El Poblado', c: [-75.566, 6.209], o: [12, -2] },
+    { n: 'El Poblado', c: [-75.566, 6.209], o: [-12, -2] },
     { n: 'Envigado', c: [-75.592, 6.176], o: [-12, 2] },
     { n: 'Sabaneta', c: [-75.617, 6.151], o: [-12, 6] },
     { n: 'Rionegro', c: [-75.374, 6.155], o: [14, -4] },
