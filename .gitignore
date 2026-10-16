@@ -1,8 +1,8 @@
 data/properties.private.json
 media/originales/
 *.mp4
-# Excepción: el clip corto de cada propiedad (recorrido.mp4, ~2 MB) sí se publica
-!assets/*/recorrido.mp4
+# Excepción: el clip corto de cada propiedad (recorrido*.mp4) sí se publica
+!assets/*/recorrido*.mp4
 *.mov
 .DS_Store
 

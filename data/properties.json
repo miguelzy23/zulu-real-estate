@@ -100,19 +100,17 @@
       "negociable": true
     },
     "media": {
-      "video_principal": "https://youtu.be/zdPLY5CQVfA",
-      "fotos_dron": 6,
+      "video_principal": null,
+      "fotos_dron": 4,
       "fotos_terrestres": 0,
       "plano_loteo": false,
-      "foto_principal": "assets/lote-222/01.jpg",
-      "clip": "assets/lote-222/recorrido.mp4",
+      "foto_principal": "assets/lote-222/dron-01.jpg",
+      "clip": "assets/lote-222/recorrido-valle.mp4",
       "fotos": [
-        "assets/lote-222/01.jpg",
-        "assets/lote-222/02.jpg",
-        "assets/lote-222/03.jpg",
-        "assets/lote-222/04.jpg",
-        "assets/lote-222/05.jpg",
-        "assets/lote-222/06.jpg"
+        "assets/lote-222/dron-01.jpg",
+        "assets/lote-222/dron-02.jpg",
+        "assets/lote-222/dron-03.jpg",
+        "assets/lote-222/dron-04.jpg"
       ]
     },
     "fecha_visita": "2026-09-05",

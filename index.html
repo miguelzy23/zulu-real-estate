@@ -2272,10 +2272,10 @@ p{margin:0; text-wrap:pretty;}
         : '');
     const video = propiedad.media ? recorridoHTML(propiedad) : '';
     return `
-      ${video}
       <div class="ficha-media"${dataFotos}>
         ${mediaHTML(propiedad)}
       </div>
+      ${video}
       <div class="ficha-body">
         <h3>${propiedad.titulo}</h3>
         ${precioDivHTML(propiedad)}
