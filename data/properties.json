@@ -384,5 +384,57 @@
     },
     "fecha_visita": "2026-10-14",
     "fecha_creacion": "2026-10-14"
+  },
+  {
+    "id": "ZUL-2026-005",
+    "slug": "oficina-q-office-el-poblado-medellin",
+    "tipo": "oficina",
+    "operacion": "gestionada",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "Oficina Q Office — El Poblado, Medellín",
+    "descripcion_corta": "Oficina con ventanales de piso a techo y vista al verde, techos en concreto a la vista, piso en madera y una librería iluminada, frente al Mall del Este.",
+    "edificio": "Q Office",
+    "unidad": "901",
+    "piso": 9,
+    "banos": 1,
+    "utiles": 2,
+    "parqueaderos": 2,
+    "area_construida": 93,
+    "gestion": {
+      "situacion": "arrendada",
+      "por": "Zulu Real Estate",
+      "motivo_publicacion": "Muestra de gestión: oficina arrendada por Zulu; se publica sin precio ni oferta."
+    },
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "Medellín",
+      "sector": "El Poblado",
+      "subregion": "Valle de Aburrá",
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "precio": {
+      "moneda": "COP",
+      "precio_historico": [],
+      "publicable": false,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 0,
+      "fotos_terrestres": 3,
+      "plano_loteo": false,
+      "foto_principal": "assets/q-office/01.jpg",
+      "fotos": [
+        "assets/q-office/01.jpg",
+        "assets/q-office/02.jpg",
+        "assets/q-office/03.jpg"
+      ]
+    },
+    "fecha_visita": "2026-10-15",
+    "fecha_creacion": "2026-10-15"
   }
 ]

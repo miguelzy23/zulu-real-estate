@@ -2194,10 +2194,12 @@ p{margin:0; text-wrap:pretty;}
     }
     if (propiedad.edificio) items.push(['Edificio', propiedad.edificio + (propiedad.unidad ? ' · Oficina ' + propiedad.unidad : '')]);
     if (propiedad.estado_inmueble) items.push(['Estado', propiedad.estado_inmueble]);
+    if (propiedad.piso) items.push(['Piso', String(propiedad.piso)]);
     if (propiedad.pisos) items.push(['Niveles', String(propiedad.pisos)]);
     if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
     if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
     if (propiedad.cocina) items.push(['Cocina', propiedad.cocina]);
+    if (propiedad.utiles) items.push(['Cuartos útiles', String(propiedad.utiles)]);
     if (propiedad.parqueaderos) items.push(['Parqueaderos', propiedad.parqueaderos + (propiedad.parqueaderos_detalle ? ' · ' + propiedad.parqueaderos_detalle : '')]);
     if (propiedad.casa_de_mayordomo) items.push(['Casa de mayordomo', 'Sí']);
     if (propiedad.area) {
@@ -2827,7 +2829,8 @@ p{margin:0; text-wrap:pretty;}
     'La Ceja': { c: [-75.430, 6.028], o: [44, 22] },
     'Santa Fe de Antioquia': { c: [-75.828, 6.556], o: [30, -24] },
     'Rionegro': { c: [-75.374, 6.155], o: [44, -20] },
-    'Envigado': { c: [-75.540, 6.172], o: [52, -52] }
+    'Envigado': { c: [-75.540, 6.172], o: [52, -52] },
+    'Medellín': { c: [-75.560, 6.198], o: [-46, -4] }
   };
   const SIN_ROTULO = ['BOGOTÁ, D.C.', 'QUINDIO', 'ATLÁNTICO', 'ANTIOQUIA', 'CUNDINAMARCA', 'SUCRE'];
   const NOMBRE = { 'NORTE DE SANTANDER': 'Norte de Santander', 'VALLE DEL CAUCA': 'Valle del Cauca', 'LA GUAJIRA': 'La Guajira' };
@@ -3014,9 +3017,9 @@ p{margin:0; text-wrap:pretty;}
     pub.forEach(p => {
       const u = p.ubicacion || {}, m = MUN[u.municipio]; if (!m) return;
       if (u.subregion) subs.add(u.subregion);
-      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, c: m.c, o: m.o });
+      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, c: m.c, o: m.o });
     });
-    LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
+    LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n || q.sec === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
     if (pub.length) {
       document.getElementById('mpN').textContent = pub.length;
       document.getElementById('mpS').innerHTML = (pub.length === 1 ? 'propiedad' : 'propiedades') + (subs.size ? ',<br>' + subs.size + (subs.size === 1 ? ' subregión' : ' subregiones') : '');
