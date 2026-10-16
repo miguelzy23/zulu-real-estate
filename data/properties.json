@@ -105,13 +105,14 @@
       "fotos_terrestres": 0,
       "plano_loteo": false,
       "foto_principal": "assets/lote-222/dron-01.jpg",
-      "clip": "assets/lote-222/recorrido-valle.mp4",
+      "clip": "assets/lote-222/recorrido-entrada.mp4",
       "fotos": [
         "assets/lote-222/dron-01.jpg",
         "assets/lote-222/dron-02.jpg",
         "assets/lote-222/dron-03.jpg",
         "assets/lote-222/dron-04.jpg"
-      ]
+      ],
+      "video_archivo": "assets/lote-222/recorrido-completo.mp4"
     },
     "fecha_visita": "2026-09-05",
     "fecha_creacion": "2026-09-06"
