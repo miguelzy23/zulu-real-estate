@@ -1197,6 +1197,15 @@ p{margin:0; text-wrap:pretty;}
 
 /* Video propio a pantalla de la ficha: sin velo, con controles */
 .ficha-reco .reco-full{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000;}
+
+/* ---- Lo que ya hicimos: segunda sección del catálogo ---- */
+.hecho{margin-top:clamp(72px,9vw,128px); padding-top:clamp(40px,5vw,64px); border-top:1px solid var(--rule-dark);}
+.hecho-head{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;}
+.hecho-head h2{font-size:clamp(26px,3.4vw,40px); line-height:1.12; color:var(--cream);}
+.hecho-head p{margin-top:12px; color:var(--on-ink-dim); font-size:15.5px; max-width:42ch; line-height:1.65;}
+.hecho-head .hecho-n{margin:0; font-family:'Fraunces',serif; font-style:italic; font-size:17px; color:var(--gold,#d8ad6b);}
+.hecho-cta{display:flex; align-items:center; justify-content:space-between; gap:18px 28px; flex-wrap:wrap; margin-top:clamp(36px,4.5vw,56px); padding-top:clamp(24px,3vw,34px); border-top:1px solid var(--rule-dark);}
+.hecho-cta p{margin:0; font-family:'Fraunces',serif; font-size:clamp(19px,2.3vw,24px); color:var(--cream);}
 </style>
 </head>
 <body>
@@ -1425,7 +1434,7 @@ p{margin:0; text-wrap:pretty;}
   <div class="wrap">
     <div class="props-head reveal">
       <div>
-        <h2>Propiedades destacadas</h2>
+        <h2>Propiedades disponibles</h2>
         <p>Filtra por lo que te interesa y abre cada ficha para ver todas sus fotos.</p>
       </div>
       <div class="filters" role="group" aria-label="Filtrar propiedades">
@@ -1439,6 +1448,21 @@ p{margin:0; text-wrap:pretty;}
 
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" hidden>No hay propiedades en esta categoría todavía. <a href="#contacto">Escríbenos</a> y te avisamos apenas entre una.</p>
+
+    <div class="hecho" id="hecho" hidden>
+      <div class="hecho-head reveal">
+        <div>
+          <h2>Casos de éxito.</h2>
+          <p>Propiedades que arrendamos y hoy tienen inquilino.</p>
+        </div>
+        <p class="hecho-n" id="hechoN" aria-live="polite"></p>
+      </div>
+      <div class="grid grid-hecho" id="gridHecho"></div>
+      <div class="hecho-cta reveal">
+        <p>¿Tienes una propiedad para arrendar?</p>
+        <a class="btn btn-solid" href="#contacto">Cuéntanos de la tuya</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2021,6 +2045,8 @@ p{margin:0; text-wrap:pretty;}
   /* --- Propiedades: cargar desde data/properties.json ------------------- */
   const chips = document.querySelectorAll('.chip');
   const grid  = document.getElementById('grid');
+  const gridHecho = document.getElementById('gridHecho');
+  const enGrids = (tipo, fn, op) => [grid, gridHecho].forEach(g => g && g.addEventListener(tipo, fn, op));
   const empty = document.getElementById('empty');
 
   const TIPO_INFO = {
@@ -2603,11 +2629,11 @@ p{margin:0; text-wrap:pretty;}
     const imgs = [...media.querySelectorAll('img')];
     if (imgs.length > 1) cargarFotoTarjeta(imgs, 1);
   }
-  grid.addEventListener('pointerover', e => {
+  enGrids('pointerover', e => {
     const media = e.target.closest('.card-media');
     if (media) precargarTarjeta(media);
   }, { passive: true });
-  grid.addEventListener('touchstart', e => {
+  enGrids('touchstart', e => {
     const media = e.target.closest('.card-media');
     if (media) precargarTarjeta(media);
   }, { passive: true });
@@ -2627,7 +2653,7 @@ p{margin:0; text-wrap:pretty;}
   }
 
   let bloquearClicTarjeta = false;
-  grid.addEventListener('click', e => {
+  enGrids('click', e => {
     if (bloquearClicTarjeta) { bloquearClicTarjeta = false; return; }
     const corazon = e.target.closest('.fav-btn');
     if (corazon) {
@@ -2653,12 +2679,12 @@ p{margin:0; text-wrap:pretty;}
   /* Deslizar en celular para cambiar de foto — sin esto, tocar y
      arrastrar solo movería la página, no la carrera. */
   let inicioX = null, inicioY = null;
-  grid.addEventListener('touchstart', e => {
+  enGrids('touchstart', e => {
     if (!e.target.closest('.card-media')) return;
     inicioX = e.touches[0].clientX;
     inicioY = e.touches[0].clientY;
   }, { passive: true });
-  grid.addEventListener('touchend', e => {
+  enGrids('touchend', e => {
     if (inicioX === null) return;
     const media = e.target.closest('.card-media');
     const dx = e.changedTouches[0].clientX - inicioX;
@@ -2675,7 +2701,7 @@ p{margin:0; text-wrap:pretty;}
      no se nota. */
   function activarTiltTarjetas() {
     if (reduce || !matchMedia('(hover: hover)').matches) return;
-    grid.querySelectorAll('.card:not(.card-cta)').forEach(card => {
+    document.querySelectorAll('#grid .card:not(.card-cta), #gridHecho .card').forEach(card => {
       card.addEventListener('mousemove', (e) => {
         const r = card.getBoundingClientRect();
         const x = e.clientX - r.left, y = e.clientY - r.top;
@@ -2692,8 +2718,18 @@ p{margin:0; text-wrap:pretty;}
     .then(propiedades => {
       propiedadesCargadas = propiedades;
       const publicadas = propiedades.filter(p => p.estado === 'publicado' || p.estado === 'proximamente');
-      grid.innerHTML = publicadas.map(tarjetaHTML).join('')
-        + (publicadas.length < 3 ? tarjetaCtaHTML() : '');
+      const disponibles = publicadas.filter(p => !esGestionada(p));
+      const hechas = publicadas.filter(esGestionada);
+      grid.innerHTML = disponibles.map(tarjetaHTML).join('')
+        + (disponibles.length < 3 ? tarjetaCtaHTML() : '');
+      const bloqueHecho = document.getElementById('hecho');
+      if (bloqueHecho && hechas.length) {
+        gridHecho.innerHTML = hechas.map(tarjetaHTML).join('');
+        document.getElementById('hechoN').textContent = hechas.length === 1 ? '1 propiedad arrendada' : hechas.length + ' propiedades arrendadas';
+        bloqueHecho.hidden = false;
+      }
+      // El chip de una categoría solo aparece si hay algo disponible en ella ("Oficinas" hoy solo tiene propiedades ya arrendadas)
+      document.querySelectorAll('.chip[data-f="Oficinas"]').forEach(c => { c.hidden = !grid.querySelector('.card[data-cat="Oficinas"]'); });
       const chipActivo = document.querySelector('.chip[aria-pressed="true"]');
       aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
       activarTiltTarjetas();
