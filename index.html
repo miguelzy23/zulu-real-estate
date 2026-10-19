@@ -1206,6 +1206,17 @@ p{margin:0; text-wrap:pretty;}
 .hecho-head .hecho-n{margin:0; font-family:'Fraunces',serif; font-style:italic; font-size:17px; color:var(--gold,#d8ad6b);}
 .hecho-cta{display:flex; align-items:center; justify-content:space-between; gap:18px 28px; flex-wrap:wrap; margin-top:clamp(36px,4.5vw,56px); padding-top:clamp(24px,3vw,34px); border-top:1px solid var(--rule-dark);}
 .hecho-cta p{margin:0; font-family:'Fraunces',serif; font-size:clamp(19px,2.3vw,24px); color:var(--cream);}
+
+/* ---- Formulario: busco / tengo una propiedad ---- */
+.rol{border:0; margin:0 0 26px; padding:0; display:flex; gap:8px; flex-wrap:wrap;}
+.rol-op{position:relative; cursor:pointer;}
+.rol-op input{position:absolute; opacity:0; inset:0; width:100%; height:100%; margin:0; cursor:pointer;}
+.rol-op span{display:inline-flex; align-items:center; min-height:44px; padding:0 20px; border:1px solid var(--rule-dark); border-radius:99px; font-size:14px; font-weight:500; color:var(--on-ink-dim); transition:border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out);}
+.rol-op:hover span{border-color:var(--cream); color:var(--cream);}
+.rol-op input:checked + span{background:var(--cream); border-color:var(--cream); color:var(--ink);}
+.rol-op input:focus-visible + span{outline:2px solid var(--cream); outline-offset:3px;}
+.field[hidden]{display:none;}
+.field label .opc{text-transform:none; letter-spacing:0; opacity:.75;}
 </style>
 </head>
 <body>
@@ -1460,7 +1471,7 @@ p{margin:0; text-wrap:pretty;}
       <div class="grid grid-hecho" id="gridHecho"></div>
       <div class="hecho-cta reveal">
         <p>¿Tienes una propiedad para arrendar?</p>
-        <a class="btn btn-solid" href="#contacto">Cuéntanos de la tuya</a>
+        <a class="btn btn-solid" href="#contacto" data-rol="tengo">Cuéntanos de la tuya</a>
       </div>
     </div>
   </div>
@@ -1487,19 +1498,26 @@ p{margin:0; text-wrap:pretty;}
       <div class="q-item">
         <div class="q-n">02</div>
         <div class="q-body">
+          <button class="q-btn" aria-expanded="false"><span>¿Me ayudan a vender o arrendar mi propiedad?</span><svg class="q-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M2 9 C 5 4, 8 13, 14 7"/></svg></button>
+          <div class="q-a"><div><p>Sí. Cuéntanos de tu propiedad en el formulario y te escribimos para ver cuál es el mejor camino: venderla o arrendarla.</p></div></div>
+        </div>
+      </div>
+      <div class="q-item">
+        <div class="q-n">03</div>
+        <div class="q-body">
           <button class="q-btn" aria-expanded="false"><span>¿En qué zonas de Antioquia trabajan?</span><svg class="q-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M2 9 C 5 4, 8 13, 14 7"/></svg></button>
           <div class="q-a"><div><p>Medellín y todo el Valle de Aburrá, además del Oriente antioqueño: Rionegro, Llanogrande, El Retiro y alrededores.</p></div></div>
         </div>
       </div>
       <div class="q-item">
-        <div class="q-n">03</div>
+        <div class="q-n">04</div>
         <div class="q-body">
           <button class="q-btn" aria-expanded="false"><span>¿Puedo invertir si vivo fuera del país?</span><svg class="q-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M2 9 C 5 4, 8 13, 14 7"/></svg></button>
           <div class="q-a"><div><p>Sí. Acompañamos el proceso completo a distancia, con videollamadas, videos de las visitas y apoyo en la parte legal.</p></div></div>
         </div>
       </div>
       <div class="q-item">
-        <div class="q-n">04</div>
+        <div class="q-n">05</div>
         <div class="q-body">
           <button class="q-btn" aria-expanded="false"><span>¿Cuánto tardan en responder?</span><svg class="q-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M2 9 C 5 4, 8 13, 14 7"/></svg></button>
           <div class="q-a"><div><p>Normalmente el mismo día, por WhatsApp o por correo.</p></div></div>
@@ -1515,7 +1533,7 @@ p{margin:0; text-wrap:pretty;}
   <div class="wrap intake-grid">
     <div class="reveal">
       <h2>Empecemos con una conversación.</h2>
-      <p class="intake-lede">Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.</p>
+      <p class="intake-lede" id="lede">Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.</p>
       <ul class="perks">
         <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Toma menos de 2 minutos</li>
         <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Sin costo ni compromiso</li>
@@ -1524,6 +1542,11 @@ p{margin:0; text-wrap:pretty;}
     </div>
 
     <form class="reveal" data-d="2" id="form" novalidate>
+      <fieldset class="rol" id="rol">
+        <legend class="sr-only">¿Qué necesitas?</legend>
+        <label class="rol-op"><input type="radio" name="rol" value="busco" checked><span>Busco una propiedad</span></label>
+        <label class="rol-op"><input type="radio" name="rol" value="tengo"><span>Tengo una propiedad</span></label>
+      </fieldset>
       <div class="field-row">
         <div class="field">
           <label for="nombre">Nombre</label>
@@ -1534,8 +1557,21 @@ p{margin:0; text-wrap:pretty;}
           <input type="text" id="contacto-info" name="contacto" autocomplete="email" required>
         </div>
       </div>
+      <div class="field" id="f-accion" hidden>
+        <label for="accion">¿Qué quieres hacer con ella?</label>
+        <select id="accion" name="accion">
+          <option value="" selected>Elige una opción</option>
+          <option>Venderla</option>
+          <option>Arrendarla</option>
+          <option>Aún no lo sé</option>
+        </select>
+      </div>
       <div class="field-row">
-        <div class="field">
+        <div class="field" id="f-valor" hidden>
+          <label for="valor">Valor que tienes en mente <span class="opc">(opcional)</span></label>
+          <input type="text" id="valor" name="valor" placeholder="Ej. $900M de venta o $5M al mes">
+        </div>
+        <div class="field" id="f-presupuesto">
           <label for="presupuesto">Presupuesto aproximado</label>
           <select id="presupuesto" name="presupuesto">
             <option value="" selected>Elige una opción</option>
@@ -1563,11 +1599,11 @@ p{margin:0; text-wrap:pretty;}
         </div>
       </div>
       <div class="field">
-        <label for="zona">Zona de interés</label>
+        <label for="zona" id="l-zona">Zona de interés</label>
         <input type="text" id="zona" name="zona" placeholder="Ej. El Poblado, Rionegro, Envigado…">
       </div>
       <div class="field">
-        <label for="notas">Cuéntanos más</label>
+        <label for="notas" id="l-notas">Cuéntanos más</label>
         <textarea id="notas" name="notas" rows="3" placeholder="Qué buscas, para cuándo, cualquier detalle que nos ayude."></textarea>
       </div>
       <div class="consent">
@@ -1582,7 +1618,7 @@ p{margin:0; text-wrap:pretty;}
       <p class="note">Tu información solo la usamos para contactarte — nada de spam.</p>
       <div class="ok" id="ok" hidden role="status">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.</span>
+        <span id="ok-t">Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.</span>
       </div>
     </form>
   </div>
@@ -2187,7 +2223,7 @@ p{margin:0; text-wrap:pretty;}
       : (esGestionada(propiedad) ? '' : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : ''));
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more">${esGestionada(propiedad) ? 'Quiero algo así' : 'Quiero saber más'}${FLECHA}</a>`;
+      : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : 'Quiero saber más'}${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
         <button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>
@@ -2301,7 +2337,7 @@ p{margin:0; text-wrap:pretty;}
     const proximamente = propiedad.estado === 'proximamente';
     const cta = proximamente
       ? `<span class="more" aria-disabled="true" id="ficha-contacto">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more" id="ficha-contacto">${esGestionada(propiedad) ? 'Quiero arrendar la mía' : 'Quiero saber más'}${FLECHA}</a>`;
+      : `<a href="#contacto" class="more" id="ficha-contacto"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero arrendar la mía' : 'Quiero saber más'}${FLECHA}</a>`;
     const aviso = proximamente
       ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
       : (esGestionada(propiedad)
@@ -2478,6 +2514,7 @@ p{margin:0; text-wrap:pretty;}
       sel('zona').value = document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).textContent.trim();
     }
     const resto = [...intake.tipo].length > 1 ? ' (También me interesan otros tipos de propiedad.)' : '';
+    setRol('busco');
     sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(/^Buscas/, 'Busco') : '') + resto + ' Avísenme cuando tengan algo así.';
     sel('contacto').scrollIntoView({ behavior: 'smooth', block: 'start' });
     setTimeout(() => sel('nombre').focus({ preventScroll: true }), 700);
@@ -2763,6 +2800,27 @@ p{margin:0; text-wrap:pretty;}
 
   const form = document.getElementById('form');
   const ok   = document.getElementById('ok');
+  const TXT_ROL = {
+    busco: { lede: 'Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.', zona: 'Zona de interés', zonaPh: 'Ej. El Poblado, Rionegro, Envigado…', notas: 'Cuéntanos más', notasPh: 'Qué buscas, para cuándo, cualquier detalle que nos ayude.', ok: 'Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.' },
+    tengo: { lede: 'Cuéntanos de tu propiedad y te decimos cómo podemos ayudarte a venderla o arrendarla.', zona: '¿Dónde está?', zonaPh: 'Municipio y sector. Ej. Envigado, Alto de las Palmas', notas: 'Cuéntanos de tu propiedad', notasPh: 'Tamaño, estado, si está desocupada o arrendada, cualquier detalle.', ok: 'Gracias — recibimos tu mensaje. Te contactamos pronto para conocer tu propiedad.' }
+  };
+  function setRol(r) {
+    const radio = form.querySelector(`input[name="rol"][value="${r}"]`);
+    if (!radio) return;
+    radio.checked = true;
+    const t = TXT_ROL[r], tengo = r === 'tengo';
+    document.getElementById('f-accion').hidden = !tengo;
+    document.getElementById('f-valor').hidden = !tengo;
+    document.getElementById('f-presupuesto').hidden = tengo;
+    document.getElementById('lede').textContent = t.lede;
+    document.getElementById('l-zona').textContent = t.zona;
+    form.zona.placeholder = t.zonaPh;
+    document.getElementById('l-notas').textContent = t.notas;
+    form.notas.placeholder = t.notasPh;
+    document.getElementById('ok-t').textContent = t.ok;
+  }
+  form.querySelectorAll('input[name="rol"]').forEach(r => r.addEventListener('change', () => setRol(r.value)));
+  document.addEventListener('click', e => { const a = e.target.closest('[data-rol]'); if (a) setRol(a.dataset.rol); });
   const submit = document.getElementById('submit');
   document.getElementById('acepto').addEventListener('change', e => {
     if (e.target.checked) {
@@ -2794,17 +2852,33 @@ p{margin:0; text-wrap:pretty;}
     submit.disabled = true;
     submit.textContent = 'Enviando…';
 
-    const datos = {
-      nombre,
-      contacto,
-      presupuesto: form.presupuesto.value,
-      tipo: form.tipo.value,
-      zona: form.zona.value.trim(),
-      notas: form.notas.value.trim(),
-      // La columna "Página" también deja constancia de la autorización y de
-      // la versión de la política que aceptó la persona.
-      pagina: location.href + ' | Autorizó datos (política 2026-10-06)'
-    };
+    // La columna "Página" también deja constancia de la autorización y de
+    // la versión de la política que aceptó la persona.
+    const autorizo = ' | Autorizó datos (política 2026-10-06)';
+    let datos;
+    if (form.rol.value === 'tengo') {
+      // Propietario: se guarda en las mismas columnas de la hoja, con el motivo marcado al inicio de Notas
+      const accion = form.accion.value, valor = form.valor.value.trim(), zona = form.zona.value.trim();
+      datos = {
+        nombre,
+        contacto,
+        presupuesto: valor ? 'Valor esperado: ' + valor : '',
+        tipo: form.tipo.value,
+        zona: zona ? 'Ubicación: ' + zona : '',
+        notas: '[PROPIETARIO · ' + (accion ? 'quiere ' + accion.toLowerCase().replace(/^aún no lo sé$/, 'definir con nosotros') : 'sin definir') + '] ' + form.notas.value.trim(),
+        pagina: location.href + ' | Propietario' + autorizo
+      };
+    } else {
+      datos = {
+        nombre,
+        contacto,
+        presupuesto: form.presupuesto.value,
+        tipo: form.tipo.value,
+        zona: form.zona.value.trim(),
+        notas: form.notas.value.trim(),
+        pagina: location.href + autorizo
+      };
+    }
 
     const marcarEnviado = () => {
       submit.textContent = 'Enviado';
