@@ -2515,7 +2515,7 @@ p{margin:0; text-wrap:pretty;}
     }
     const resto = [...intake.tipo].length > 1 ? ' (También me interesan otros tipos de propiedad.)' : '';
     setRol('busco');
-    sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(/^Buscas/, 'Busco') : '') + resto + ' Avísenme cuando tengan algo así.';
+    sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(/^Buscas/, 'Busco').replace('encaje contigo', 'encaje conmigo') : '') + resto + ' Avísenme cuando tengan algo así.';
     sel('contacto').scrollIntoView({ behavior: 'smooth', block: 'start' });
     setTimeout(() => sel('nombre').focus({ preventScroll: true }), 700);
   }
