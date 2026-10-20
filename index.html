@@ -1211,7 +1211,7 @@ p{margin:0; text-wrap:pretty;}
 .rol{border:0; margin:0 0 26px; padding:0; display:flex; gap:8px; flex-wrap:wrap;}
 .rol-op{position:relative; cursor:pointer;}
 .rol-op input{position:absolute; opacity:0; inset:0; width:100%; height:100%; margin:0; cursor:pointer;}
-.rol-op span{display:inline-flex; align-items:center; min-height:44px; padding:0 20px; border:1px solid var(--rule-dark); border-radius:99px; font-size:14px; font-weight:500; color:var(--on-ink-dim); transition:border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out);}
+.rol-op span{display:inline-flex; align-items:center; min-height:44px; padding:6px 20px; line-height:1.3; text-align:center; text-wrap:balance; border:1px solid var(--rule-dark); border-radius:99px; font-size:14px; font-weight:500; color:var(--on-ink-dim); transition:border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out);}
 .rol-op:hover span{border-color:var(--cream); color:var(--cream);}
 .rol-op input:checked + span{background:var(--cream); border-color:var(--cream); color:var(--ink);}
 .rol-op input:focus-visible + span{outline:2px solid var(--cream); outline-offset:3px;}
@@ -1545,7 +1545,7 @@ p{margin:0; text-wrap:pretty;}
       <fieldset class="rol" id="rol">
         <legend class="sr-only">¿Qué necesitas?</legend>
         <label class="rol-op"><input type="radio" name="rol" value="busco" checked><span>Busco una propiedad</span></label>
-        <label class="rol-op"><input type="radio" name="rol" value="tengo"><span>Tengo una propiedad</span></label>
+        <label class="rol-op"><input type="radio" name="rol" value="tengo"><span>Tengo una propiedad y quiero trabajar con ustedes</span></label>
       </fieldset>
       <div class="field-row">
         <div class="field">
