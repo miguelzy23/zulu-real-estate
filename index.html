@@ -1146,7 +1146,7 @@ p{margin:0; text-wrap:pretty;}
 .mp-mini path.es-ant{fill:rgba(216,173,107,.85); stroke:#d8ad6b;}
 .mp-mini figcaption{margin-top:8px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--on-ink-dim); line-height:1.35;}
 @media (max-width:760px), (max-aspect-ratio:11/10){.mp-mini{left:auto; right:16px; top:84px; width:58px;} .mp-mini figcaption{display:none;}}
-@media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-cap{bottom:44px;}}
+@media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-pin:not(.is-ref) span{font-size:12px; white-space:normal; width:max-content; max-width:124px;} .mp-pin:not(.is-ref) span small{font-size:12px;} .mp-cap{bottom:44px;}}
 @media (prefers-reduced-motion:reduce){.mp-pin i{animation:none;} .card.mp-destello{animation:none;}}
 
 /* ============================================================
@@ -2262,6 +2262,7 @@ p{margin:0; text-wrap:pretty;}
     if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
     if (propiedad.cocina) items.push(['Cocina', propiedad.cocina]);
     if (propiedad.utiles) items.push(['Cuartos útiles', String(propiedad.utiles)]);
+    if (propiedad.ascensor) items.push(['Ascensor', 'Sí']);
     if (propiedad.parqueaderos) items.push(['Parqueaderos', propiedad.parqueaderos + (propiedad.parqueaderos_detalle ? ' · ' + propiedad.parqueaderos_detalle : '')]);
     if (propiedad.casa_de_mayordomo) items.push(['Casa de mayordomo', 'Sí']);
     if (propiedad.area) {
@@ -3010,7 +3011,56 @@ p{margin:0; text-wrap:pretty;}
       if (it.l) { it.l.setAttribute('x1', x); it.l.setAttribute('y1', y); it.l.setAttribute('x2', x + it.o[0] - 4); it.l.setAttribute('y2', y + it.o[1]); }
     });
   }
+  /* Etiquetas sin pisarse: en la cámara final se prueban varias posiciones para cada texto y se elige la primera que no choca con otro texto ni con un punto. Los lugares con propiedad se acomodan primero. */
+  function acomodarEtiquetas() {
+    const g = camara(1), W = B.W, H = B.H;
+    const info = pines.map(p => { const q = B.proj(p.c[0], p.c[1]); p.o0 = p.o0 || p.o; return { p, x: g.ax + q[0] * g.Zk, y: g.ay + q[1] * g.Zk, o: p.o0 }; });
+    const movil = W < 760;
+    const caja = (q, o) => {
+      const maxW = movil && !q.p.ref ? 124 : 1e9, wn = String(q.p.n).length * (movil && q.p.ref ? 7.7 : 8.6), ws = String(q.p.s || '').length * (movil ? 6.6 : 7.2);
+      const w = Math.min(Math.max(wn, ws), maxW) + 6, h = Math.ceil(wn / Math.max(1, maxW - 6)) * 16 + (q.p.s ? Math.ceil(ws / Math.max(1, maxW - 6)) * 17 : 0);
+      return { x: o[0] < 0 ? q.x + o[0] - w : q.x + o[0], y: q.y + o[1] - 9, w, h };
+    };
+    const choca = (a, b) => a.x < b.x + b.w + 4 && b.x < a.x + a.w + 4 && a.y < b.y + b.h + 2 && b.y < a.y + a.h + 2;
+    const area = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const trazo = (q, o) => Array.from({ length: 9 }, (_, k) => ({ x: q.x + (o[0] - 4) * (k + 1) / 10, y: q.y + o[1] * (k + 1) / 10 }));
+    const dentro = (t, b, m) => t.x > b.x - m && t.x < b.x + b.w + m && t.y > b.y - m && t.y < b.y + b.h + m;
+    const costo = (q, o) => {
+      const b = caja(q, o);
+      if (b.x < 8 || b.x + b.w > W - 8 || b.y < 8 || b.y + b.h > H - 8) return 1e9;
+      let c = 0;
+      const mio = q.p.ref ? [] : trazo(q, o);
+      info.forEach(r => {
+        if (r === q) return;
+        const rb = caja(r, r.o);
+        if (choca(b, rb)) c += 1000 + area(b, rb);
+        if (r.x > b.x - 6 && r.x < b.x + b.w + 6 && r.y > b.y - 6 && r.y < b.y + b.h + 6) c += 500;
+        if (!r.p.ref && trazo(r, r.o).some(t => dentro(t, b, 3))) c += 800;
+        if (mio.some(t => dentro(t, rb, 3))) c += 800;
+      });
+      return c;
+    };
+    const orden = [...info.filter(q => !q.p.ref), ...info.filter(q => q.p.ref)];
+    for (let pasada = 0; pasada < 5; pasada++) {
+      let cambio = false;
+      orden.forEach(q => {
+        const cand = q.p.ref
+          ? [q.p.o0, [12, -2], [-12, -2], [12, 16], [-12, 16], [14, -16], [-14, -16], [26, 4], [-26, 4], [12, 32], [-12, 32], [28, -30], [-28, -30], [40, 18], [-40, 18], [40, -14], [-40, -14], [0, 28], [0, -30]]
+          : [q.p.o0, [44, -34], [44, 22], [-44, -34], [-44, 22], [44, -62], [44, 50], [-44, -62], [-44, 50], [70, -12], [-70, -12], [30, -44], [-30, -44], [30, 60], [-30, 60], [30, -74], [-30, -74], [80, -30], [-80, -30], [80, 20], [-80, 20]];
+        let mejor = q.o, peor = costo(q, q.o);
+        for (const o of cand) {
+          if (peor === 0) break;
+          const c = costo(q, o);
+          if (c < peor - 0.5) { peor = c; mejor = o; }
+        }
+        if (mejor !== q.o) { q.o = mejor; cambio = true; }
+      });
+      if (!cambio) break;
+    }
+    info.forEach(q => { q.p.o = q.o; });
+  }
   function pintar() {
+    acomodarEtiquetas();
     ov.setAttribute('viewBox', `0 0 ${B.W} ${B.H}`); ov.innerHTML = ''; pinsEl.innerHTML = ''; B.items = []; B.lastU = -1;
     pines.forEach((p, i) => {
       const [x, y] = B.proj(p.c[0], p.c[1]);
@@ -3127,7 +3177,8 @@ p{margin:0; text-wrap:pretty;}
     pub.forEach(p => {
       const u = p.ubicacion || {}, m = MUN[u.municipio]; if (!m) return;
       if (u.subregion) subs.add(u.subregion);
-      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, c: m.c, o: m.o });
+      const co = u.coordenadas, exacto = !!(co && co.lat != null && co.lng != null);
+      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, c: exacto ? [co.lng, co.lat] : m.c, o: m.o });
     });
     LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n || q.sec === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
     if (pub.length) {

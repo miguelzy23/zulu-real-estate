@@ -355,9 +355,10 @@
       "sector": "Alto de las Palmas",
       "subregion": "Valle de Aburrá",
       "coordenadas": {
-        "lat": null,
-        "lng": null
-      }
+        "lat": 6.154,
+        "lng": -75.5327
+      },
+      "direccion": "Indiana Mall, Avenida Las Palmas"
     },
     "precio": {
       "moneda": "COP",
@@ -383,7 +384,8 @@
       ]
     },
     "fecha_visita": "2026-10-14",
-    "fecha_creacion": "2026-10-14"
+    "fecha_creacion": "2026-10-14",
+    "ascensor": true
   },
   {
     "id": "ZUL-2026-005",
