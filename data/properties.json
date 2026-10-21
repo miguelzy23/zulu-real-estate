@@ -438,5 +438,67 @@
     },
     "fecha_visita": "2026-10-15",
     "fecha_creacion": "2026-10-15"
+  },
+  {
+    "id": "ZUL-2026-006",
+    "slug": "villa-marina-de-baru-cartagena",
+    "tipo": "casa",
+    "subtipo": "Villa",
+    "operacion": "alquiler",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "Villa en Marina de Barú — Cartagena",
+    "descripcion_corta": "Villa sobre el canal, rodeada de manglar y zonas verdes. Tiene piscina, muelle y una palapa de techo de paja.",
+    "habitaciones": 4,
+    "banos": 5,
+    "capacidad": 14,
+    "condominio": "Marina de Barú",
+    "unidad_cerrada": true,
+    "llegada": "En carro o en bote",
+    "ubicacion": {
+      "departamento": "Bolívar",
+      "municipio": "Cartagena",
+      "sector": "Condominio Marina de Barú",
+      "subregion": "Costa Caribe",
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "precio": {
+      "moneda": "COP",
+      "periodo": "noche",
+      "precio_historico": [
+        {
+          "fecha": "2026-10-21",
+          "valor": 6000000,
+          "motivo": "Precio por noche informado por el propietario."
+        }
+      ],
+      "publicable": true,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 8,
+      "fotos_terrestres": 1,
+      "plano_loteo": false,
+      "foto_principal": "assets/baru/vb-01.jpg",
+      "clip": "assets/baru/recorrido-clip.mp4",
+      "video_archivo": "assets/baru/recorrido-completo.mp4",
+      "fotos": [
+        "assets/baru/vb-01.jpg",
+        "assets/baru/vb-02.jpg",
+        "assets/baru/vb-03.jpg",
+        "assets/baru/vb-04.jpg",
+        "assets/baru/vb-05.jpg",
+        "assets/baru/vb-06.jpg",
+        "assets/baru/vb-07.jpg",
+        "assets/baru/vb-08.jpg",
+        "assets/baru/vb-09.jpg"
+      ]
+    },
+    "fecha_visita": "2026-10-07",
+    "fecha_creacion": "2026-10-21"
   }
 ]

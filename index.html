@@ -1217,6 +1217,8 @@ p{margin:0; text-wrap:pretty;}
 .rol-op input:focus-visible + span{outline:2px solid var(--cream); outline-offset:3px;}
 .field[hidden]{display:none;}
 .field label .opc{text-transform:none; letter-spacing:0; opacity:.75;}
+
+.price-per{font-family:'Inter',sans-serif; font-size:13px; font-weight:500; letter-spacing:0; color:var(--on-cream-dim);}
 </style>
 </head>
 <body>
@@ -1429,6 +1431,7 @@ p{margin:0; text-wrap:pretty;}
         <button class="qchip" data-v="oriente" data-label="en el Oriente antioqueño">Oriente antioqueño</button>
         <button class="qchip" data-v="medellin" data-label="en Medellín y el Valle de Aburrá">Medellín y Valle de Aburrá</button>
         <button class="qchip" data-v="occidente" data-label="en el Occidente antioqueño">Occidente antioqueño</button>
+        <button class="qchip" data-v="caribe" data-label="en Cartagena y Barú">Cartagena y Barú</button>
       </div>
     </div>
 
@@ -2103,8 +2106,12 @@ p{margin:0; text-wrap:pretty;}
   }
   /* Propiedades que Zulu ya arrendó: se publican como muestra de lo que hacemos, sin precio ni venta/alquiler. */
   const esGestionada = p => p.operacion === 'gestionada';
-  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : formatoCOP(ultimoPrecio(p));
-  const precioDivHTML = p => `<div class="price${esGestionada(p) ? ' price-gest' : ''}">${precioTexto(p)}</div>`;
+  const esAlquiler = p => p.operacion === 'alquiler';
+  const periodoDe = p => (p.precio && p.precio.periodo) || '';
+  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : formatoCOP(ultimoPrecio(p)) + (periodoDe(p) ? ' por ' + periodoDe(p) : '');
+  const precioDivHTML = p => esGestionada(p)
+    ? '<div class="price price-gest">Arrendada por Zulu Real Estate</div>'
+    : `<div class="price">${formatoCOP(ultimoPrecio(p))}${periodoDe(p) ? `<small class="price-per"> / ${periodoDe(p)}</small>` : ''}</div>`;
 
   /* Zona ancha para el panel "Cuéntanos qué buscas" — deriva de la
      subregión/ubicación real, con Llanogrande como caso especial
@@ -2114,6 +2121,7 @@ p{margin:0; text-wrap:pretty;}
     const u = propiedad.ubicacion || {};
     const lugar = `${u.municipio || ''} ${u.vereda || ''} ${(u.parcelacion && u.parcelacion.nombre) || ''}`.toLowerCase();
     const sub = (u.subregion || '').toLowerCase();
+    if (/cartagena|bar[uú]|bol[ií]var/.test(lugar + ' ' + (u.departamento || '').toLowerCase())) return 'caribe';
     if (lugar.includes('llanogrande')) return 'llanogrande';
     if (sub.includes('oriente')) return 'oriente';
     if (sub.includes('occidente')) return 'occidente';
@@ -2126,6 +2134,7 @@ p{margin:0; text-wrap:pretty;}
   const ICO_BANO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a1 1 0 0 1 1-1Z"/><path d="M6 12V6a2 2 0 0 1 3.5-1.3"/><path d="M4 21h16"/></svg>';
   const ICO_CORAZON = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 7.9 2 4.5 5.4 4c2-.3 3.8.7 4.6 2.3.3.5.6 1.1.8 1.5.2.3.6.3.8 0 .2-.4.5-1 .8-1.5C13.2 4.7 15 3.7 17 4c3.4.5 5 3.9 3.4 7.2-2.5 4.7-10 9.3-10 9.3Z"/></svg>';
 
+  const ICO_PERSONAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.6.2 4.5 2.2 4.5 4.8"/></svg>';
   const ICO_CARRO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M3 13l2-6h14l2 6v4H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>';
   function metaHTML(propiedad) {
     if (propiedad.tipo === 'oficina') {
@@ -2138,7 +2147,10 @@ p{margin:0; text-wrap:pretty;}
     }
     const info = TIPO_INFO[propiedad.tipo];
     const banos = propiedad.banos ? `<span>${ICO_BANO}${propiedad.banos}</span>` : '';
-    return `<span>${ICO_CAMA}${propiedad.habitaciones}</span>${banos}<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>`;
+    const hab = propiedad.habitaciones ? `<span>${ICO_CAMA}${propiedad.habitaciones}</span>` : '';
+    const cap = propiedad.capacidad ? `<span title="Capacidad para ${propiedad.capacidad} personas">${ICO_PERSONAS}${propiedad.capacidad}</span>` : '';
+    const area = propiedad.area_construida ? `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>` : '';
+    return hab + banos + cap + area;
   }
 
   /* Precio por m² — solo tiene sentido comparativo en lotes (sobre el
@@ -2220,16 +2232,16 @@ p{margin:0; text-wrap:pretty;}
     const proximamente = propiedad.estado === 'proximamente';
     const sello = proximamente
       ? '<div class="tag tag-proximamente">Próximamente</div>'
-      : (esGestionada(propiedad) ? '' : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : ''));
+      : (esGestionada(propiedad) ? '' : (esAlquiler(propiedad) ? '<div class="tag tag-verified">Alquiler</div>' : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '')));
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : 'Quiero saber más'}${FLECHA}</a>`;
+      : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
         <button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
-          <div class="tag">${info.etiqueta}</div>
+          <div class="tag">${propiedad.subtipo || info.etiqueta}</div>
           ${propiedad.media && propiedad.media.clip ? '<span class="card-reco">Recorrido</span>' : ''}
           ${sello}
           <button type="button" class="fav-btn${esFavorita ? ' is-fav' : ''}" aria-label="Guardar en favoritos" aria-pressed="${esFavorita}">${ICO_CORAZON}</button>
@@ -2260,6 +2272,9 @@ p{margin:0; text-wrap:pretty;}
     if (propiedad.pisos) items.push(['Niveles', String(propiedad.pisos)]);
     if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
     if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
+    if (propiedad.capacidad) items.push(['Capacidad', propiedad.capacidad + ' personas']);
+    if (propiedad.condominio) items.push(['Condominio', propiedad.unidad_cerrada ? 'Unidad cerrada' : propiedad.condominio]);
+    if (propiedad.llegada) items.push(['Cómo llegar', propiedad.llegada]);
     if (propiedad.cocina) items.push(['Cocina', propiedad.cocina]);
     if (propiedad.utiles) items.push(['Cuartos útiles', String(propiedad.utiles)]);
     if (propiedad.ascensor) items.push(['Ascensor', 'Sí']);
@@ -2338,7 +2353,7 @@ p{margin:0; text-wrap:pretty;}
     const proximamente = propiedad.estado === 'proximamente';
     const cta = proximamente
       ? `<span class="more" aria-disabled="true" id="ficha-contacto">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more" id="ficha-contacto"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero arrendar la mía' : 'Quiero saber más'}${FLECHA}</a>`;
+      : `<a href="#contacto" class="more" id="ficha-contacto"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero arrendar la mía' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
     const aviso = proximamente
       ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
       : (esGestionada(propiedad)
@@ -2364,6 +2379,7 @@ p{margin:0; text-wrap:pretty;}
   /* --- Panel "Cuéntanos qué buscas" ---------------------------------- */
   const intake = { tipo: new Set(), presupuesto: 'todos', zona: 'todas' };
   let intencionActiva = 'comprar';
+  let intencionElegida = false;
   const EMPTY_DEFAULT_HTML = empty.innerHTML;
   let categoriaActiva = 'Todas';
 
@@ -2427,10 +2443,10 @@ p{margin:0; text-wrap:pretty;}
       if (on && intake.tipo.size > 0) on = intake.tipo.has(card.dataset.tipo);
       // "Hasta $X": acumulativo, no una banda cerrada — quien pone un
       // techo alto también quiere ver lo más económico que le sirve.
-      if (on && intake.presupuesto !== 'todos') on = card.dataset.op !== 'gestionada' && (+card.dataset.precio) <= Number(intake.presupuesto);
+      if (on && intake.presupuesto !== 'todos') on = card.dataset.op === 'alquiler' ? (intencionElegida && intencionActiva === 'alquilar') : (+card.dataset.precio) <= Number(intake.presupuesto);
       if (on) on = zonaCoincide(card.dataset.zona, intake.zona);
       // Comprar e Invertir = propiedades en venta; Alquilar = en alquiler
-      if (on) on = card.dataset.op === 'gestionada' ? intencionActiva !== 'alquilar' : card.dataset.op === (intencionActiva === 'alquilar' ? 'alquiler' : 'venta');
+      if (on && intencionElegida) on = card.dataset.op === (intencionActiva === 'alquilar' ? 'alquiler' : 'venta');
       card.hidden = !on;
       if (on) mostradas++;
     });
@@ -2462,7 +2478,7 @@ p{margin:0; text-wrap:pretty;}
         } else {
           grupo.querySelectorAll('.qchip').forEach(b => b.classList.remove('is-active'));
           boton.classList.add('is-active');
-          if (nombre === 'intencion') intencionActiva = v;
+          if (nombre === 'intencion') { intencionActiva = v; intencionElegida = true; }
           else intake[nombre] = v;
         }
         boton.classList.remove('pop');
@@ -2488,7 +2504,7 @@ p{margin:0; text-wrap:pretty;}
     intake.tipo.clear();
     intake.presupuesto = 'todos';
     intake.zona = 'todas';
-    intencionActiva = 'comprar';
+    intencionActiva = 'comprar'; intencionElegida = false;
     document.querySelectorAll('.q-chips[data-group] .qchip').forEach(b => b.classList.remove('is-active'));
     document.querySelector('.q-chips[data-group="intencion"] [data-v="comprar"]')?.classList.add('is-active');
     document.querySelector('.q-chips[data-group="presupuesto"] [data-v="todos"]')?.classList.add('is-active');
@@ -2596,7 +2612,7 @@ p{margin:0; text-wrap:pretty;}
     favBarCount.textContent = favoritos.size;
     favBar.classList.toggle('is-visible', favoritos.size > 0);
     const elegidas = propiedadesCargadas.filter(p => favoritos.has(p.id));
-    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + formatoCOP(ultimoPrecio(p))}`).join('\n');
+    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + precioTexto(p)}`).join('\n');
     const msg = `Hola, me interesan estas propiedades de Zulu:\n${lineas}\n¿Me cuentan más?`;
     favBarWa.href = `https://wa.me/573107311282?text=${encodeURIComponent(msg)}`;
   }
@@ -3181,9 +3197,10 @@ p{margin:0; text-wrap:pretty;}
       pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, c: exacto ? [co.lng, co.lat] : m.c, o: m.o });
     });
     LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n || q.sec === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
-    if (pub.length) {
-      document.getElementById('mpN').textContent = pub.length;
-      document.getElementById('mpS').innerHTML = (pub.length === 1 ? 'propiedad' : 'propiedades') + (subs.size ? ',<br>' + subs.size + (subs.size === 1 ? ' subregión' : ' subregiones') : '');
+    const conPunto = pub.filter(p => MUN[(p.ubicacion || {}).municipio]);
+    if (conPunto.length) {
+      document.getElementById('mpN').textContent = conPunto.length;
+      document.getElementById('mpS').innerHTML = (conPunto.length === 1 ? 'propiedad' : 'propiedades') + (subs.size ? ',<br>' + subs.size + (subs.size === 1 ? ' subregión' : ' subregiones') : '');
     }
     montar(); ready = true; dibujar(0, 0); requestAnimationFrame(bucle);
   });
