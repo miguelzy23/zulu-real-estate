@@ -533,14 +533,9 @@
     },
     "precio": {
       "moneda": "COP",
-      "periodo": "mes",
-      "precio_historico": [
-        {
-          "fecha": "2026-10-22",
-          "valor": 12000000,
-          "motivo": "Canon mensual de alquiler informado por el propietario."
-        }
-      ],
+      "periodo": "",
+      "consultar": true,
+      "precio_historico": [],
       "publicable": true,
       "negociable": null
     },
