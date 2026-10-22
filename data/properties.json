@@ -500,5 +500,65 @@
     },
     "fecha_visita": "2026-10-07",
     "fecha_creacion": "2026-10-21"
+  },
+  {
+    "id": "ZUL-2026-007",
+    "slug": "la-clarita",
+    "tipo": "casa",
+    "subtipo": "Casa campestre",
+    "operacion": "alquiler",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "La Clarita — Rionegro",
+    "descripcion_corta": "Casa de dos pisos con corredor y zona verde, en un lote cercado con portón de entrada y parqueadero.",
+    "filas_extra": [
+      [
+        "Niveles",
+        "2"
+      ],
+      [
+        "Lote",
+        "Cercado, con portón de entrada"
+      ]
+    ],
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "Rionegro",
+      "sector": "",
+      "subregion": "Oriente Antioqueño",
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "precio": {
+      "moneda": "COP",
+      "periodo": "mes",
+      "precio_historico": [
+        {
+          "fecha": "2026-10-22",
+          "valor": 12000000,
+          "motivo": "Canon mensual de alquiler informado por el propietario."
+        }
+      ],
+      "publicable": true,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 3,
+      "fotos_terrestres": 1,
+      "plano_loteo": false,
+      "foto_principal": "assets/la-clarita/lc-01.jpg",
+      "clip": "assets/la-clarita/recorrido-vuelta.mp4",
+      "fotos": [
+        "assets/la-clarita/lc-01.jpg",
+        "assets/la-clarita/lc-02.jpg",
+        "assets/la-clarita/lc-03.jpg",
+        "assets/la-clarita/lc-04.jpg"
+      ]
+    },
+    "fecha_visita": "2026-10-03",
+    "fecha_creacion": "2026-10-22"
   }
 ]

@@ -2127,10 +2127,11 @@ p{margin:0; text-wrap:pretty;}
   const esGestionada = p => p.operacion === 'gestionada';
   const esAlquiler = p => p.operacion === 'alquiler';
   const periodoDe = p => (p.precio && p.precio.periodo) || '';
-  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : formatoCOP(ultimoPrecio(p)) + (periodoDe(p) ? ' por ' + periodoDe(p) : '');
+  const aConsultar = p => !!(p.precio && p.precio.consultar);
+  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : (aConsultar(p) ? 'Precio a consultar' : formatoCOP(ultimoPrecio(p)) + (periodoDe(p) ? ' por ' + periodoDe(p) : ''));
   const precioDivHTML = p => esGestionada(p)
     ? '<div class="price price-gest">Arrendada por Zulu Real Estate</div>'
-    : `<div class="price">${formatoCOP(ultimoPrecio(p))}${periodoDe(p) ? `<small class="price-per"> / ${periodoDe(p)}</small>` : ''}</div>`;
+    : (aConsultar(p) ? '<div class="price price-gest">Precio a consultar</div>' : `<div class="price">${formatoCOP(ultimoPrecio(p))}${periodoDe(p) ? `<small class="price-per"> / ${periodoDe(p)}</small>` : ''}</div>`);
 
   /* Zona ancha para el panel "Cuéntanos qué buscas" — deriva de la
      subregión/ubicación real, con Llanogrande como caso especial
@@ -2291,6 +2292,7 @@ p{margin:0; text-wrap:pretty;}
     if (propiedad.pisos) items.push(['Niveles', String(propiedad.pisos)]);
     if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
     if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
+    (propiedad.filas_extra || []).forEach(f => items.push(f));
     if (propiedad.capacidad) items.push(['Capacidad', propiedad.capacidad + ' personas']);
     if (propiedad.condominio) items.push(['Condominio', propiedad.unidad_cerrada ? 'Unidad cerrada' : propiedad.condominio]);
     if (propiedad.llegada) items.push(['Cómo llegar', propiedad.llegada]);
@@ -3078,8 +3080,8 @@ p{margin:0; text-wrap:pretty;}
         const rb = caja(r, r.o);
         if (choca(b, rb)) c += 1000 + area(b, rb);
         if (r.x > b.x - 6 && r.x < b.x + b.w + 6 && r.y > b.y - 6 && r.y < b.y + b.h + 6) c += 500;
-        if (!r.p.ref && trazo(r, r.o).some(t => dentro(t, b, 3))) c += 800;
-        if (mio.some(t => dentro(t, rb, 3))) c += 800;
+        if (!r.p.ref && trazo(r, r.o).some(t => dentro(t, b, 10))) c += 800;
+        if (mio.some(t => dentro(t, rb, 10))) c += 800;
       });
       return c;
     };
