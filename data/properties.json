@@ -555,5 +555,54 @@
     },
     "fecha_visita": "2026-10-03",
     "fecha_creacion": "2026-10-22"
+  },
+  {
+    "id": "ZUL-2026-008",
+    "slug": "la-ponderosa",
+    "tipo": "casa",
+    "subtipo": "Casa campestre",
+    "operacion": "alquiler",
+    "estado": "publicado",
+    "verificado": true,
+    "titulo": "La Ponderosa — Rionegro",
+    "descripcion_corta": "Casa campestre de muros blancos y techo de teja, con corredor, árboles y espacio de sobra para parquear.",
+    "ubicacion": {
+      "departamento": "Antioquia",
+      "municipio": "Rionegro",
+      "sector": "Vía a La Ceja",
+      "subregion": "Oriente Antioqueño",
+      "coordenadas": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "precio": {
+      "moneda": "COP",
+      "periodo": "mes",
+      "precio_historico": [
+        {
+          "fecha": "2026-10-22",
+          "valor": 12000000,
+          "motivo": "Canon mensual de alquiler informado por el propietario."
+        }
+      ],
+      "publicable": true,
+      "negociable": null
+    },
+    "media": {
+      "video_principal": null,
+      "fotos_dron": 0,
+      "fotos_terrestres": 4,
+      "plano_loteo": false,
+      "foto_principal": "assets/la-ponderosa/po-01.jpg",
+      "fotos": [
+        "assets/la-ponderosa/po-01.jpg",
+        "assets/la-ponderosa/po-02.jpg",
+        "assets/la-ponderosa/po-03.jpg",
+        "assets/la-ponderosa/po-04.jpg"
+      ]
+    },
+    "fecha_visita": "2026-10-06",
+    "fecha_creacion": "2026-10-22"
   }
 ]

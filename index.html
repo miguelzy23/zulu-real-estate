@@ -3070,13 +3070,23 @@ p{margin:0; text-wrap:pretty;}
     const area = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
     const trazo = (q, o) => Array.from({ length: 9 }, (_, k) => ({ x: q.x + (o[0] - 4) * (k + 1) / 10, y: q.y + o[1] * (k + 1) / 10 }));
     const dentro = (t, b, m) => t.x > b.x - m && t.x < b.x + b.w + m && t.y > b.y - m && t.y < b.y + b.h + m;
+    const seg = (q, o) => [q.x, q.y, q.x + o[0] - 4, q.y + o[1]];
+    const ccw = (ax, ay, bx, by, cx, cy) => (cy - ay) * (bx - ax) > (by - ay) * (cx - ax);
+    const cruzan = (s, t) => ccw(s[0], s[1], t[0], t[1], t[2], t[3]) !== ccw(s[2], s[3], t[0], t[1], t[2], t[3]) && ccw(s[0], s[1], s[2], s[3], t[0], t[1]) !== ccw(s[0], s[1], s[2], s[3], t[2], t[3]);
+    const cercaDe = (s, x, y, m) => { const dx = s[2] - s[0], dy = s[3] - s[1], t = clamp(((x - s[0]) * dx + (y - s[1]) * dy) / (dx * dx + dy * dy || 1)); return Math.hypot(s[0] + t * dx - x, s[1] + t * dy - y) < m; };
     const costo = (q, o) => {
       const b = caja(q, o);
       if (b.x < 8 || b.x + b.w > W - 8 || b.y < 8 || b.y + b.h > H - 8) return 1e9;
+      if (movil && b.y + b.h > H * .6) return 1e9; // en celular el texto de la sección ocupa el tercio de abajo
       let c = 0;
       const mio = q.p.ref ? [] : trazo(q, o);
+      const smio = q.p.ref ? null : seg(q, o);
       info.forEach(r => {
         if (r === q) return;
+        if (smio) {
+          if (!r.p.ref && cruzan(smio, seg(r, r.o))) c += 900;
+          if (cercaDe(smio, r.x, r.y, 7)) c += 600;
+        }
         const rb = caja(r, r.o);
         if (choca(b, rb)) c += 1000 + area(b, rb);
         if (r.x > b.x - 6 && r.x < b.x + b.w + 6 && r.y > b.y - 6 && r.y < b.y + b.h + 6) c += 500;
@@ -3085,13 +3095,15 @@ p{margin:0; text-wrap:pretty;}
       });
       return c;
     };
-    const orden = [...info.filter(q => !q.p.ref), ...info.filter(q => q.p.ref)];
+    const base = [...info.filter(q => !q.p.ref), ...info.filter(q => q.p.ref)];
+    const resolver = orden => {
+    info.forEach(q => { q.o = q.p.o0; });
     for (let pasada = 0; pasada < 5; pasada++) {
       let cambio = false;
       orden.forEach(q => {
         const cand = q.p.ref
           ? [q.p.o0, [12, -2], [-12, -2], [12, 16], [-12, 16], [14, -16], [-14, -16], [26, 4], [-26, 4], [12, 32], [-12, 32], [28, -30], [-28, -30], [40, 18], [-40, 18], [40, -14], [-40, -14], [0, 28], [0, -30]]
-          : [q.p.o0, [44, -34], [44, 22], [-44, -34], [-44, 22], [44, -62], [44, 50], [-44, -62], [-44, 50], [70, -12], [-70, -12], [30, -44], [-30, -44], [30, 60], [-30, 60], [30, -74], [-30, -74], [80, -30], [-80, -30], [80, 20], [-80, 20]];
+          : [q.p.o0, [44, -34], [44, 22], [-44, -34], [-44, 22], [44, -62], [44, 50], [-44, -62], [-44, 50], [70, -12], [-70, -12], [30, -44], [-30, -44], [30, 60], [-30, 60], [30, -74], [-30, -74], [80, -30], [-80, -30], [80, 20], [-80, 20], [44, -100], [-44, -100], [44, 90], [-44, 90], [0, -120], [0, 110], [60, -130], [-60, -130], [60, 120], [-60, 120], [24, -160], [-24, -160], [24, 150], [-24, 150]];
         let mejor = q.o, peor = costo(q, q.o);
         for (const o of cand) {
           if (peor === 0) break;
@@ -3102,6 +3114,17 @@ p{margin:0; text-wrap:pretty;}
       });
       if (!cambio) break;
     }
+      return info.reduce((s, q) => s + costo(q, q.o), 0);
+    };
+    // Varios órdenes de acomodo (determinísticos); se queda el de menor costo total.
+    let semilla = 7, mejorTotal = Infinity, mejorOs = null;
+    for (let ensayo = 0; ensayo < 40 && mejorTotal > 0; ensayo++) {
+      const orden = base.slice();
+      if (ensayo) for (let i = orden.length - 1; i > 0; i--) { semilla = (semilla * 1103515245 + 12345) % 2147483648; const j = semilla % (i + 1); [orden[i], orden[j]] = [orden[j], orden[i]]; }
+      const t = resolver(orden);
+      if (t < mejorTotal) { mejorTotal = t; mejorOs = info.map(q => q.o); }
+    }
+    info.forEach((q, i) => { q.o = mejorOs[i]; });
     info.forEach(q => { q.p.o = q.o; });
   }
   function pintar() {
@@ -3223,7 +3246,9 @@ p{margin:0; text-wrap:pretty;}
       const u = p.ubicacion || {}, m = MUN[u.municipio]; if (!m) return;
       if (u.subregion) subs.add(u.subregion);
       const co = u.coordenadas, exacto = !!(co && co.lat != null && co.lng != null);
-      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, c: exacto ? [co.lng, co.lat] : m.c, o: m.o });
+      // Sin coordenadas exactas, varias propiedades de un mismo municipio caerían en el mismo punto: se separan un poco (y la etiqueta cambia de lado).
+      const k = exacto ? 0 : pines.filter(q => q.mun === u.municipio && !q.exacto).length;
+      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, c: exacto ? [co.lng, co.lat] : (k ? [m.c[0] - .014 * k, m.c[1] - .032 * k] : m.c), o: k ? [m.o[0], -m.o[1] + 12 * k] : m.o });
     });
     LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n || q.sec === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
     const conPunto = pub.filter(p => MUN[(p.ubicacion || {}).municipio]);
