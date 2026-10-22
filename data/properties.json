@@ -594,12 +594,12 @@
       "fotos_dron": 0,
       "fotos_terrestres": 4,
       "plano_loteo": false,
-      "foto_principal": "assets/la-ponderosa/po-01.jpg",
+      "foto_principal": "assets/la-ponderosa/po-05.jpg",
       "fotos": [
-        "assets/la-ponderosa/po-01.jpg",
-        "assets/la-ponderosa/po-02.jpg",
-        "assets/la-ponderosa/po-03.jpg",
-        "assets/la-ponderosa/po-04.jpg"
+        "assets/la-ponderosa/po-05.jpg",
+        "assets/la-ponderosa/po-06.jpg",
+        "assets/la-ponderosa/po-07.jpg",
+        "assets/la-ponderosa/po-08.jpg"
       ]
     },
     "fecha_visita": "2026-10-06",
