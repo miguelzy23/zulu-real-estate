@@ -1219,6 +1219,25 @@ p{margin:0; text-wrap:pretty;}
 .field label .opc{text-transform:none; letter-spacing:0; opacity:.75;}
 
 .price-per{font-family:'Inter',sans-serif; font-size:13px; font-weight:500; letter-spacing:0; color:var(--on-cream-dim);}
+
+/* ---- Panel compacto: presupuesto y zona como menús en una fila ---- */
+.intent canvas.particles{opacity:.45;}
+.q-selects{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 20px; margin-top:32px; max-width:640px;}
+.q-sel .q-label{margin-bottom:10px;}
+.q-opc{font-weight:400; color:var(--on-ink-dim);}
+.q-sel select{
+  width:100%; min-height:46px; padding:0 44px 0 20px; border:1px solid var(--rule-dark); border-radius:99px;
+  background-color:transparent; color:var(--cream); font:500 14.5px 'Inter',sans-serif; cursor:pointer;
+  -webkit-appearance:none; appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--on-ink-dim) 50%),linear-gradient(135deg,var(--on-ink-dim) 50%,transparent 50%);
+  background-position:calc(100% - 22px) 20px, calc(100% - 17px) 20px; background-size:5px 5px,5px 5px; background-repeat:no-repeat;
+  transition:border-color .2s var(--ease-out);
+}
+.q-sel select:hover{border-color:var(--cream);}
+.q-sel select:focus-visible{outline:2px solid var(--cream); outline-offset:3px;}
+.q-sel select.is-set{border-color:var(--cream); background-color:rgba(250,238,218,.06);}
+.q-sel select option{color:#000; background:var(--cream);}
+@media (max-width:600px){.q-selects{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -1405,33 +1424,33 @@ p{margin:0; text-wrap:pretty;}
         <button class="qchip" data-v="lote" data-label="un lote">Lote</button>
         <button class="qchip" data-v="casa" data-label="una casa">Casa</button>
         <button class="qchip" data-v="apartamento" data-label="un apartamento">Apartamento</button>
-        <button class="qchip" data-v="local" data-label="un local">Local</button>
         <button class="qchip" data-v="oficina" data-label="una oficina">Oficina</button>
-        <button class="qchip" data-v="bodega" data-label="una bodega">Bodega</button>
+        <button class="qchip" data-v="otro" data-label="otro tipo de propiedad">Otro</button>
       </div>
     </div>
 
-    <div class="q-block reveal">
-      <label class="q-label">¿Cuál es tu presupuesto?</label>
-      <div class="q-chips" data-group="presupuesto">
-        <button class="qchip" data-v="400" data-label="hasta $400M">Hasta $400M</button>
-        <button class="qchip" data-v="800" data-label="hasta $800M">Hasta $800M</button>
-        <button class="qchip" data-v="1500" data-label="hasta $1.500M">Hasta $1.500M</button>
-        <button class="qchip" data-v="2500" data-label="hasta $2.500M">Hasta $2.500M</button>
-        <button class="qchip" data-v="4000" data-label="hasta $4.000M">Hasta $4.000M</button>
-        <button class="qchip is-active" data-v="todos" data-label="">Sin límite</button>
+    <div class="q-selects reveal">
+      <div class="q-sel">
+        <label class="q-label" for="selPresupuesto">Presupuesto</label>
+        <select id="selPresupuesto" data-group="presupuesto" data-def="todos">
+          <option value="todos" data-v="todos" data-label="" selected>Sin límite</option>
+          <option value="400" data-v="400" data-label="hasta $400M">Hasta $400M</option>
+          <option value="800" data-v="800" data-label="hasta $800M">Hasta $800M</option>
+          <option value="1500" data-v="1500" data-label="hasta $1.500M">Hasta $1.500M</option>
+          <option value="2500" data-v="2500" data-label="hasta $2.500M">Hasta $2.500M</option>
+          <option value="4000" data-v="4000" data-label="hasta $4.000M">Hasta $4.000M</option>
+        </select>
       </div>
-    </div>
-
-    <div class="zona-block reveal">
-      <div class="zona-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Zona de interés (opcional)</div>
-      <div class="q-chips zona-chips" data-group="zona">
-        <button class="qchip is-active" data-v="todas" data-label="">Todas</button>
-        <button class="qchip is-highlight" data-v="llanogrande" data-label="en Llanogrande">Llanogrande</button>
-        <button class="qchip" data-v="oriente" data-label="en el Oriente antioqueño">Oriente antioqueño</button>
-        <button class="qchip" data-v="medellin" data-label="en Medellín y el Valle de Aburrá">Medellín y Valle de Aburrá</button>
-        <button class="qchip" data-v="occidente" data-label="en el Occidente antioqueño">Occidente antioqueño</button>
-        <button class="qchip" data-v="caribe" data-label="en Cartagena y Barú">Cartagena y Barú</button>
+      <div class="q-sel">
+        <label class="q-label" for="selZona">Zona <span class="q-opc">(opcional)</span></label>
+        <select id="selZona" data-group="zona" data-def="todas">
+          <option value="todas" data-v="todas" data-label="" selected>Todas</option>
+          <option value="llanogrande" data-v="llanogrande" data-label="en Llanogrande">Llanogrande</option>
+          <option value="oriente" data-v="oriente" data-label="en el Oriente antioqueño">Oriente antioqueño</option>
+          <option value="medellin" data-v="medellin" data-label="en Medellín y el Valle de Aburrá">Medellín y Valle de Aburrá</option>
+          <option value="occidente" data-v="occidente" data-label="en el Occidente antioqueño">Occidente antioqueño</option>
+          <option value="caribe" data-v="caribe" data-label="en Cartagena y Barú">Cartagena y Barú</option>
+        </select>
       </div>
     </div>
 
@@ -2389,7 +2408,7 @@ p{margin:0; text-wrap:pretty;}
     if (!fraseEl) return;
     const intencionLbl = document.querySelector(`[data-group="intencion"] [data-v="${intencionActiva}"]`)?.dataset.label || 'comprar';
     const tipoLbls = [...intake.tipo].map(v => document.querySelector(`[data-group="tipo"] [data-v="${v}"]`)?.dataset.label).filter(Boolean);
-    const tipoTxt = tipoLbls.length ? tipoLbls.join(' o ') : 'algo que encaje contigo';
+    const tipoTxt = tipoLbls.length ? tipoLbls.join(' o ') : 'una propiedad';
     const presLbl = intake.presupuesto !== 'todos' ? ', ' + document.querySelector(`[data-group="presupuesto"] [data-v="${intake.presupuesto}"]`).dataset.label : '';
     const zonaLbl = intake.zona !== 'todas' ? ' ' + document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).dataset.label : '';
     fraseEl.innerHTML = `Buscas <b>${intencionLbl}</b> ${tipoTxt}${zonaLbl}${presLbl}.`;
@@ -2489,6 +2508,13 @@ p{margin:0; text-wrap:pretty;}
       });
     });
   });
+  document.querySelectorAll('select[data-group]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      intake[sel.dataset.group] = sel.value;
+      sel.classList.toggle('is-set', sel.value !== sel.dataset.def);
+      actualizarFrase();
+    });
+  });
   actualizarFrase();
 
   const btnVerPropiedades = document.getElementById('btnVerPropiedades');
@@ -2504,6 +2530,7 @@ p{margin:0; text-wrap:pretty;}
     intake.tipo.clear();
     intake.presupuesto = 'todos';
     intake.zona = 'todas';
+    document.querySelectorAll('select[data-group]').forEach(s => { s.value = s.dataset.def; s.classList.remove('is-set'); });
     intencionActiva = 'comprar'; intencionElegida = false;
     document.querySelectorAll('.q-chips[data-group] .qchip').forEach(b => b.classList.remove('is-active'));
     document.querySelector('.q-chips[data-group="intencion"] [data-v="comprar"]')?.classList.add('is-active');
