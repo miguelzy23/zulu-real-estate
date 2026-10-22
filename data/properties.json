@@ -484,8 +484,8 @@
       "fotos_terrestres": 1,
       "plano_loteo": false,
       "foto_principal": "assets/baru/vb-01.jpg",
-      "clip": "assets/baru/recorrido-clip.mp4",
-      "video_archivo": "assets/baru/recorrido-completo.mp4",
+      "clip": "assets/baru/recorrido-clip-hd.mp4",
+      "video_archivo": "assets/baru/recorrido-completo-hd.mp4",
       "fotos": [
         "assets/baru/vb-01.jpg",
         "assets/baru/vb-02.jpg",
