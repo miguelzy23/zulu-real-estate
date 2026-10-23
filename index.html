@@ -846,6 +846,8 @@ p{margin:0; text-wrap:pretty;}
 .field select option{color:#000; background:var(--cream);}
 .field input::placeholder,.field textarea::placeholder{color:#6E6555;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cream); outline:none;}
+.field input[aria-invalid="true"]{border-color:#e8a07a;}
+.field-error{margin:8px 0 0; font-size:13px; line-height:1.4; color:#e8a07a;}
 .field-row{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
 
 .btn{
@@ -1183,6 +1185,12 @@ p{margin:0; text-wrap:pretty;}
 .reco-play:hover i{transform:scale(1.08);}
 .reco-play:active i{transform:scale(.96);}
 .reco-play:focus-visible{outline:2px solid #d8ad6b; outline-offset:6px; border-radius:6px;}
+.reco-pausa{position:absolute; right:14px; top:14px; z-index:2; width:44px; height:44px; padding:0; border-radius:50%; border:1px solid rgba(250,238,218,.55); background:rgba(10,10,10,.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; cursor:pointer; display:grid; place-items:center; transition:background .2s var(--ease-out), transform .16s var(--ease-out);}
+.reco-pausa::before{content:""; width:12px; height:14px; border-left:4px solid currentColor; border-right:4px solid currentColor; box-sizing:border-box;}
+.reco-pausa.is-pausado::before{width:0; height:0; border-left:13px solid currentColor; border-right:0; border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px;}
+.reco-pausa:hover{background:rgba(10,10,10,.8);}
+.reco-pausa:active{transform:scale(.94);}
+.reco-pausa:focus-visible{outline:2px solid #d8ad6b; outline-offset:4px;}
 .card-reco{position:absolute; z-index:3; left:12px; bottom:12px; display:inline-flex; align-items:center; gap:7px; padding:6px 11px 6px 9px; border-radius:99px; background:rgba(10,10,10,.6); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; pointer-events:none;}
 .card-reco::before{content:""; border-left:7px solid #FAEEDA; border-top:4.5px solid transparent; border-bottom:4.5px solid transparent;}
 @media (prefers-reduced-motion:reduce){.reco-tag::before{animation:none;}}
@@ -1573,10 +1581,12 @@ p{margin:0; text-wrap:pretty;}
         <div class="field">
           <label for="nombre">Nombre</label>
           <input type="text" id="nombre" name="nombre" autocomplete="name" required>
+          <p class="field-error" id="nombreError" role="alert" hidden>Escribe tu nombre para saber cómo llamarte.</p>
         </div>
         <div class="field">
           <label for="contacto-info">WhatsApp o correo</label>
           <input type="text" id="contacto-info" name="contacto" autocomplete="email" required>
+          <p class="field-error" id="contactoError" role="alert" hidden>Déjanos un WhatsApp o un correo para poder responderte.</p>
         </div>
       </div>
       <div class="field" id="f-accion" hidden>
@@ -2351,13 +2361,16 @@ p{margin:0; text-wrap:pretty;}
     const yt = url && url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
     if (!clip && !yt && !m.video_archivo) return videoEmbedHTML(url);
     const foto = m.foto_principal || '';
+    // Con "reducir movimiento" el clip no arranca solo; en todo caso se puede pausar o reanudar.
+    const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const vista = clip
-      ? `<video class="reco-clip" src="${clip}" poster="${foto}" autoplay muted loop playsinline></video>`
+      ? `<video class="reco-clip" src="${clip}" poster="${foto}" ${quieto ? '' : 'autoplay '}muted loop playsinline></video>`
       : `<img class="reco-clip" src="${foto}" alt="">`;
     const boton = m.video_archivo
       ? `<button type="button" class="reco-play" data-mp4="${m.video_archivo}"><i></i>Ver el recorrido completo</button>`
       : (yt ? `<button type="button" class="reco-play" data-yt="${yt[1]}"><i></i>Ver el video completo</button>` : '');
-    return `<div class="ficha-reco" role="group" aria-label="Recorrido de la propiedad">${vista}<div class="reco-veil"></div><span class="reco-tag">Recorrido</span>${boton}</div>`;
+    const pausa = clip ? `<button type="button" class="reco-pausa${quieto ? ' is-pausado' : ''}" aria-label="${quieto ? 'Reproducir el video' : 'Pausar el video'}"></button>` : '';
+    return `<div class="ficha-reco" role="group" aria-label="Recorrido de la propiedad">${vista}<div class="reco-veil"></div><span class="reco-tag">Recorrido</span>${pausa}${boton}</div>`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('.reco-play'); if (!b) return;
@@ -2588,16 +2601,44 @@ p{margin:0; text-wrap:pretty;}
     lightboxImg.src = fotosGaleria[indiceGaleria];
     lightboxCounter.textContent = `${indiceGaleria + 1} / ${fotosGaleria.length}`;
   }
+  /* Mientras una ventana está abierta, el resto de la página queda inerte (teclado y lector de
+     pantalla no se escapan hacia el menú de atrás) y Tab da la vuelta dentro de la ventana. */
+  let inertesPuestos = [];
+  function aislarFondo(dialogo) {
+    inertesPuestos.forEach(el => { el.inert = false; });
+    inertesPuestos = [];
+    if (!dialogo) return;
+    [...document.body.children].forEach(el => {
+      if (el === dialogo || el.matches('script,style,link') || el.inert) return;
+      el.inert = true;
+      inertesPuestos.push(el);
+    });
+  }
+  function atraparTab(e, dialogo) {
+    const f = [...dialogo.querySelectorAll('a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),video[controls],[tabindex]:not([tabindex="-1"])')].filter(x => x.getClientRects().length);
+    if (!f.length) return;
+    const primero = f[0], ultimo = f[f.length - 1], activo = document.activeElement;
+    if (!dialogo.contains(activo)) { e.preventDefault(); primero.focus(); }
+    else if (e.shiftKey && activo === primero) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && activo === ultimo) { e.preventDefault(); primero.focus(); }
+  }
+  let focoGaleria = null;
   function abrirGaleria(fotos) {
     fotosGaleria = fotos;
     indiceGaleria = 0;
     mostrarFotoGaleria();
+    focoGaleria = document.activeElement;
     lightbox.hidden = false;
     document.body.style.overflow = 'hidden';
+    aislarFondo(lightbox);
+    document.getElementById('lightbox-close').focus({ preventScroll: true });
   }
   function cerrarGaleria() {
     lightbox.hidden = true;
-    document.body.style.overflow = '';
+    document.body.style.overflow = fichaBackdrop.hidden ? '' : 'hidden';
+    aislarFondo(fichaBackdrop.hidden ? null : fichaBackdrop);
+    if (focoGaleria && document.contains(focoGaleria)) focoGaleria.focus({ preventScroll: true });
+    focoGaleria = null;
   }
   function fotoAnterior() {
     indiceGaleria = (indiceGaleria - 1 + fotosGaleria.length) % fotosGaleria.length;
@@ -2665,6 +2706,7 @@ p{margin:0; text-wrap:pretty;}
     fichaContenido.innerHTML = fichaHTML(propiedad);
     fichaBackdrop.hidden = false;
     document.body.style.overflow = 'hidden';
+    aislarFondo(fichaBackdrop);
     const cerrar = document.getElementById('ficha-close');
     if (cerrar) cerrar.focus({ preventScroll: true });
   }
@@ -2672,6 +2714,7 @@ p{margin:0; text-wrap:pretty;}
   function cerrarFicha() {
     fichaBackdrop.hidden = true;
     document.body.style.overflow = '';
+    aislarFondo(null);
     // Se vacía después del clic para no romper el enlace "Quiero saber más"; así el clip o el
     // video de YouTube dejan de reproducirse (antes seguía sonando oculto).
     setTimeout(() => { if (fichaBackdrop.hidden) fichaContenido.innerHTML = ''; }, 60);
@@ -2681,6 +2724,16 @@ p{margin:0; text-wrap:pretty;}
   document.getElementById('ficha-close').addEventListener('click', cerrarFicha);
   fichaBackdrop.addEventListener('click', e => { if (e.target === fichaBackdrop) cerrarFicha(); });
   fichaContenido.addEventListener('click', e => {
+    const pausa = e.target.closest('.reco-pausa');
+    if (pausa) {
+      const v = pausa.parentElement.querySelector('video.reco-clip');
+      if (v) {
+        if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else { v.pause(); }
+        pausa.classList.toggle('is-pausado', v.paused);
+        pausa.setAttribute('aria-label', v.paused ? 'Reproducir el video' : 'Pausar el video');
+      }
+      return;
+    }
     if (e.target.closest('#ficha-contacto')) { cerrarFicha(); return; }
     const botonFotos = e.target.closest('.tag-fotos');
     if (botonFotos) {
@@ -2690,6 +2743,11 @@ p{margin:0; text-wrap:pretty;}
   });
 
   addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      const abierto = !lightbox.hidden ? lightbox : (!fichaBackdrop.hidden ? fichaBackdrop : null);
+      if (abierto) atraparTab(e, abierto);
+      return;
+    }
     if (!lightbox.hidden) {
       if (e.key === 'Escape') cerrarGaleria();
       if (e.key === 'ArrowLeft') fotoAnterior();
@@ -2874,10 +2932,25 @@ p{margin:0; text-wrap:pretty;}
       document.getElementById('aceptoError').hidden = true;
     }
   });
+  [['nombre', 'nombreError'], ['contacto-info', 'contactoError']].forEach(([id, idError]) => {
+    document.getElementById(id).addEventListener('input', ev => {
+      if (!ev.target.value.trim()) return;
+      ev.target.setAttribute('aria-invalid', 'false');
+      ev.target.removeAttribute('aria-describedby');
+      document.getElementById(idError).hidden = true;
+    });
+  });
   form.addEventListener('submit', e => {
     e.preventDefault();
     const nombre = form.nombre.value.trim();
     const contacto = form.contacto.value.trim();
+    const marcarCampo = (campo, idError, falta) => {
+      campo.setAttribute('aria-invalid', String(falta));
+      if (falta) campo.setAttribute('aria-describedby', idError); else campo.removeAttribute('aria-describedby');
+      document.getElementById(idError).hidden = !falta;
+    };
+    marcarCampo(form.nombre, 'nombreError', !nombre);
+    marcarCampo(form.contacto, 'contactoError', !contacto);
     if (!nombre || !contacto) {
       (!nombre ? form.nombre : form.contacto).focus();
       return;
