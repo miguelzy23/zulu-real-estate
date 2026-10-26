@@ -3107,12 +3107,17 @@ main:focus{outline:none;}
   ];
   let B = { W: 0, H: 0, gx: 0, gy: 0, cell: 10, sdf: null, pts: [], proj: null };
   let cur = 0, tgt = 0, t0 = performance.now(), ready = false;
+  /* Rendimiento: el mapa solo se redibuja si cambió algo (el avance del scroll o la deriva lenta del relieve) y su
+     visibilidad se sabe con un IntersectionObserver, sin preguntar la posición en cada cuadro (eso forzaba un recálculo de
+     toda la página justo después de las olas del hero). */
+  let visible = false, sucio = true, forzar = true, ultimoCur = NaN, ultimoT = 0;
 
   function hash(i, j) { let h = Math.imul(i, 374761393) + Math.imul(j, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
   function vn(x, y) { const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy); return (hash(i, j) * (1 - u) + hash(i + 1, j) * u) * (1 - v) + (hash(i, j + 1) * (1 - u) + hash(i + 1, j + 1) * u) * v; }
   function fbm(x, y) { return (vn(x, y) * .55 + vn(x * 2.1 + 7, y * 2.1 + 3) * .3 + vn(x * 4.3 + 1, y * 4.3 + 9) * .15) - .5; }
 
   function montar() {
+    forzar = true; sucio = true;
     const dpr = Math.min(devicePixelRatio || 1, 2), W = innerWidth, H = innerHeight;
     cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const mob = W < 760 || H > W * 1.1, rx = mob ? W * .04 : W * .42, ry = mob ? H * .13 : H * .09, rw = mob ? W * .92 : W * .55, rh = mob ? H * .46 : H * .80;
@@ -3253,6 +3258,7 @@ main:focus{outline:none;}
   }
 
   const LV = []; for (let k = -6; k <= 13; k++) LV.push(k);
+  const SEGS = LV.map(() => []); // segmentos de cada curva de nivel, reutilizados en cada cuadro
   function dibujar(p, t) {
     const { W, H, gx, gy, cell, sdf, pts, dpr } = B, w = sstep(.2, .58, p), mob = W < 760 || H > W * 1.1;
     const zu = sstep(.80, .94, p), g = camara(zu), Zk = g.Zk, av = sstep(.46, .64, p), kv = 1 - zu * .95;
@@ -3267,20 +3273,29 @@ main:focus{outline:none;}
     }
     if (zu < .98) {
       const F = new Float32Array(gx * gy), dx = p * 2.6 + t * .015, dy = p * 1.1 + t * .006, k = .0075 * (mob ? 1.7 : 1);
+      // Con el mapa ya formado (w = 1) el ruido vale 0: no se calcula; antes de formarse (w = 0) no hace falta la forma.
       for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++) {
-        F[j * gx + i] = fbm(i * cell * k + dx, j * cell * k + dy) * 17 * (1 - w) + clamp(sdf[j * gx + i], -8, 16) * w;
+        F[j * gx + i] = (w < 1 ? fbm(i * cell * k + dx, j * cell * k + dy) * 17 * (1 - w) : 0) + (w > 0 ? clamp(sdf[j * gx + i], -8, 16) * w : 0);
       }
       cx.lineCap = 'round'; cx.lineJoin = 'round';
-      for (const L of LV) {
-        cx.beginPath();
-        for (let j = 0; j < gy - 1; j++) for (let i = 0; i < gx - 1; i++) {
-          const a = F[j * gx + i] - L, b = F[j * gx + i + 1] - L, c = F[(j + 1) * gx + i + 1] - L, d = F[(j + 1) * gx + i] - L;
+      // Una sola pasada por la cuadrícula: cada celda solo se revisa para los niveles que realmente la cruzan
+      // (antes se recorría toda la cuadrícula una vez por cada uno de los 20 niveles). El resultado es el mismo.
+      for (const s of SEGS) s.length = 0;
+      for (let j = 0; j < gy - 1; j++) for (let i = 0; i < gx - 1; i++) {
+        const v0 = F[j * gx + i], v1 = F[j * gx + i + 1], v2 = F[(j + 1) * gx + i + 1], v3 = F[(j + 1) * gx + i];
+        const k0 = Math.max(0, Math.ceil(Math.min(v0, v1, v2, v3)) + 6), k1 = Math.min(LV.length - 1, Math.ceil(Math.max(v0, v1, v2, v3)) - 1 + 6);
+        for (let k = k0; k <= k1; k++) {
+          const L = LV[k], s = SEGS[k], a = v0 - L, b = v1 - L, c = v2 - L, d = v3 - L;
           const m = (a > 0 ? 8 : 0) | (b > 0 ? 4 : 0) | (c > 0 ? 2 : 0) | (d > 0 ? 1 : 0); if (m === 0 || m === 15) continue;
-          const x = i * cell, y = j * cell, T = [x + cell * a / (a - b), y], R = [x + cell, y + cell * b / (b - c)], Bt = [x + cell * d / (d - c), y + cell], Lf = [x, y + cell * a / (a - d)];
-          const seg = (P, Q) => { cx.moveTo(P[0], P[1]); cx.lineTo(Q[0], Q[1]); };
-          switch (m) { case 1: case 14: seg(Lf, Bt); break; case 2: case 13: seg(Bt, R); break; case 3: case 12: seg(Lf, R); break; case 4: case 11: seg(T, R); break;
-            case 5: seg(T, Lf); seg(Bt, R); break; case 6: case 9: seg(T, Bt); break; case 7: case 8: seg(T, Lf); break; case 10: seg(T, R); seg(Lf, Bt); break; }
+          const x = i * cell, y = j * cell, tx = x + cell * a / (a - b), ry = y + cell * b / (b - c), bx = x + cell * d / (d - c), ly = y + cell * a / (a - d);
+          switch (m) { case 1: case 14: s.push(x, ly, bx, y + cell); break; case 2: case 13: s.push(bx, y + cell, x + cell, ry); break; case 3: case 12: s.push(x, ly, x + cell, ry); break; case 4: case 11: s.push(tx, y, x + cell, ry); break;
+            case 5: s.push(tx, y, x, ly, bx, y + cell, x + cell, ry); break; case 6: case 9: s.push(tx, y, bx, y + cell); break; case 7: case 8: s.push(tx, y, x, ly); break; case 10: s.push(tx, y, x + cell, ry, x, ly, bx, y + cell); break; }
         }
+      }
+      for (let k = 0; k < LV.length; k++) {
+        const L = LV[k], s = SEGS[k];
+        cx.beginPath();
+        for (let q = 0; q < s.length; q += 4) { cx.moveTo(s[q], s[q + 1]); cx.lineTo(s[q + 2], s[q + 3]); }
         const major = (L % 5 === 0), zero = L === 0;
         if (zero && w > .35) { cx.strokeStyle = 'rgba(216,173,107,' + ((.35 + .65 * w) * (1 - sstep(0, .05, zu))) + ')'; cx.lineWidth = (1.2 + 1.6 * w) / Zk; }
         else { const fade = 1 - Math.max(0, L - 4) / 14 * w; cx.strokeStyle = 'rgba(250,238,218,' + ((major ? .5 : .2) * fade * kv) + ')'; cx.lineWidth = (major ? 1.1 : .8) / Zk; }
@@ -3319,13 +3334,24 @@ main:focus{outline:none;}
     });
   }
 
-  function enVista() { const r = sec.getBoundingClientRect(); return r.bottom > -50 && r.top < innerHeight + 50; }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; sucio = true; }, { rootMargin: '50px 0px' }).observe(sec);
+  } else visible = true;
+  addEventListener('scroll', () => { sucio = true; }, { passive: true });
+  if ('ResizeObserver' in window) new ResizeObserver(() => { sucio = true; }).observe(document.body);
   function bucle(now) {
-    if (ready && enVista()) {
-      const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
-      tgt = clamp(-r.top / m);
-      cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
-      dibujar(cur, (now - t0) / 1000);
+    if (ready && visible) {
+      if (sucio || cur !== tgt) {
+        sucio = false;
+        const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
+        tgt = clamp(-r.top / m);
+        cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
+      }
+      const deriva = !reduce && sstep(.2, .58, cur) < 1;
+      if (forzar || cur !== ultimoCur || (deriva && now - ultimoT > 100)) {
+        forzar = false; ultimoCur = cur; ultimoT = now;
+        dibujar(cur, (now - t0) / 1000);
+      }
     }
     requestAnimationFrame(bucle);
   }
@@ -3375,8 +3401,10 @@ main:focus{outline:none;}
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const sstep = (a, b, x) => { x = clamp((x - a) / (b - a)); return x * x * (3 - 2 * x); };
   let A = { W: 0, H: 0, ax: 0, ay: 0, w0: 1, smax: 20 }, cur = 0, tgt = 0, listo = false;
+  let visible = false, sucio = true, forzar = true, ultimoCur = NaN; // ver el comentario de rendimiento del mapa
 
   function montar() {
+    forzar = true; sucio = true;
     const W = innerWidth, H = innerHeight;
     sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
     [mr, cr].forEach(e => { e.setAttribute('width', W); e.setAttribute('height', H); });
@@ -3408,13 +3436,20 @@ main:focus{outline:none;}
     vl.style.opacity = q; fin.style.opacity = q; fin.style.transform = `translateY(${(1 - q) * 24}px)`;
   }
 
-  function enVista() { const r = sec.getBoundingClientRect(); return r.bottom > -50 && r.top < innerHeight + 50; }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; sucio = true; }, { rootMargin: '50px 0px' }).observe(sec);
+  } else visible = true;
+  addEventListener('scroll', () => { sucio = true; }, { passive: true });
+  if ('ResizeObserver' in window) new ResizeObserver(() => { sucio = true; }).observe(document.body);
   function bucle() {
-    if (listo && enVista()) {
-      const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
-      tgt = m > 0 ? clamp(-r.top / m) : 1;
-      cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
-      dibujar(cur);
+    if (listo && visible) {
+      if (sucio || cur !== tgt) {
+        sucio = false;
+        const r = sec.getBoundingClientRect(), m = sec.offsetHeight - innerHeight;
+        tgt = m > 0 ? clamp(-r.top / m) : 1;
+        cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
+      }
+      if (forzar || cur !== ultimoCur) { forzar = false; ultimoCur = cur; dibujar(cur); }
     }
     requestAnimationFrame(bucle);
   }
