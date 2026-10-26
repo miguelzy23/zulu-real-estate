@@ -2299,7 +2299,9 @@ main:focus{outline:none;}
       : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
-        <button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>
+        ${propiedad.estado === 'publicado' && propiedad.slug
+          ? `<a href="/${propiedad.slug}" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></a>`
+          : `<button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>`}
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
           <div class="tag">${propiedad.subtipo || info.etiqueta}</div>
@@ -2730,10 +2732,25 @@ main:focus{outline:none;}
     actualizarBarraFavoritos();
   }
 
-  function abrirFicha(id) {
+  /* URL propia por propiedad: al abrir una ficha la dirección pasa a /<slug> (y "atrás" la cierra); al entrar directo a
+     /<slug> la ficha se abre sola. Las páginas /<slug> las genera scripts/paginas-lote.py. */
+  const tituloPagina = document.body.dataset.titulo || document.title;
+  let idFichaAbierta = null, entradaDirecta = false;
+  function idDesdeRuta() {
+    let slug = '';
+    try { slug = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, '').replace(/\.html$/, ''); } catch (err) { return null; }
+    const p = slug && propiedadesCargadas.find(x => x.slug === slug && x.estado === 'publicado');
+    return p ? p.id : null;
+  }
+  function abrirFicha(id, desdeHistorial) {
     const propiedad = propiedadesCargadas.find(p => p.id === id);
     if (!propiedad) return;
-    focoPrevio = document.activeElement;
+    if (desdeHistorial !== true && propiedad.estado === 'publicado' && propiedad.slug) {
+      try { history.pushState({ ficha: id }, '', '/' + propiedad.slug); } catch (err) {}
+    }
+    idFichaAbierta = id;
+    document.title = propiedad.titulo + ' | Zulu Real Estate';
+    if (fichaBackdrop.hidden) focoPrevio = document.activeElement;
     fichaContenido.innerHTML = fichaHTML(propiedad);
     fichaBackdrop.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -2742,10 +2759,23 @@ main:focus{outline:none;}
     if (cerrar) cerrar.focus({ preventScroll: true });
   }
   let focoPrevio = null;
-  function cerrarFicha() {
+  function cerrarFicha(desdeHistorial) {
+    if (desdeHistorial !== true) {
+      // Si la dirección la puso la propia ficha, se retrocede una entrada (popstate termina de cerrarla); si se entró
+      // directo a /<slug>, solo se vuelve a la portada.
+      if (history.state && history.state.ficha) { history.back(); return; }
+      if (location.pathname !== '/') { try { history.replaceState({}, '', '/'); } catch (err) {} }
+    }
+    idFichaAbierta = null;
+    document.title = tituloPagina;
     fichaBackdrop.hidden = true;
     document.body.style.overflow = '';
     aislarFondo(null);
+    if (entradaDirecta) {
+      entradaDirecta = false;
+      const lista = document.getElementById('propiedades');
+      if (lista) lista.scrollIntoView({ block: 'start' });
+    }
     // Se vacía después del clic para no romper el enlace "Quiero saber más"; así el clip o el
     // video de YouTube dejan de reproducirse (antes seguía sonando oculto).
     setTimeout(() => { if (fichaBackdrop.hidden) fichaContenido.innerHTML = ''; }, 60);
@@ -2765,12 +2795,24 @@ main:focus{outline:none;}
       }
       return;
     }
-    if (e.target.closest('#ficha-contacto')) { cerrarFicha(); return; }
+    if (e.target.closest('#ficha-contacto')) {
+      // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
+      if (history.state && history.state.ficha) { try { history.replaceState({}, '', '/'); } catch (err) {} }
+      cerrarFicha(true);
+      return;
+    }
     const botonFotos = e.target.closest('.tag-fotos');
     if (botonFotos) {
       const media = botonFotos.closest('.ficha-media[data-fotos]');
       if (media) abrirGaleria(JSON.parse(media.dataset.fotos));
     }
+  });
+
+  addEventListener('popstate', () => {
+    if (!lightbox.hidden) cerrarGaleria();
+    const id = idDesdeRuta();
+    if (id) { if (fichaBackdrop.hidden || idFichaAbierta !== id) abrirFicha(id, true); }
+    else if (!fichaBackdrop.hidden) cerrarFicha(true);
   });
 
   addEventListener('keydown', e => {
@@ -2844,6 +2886,12 @@ main:focus{outline:none;}
       return;
     }
     if (e.target.closest('.more')) return;
+    const enlaceFicha = e.target.closest('a.card-open');
+    if (enlaceFicha) {
+      // Con Ctrl/Cmd/Shift o clic del medio, el navegador abre la página de la propiedad en otra pestaña.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+      e.preventDefault();
+    }
     const card = e.target.closest('.card');
     if (card) abrirFicha(card.dataset.id);
   });
@@ -2906,6 +2954,9 @@ main:focus{outline:none;}
       aplicarFiltro(chipActivo ? chipActivo.dataset.f : 'Todas');
       activarTiltTarjetas();
       actualizarBarraFavoritos();
+      // Entrada directa a /<slug> (la página trae data-abrir): se abre la ficha de esa propiedad.
+      const idInicial = document.body.dataset.abrir || idDesdeRuta();
+      if (idInicial && propiedades.some(p => p.id === idInicial)) { entradaDirecta = true; abrirFicha(idInicial, true); }
     })
     .catch(err => {
       console.error('No se pudieron cargar las propiedades:', err);
