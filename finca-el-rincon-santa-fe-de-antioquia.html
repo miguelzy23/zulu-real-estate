@@ -2365,7 +2365,7 @@ main:focus{outline:none;}
     const proximamente = propiedad.estado === 'proximamente';
     const sello = proximamente
       ? '<div class="tag tag-proximamente">Próximamente</div>'
-      : (esGestionada(propiedad) ? '' : (esAlquiler(propiedad) ? '<div class="tag tag-verified">Alquiler</div>' : (propiedad.verificado ? '<div class="tag tag-verified">Visitado</div>' : '')));
+      : (esGestionada(propiedad) ? '' : (esAlquiler(propiedad) ? '<div class="tag tag-verified">Alquiler</div>' : '<div class="tag tag-verified">En venta</div>'));
     const cta = proximamente
       ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
       : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
