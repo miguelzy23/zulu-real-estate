@@ -1167,7 +1167,7 @@ p{margin:0; text-wrap:pretty;}
 /* ============================================================
    MAPA — las curvas de nivel se vuelven Antioquia (scroll)
    ============================================================ */
-.mapa{position:relative; height:540vh; background:var(--ink);}
+.mapa{position:relative; height:675vh; background:var(--ink);}
 .mp-stage{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--ink);}
 #mpCanvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
 #mpLines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
@@ -1203,7 +1203,7 @@ p{margin:0; text-wrap:pretty;}
 .mp-mini path.es-ant{fill:rgba(216,173,107,.85); stroke:#d8ad6b;}
 .mp-mini figcaption{margin-top:8px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--on-ink-dim); line-height:1.35;}
 @media (max-width:760px), (max-aspect-ratio:11/10){.mp-mini{left:auto; right:16px; top:84px; width:58px;} .mp-mini figcaption{display:none;}}
-@media (max-width:760px){.mapa{height:480vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-pin:not(.is-ref) span{font-size:12px; white-space:normal; width:max-content; max-width:124px;} .mp-pin:not(.is-ref) span small{font-size:12px;} .mp-cap{bottom:44px;}}
+@media (max-width:760px){.mapa{height:600vh;} .mp-pin span{font-size:10.5px;} .mp-pin span small{font-size:11px;} .mp-pin:not(.is-ref) span{font-size:12px; white-space:normal; width:max-content; max-width:124px;} .mp-pin:not(.is-ref) span small{font-size:12px;} .mp-cap{bottom:44px;}}
 @media (prefers-reduced-motion:reduce){.mp-pin i{animation:none;} .card.mp-destello{animation:none;}}
 
 /* ============================================================
@@ -1508,7 +1508,8 @@ main:focus{outline:none;}
     <figure class="mp-mini" id="mpMiniBox" aria-hidden="true"><svg id="mpMini" viewBox="0 0 96 132"></svg><figcaption>Antioquia, en Colombia</figcaption></figure>
     <div class="mp-cap" data-a="-1" data-b=".24"><p class="mp-k">Antioquia</p><h2 class="mp-big">Cada lugar tiene <em>su historia.</em></h2></div>
     <div class="mp-cap" data-a=".30" data-b=".60"><p class="mp-k">Curva por curva</p><h2 class="mp-big">Nos gusta conocerla <em>antes de contarla.</em></h2></div>
-    <div class="mp-cap" data-a=".68" data-b="2"><p class="mp-k">Propiedades publicadas</p><h2 class="mp-big"><span id="mpN">3</span><small id="mpS">propiedades,<br>2 subregiones</small></h2><p class="mp-txt">Toca un punto del mapa para abrir la ficha.</p><a class="btn btn-solid" href="#propiedades">Ver propiedades</a></div>
+    <div class="mp-cap" data-a=".544" data-b=".86" data-s="P"><p class="mp-k">Propiedades publicadas</p><h2 class="mp-big"><span id="mpN">3</span><small id="mpS">propiedades,<br>2 subregiones</small></h2><p class="mp-txt">Toca un punto del mapa para abrir la ficha.</p><a class="btn btn-solid" href="#propiedades">Ver propiedades</a></div>
+    <div class="mp-cap" data-a=".90" data-b="2" data-s="P"><p class="mp-k">Cartagena y Barú</p><h2 class="mp-big">También en el <em>Caribe.</em></h2><p class="mp-txt">Toca el punto para abrir la ficha.</p><a class="btn btn-solid" href="#propiedades">Ver propiedades</a></div>
   </div>
 </section>
 
@@ -3282,7 +3283,9 @@ main:focus{outline:none;}
     'Santa Fe de Antioquia': { c: [-75.828, 6.556], o: [30, -24] },
     'Rionegro': { c: [-75.374, 6.155], o: [44, -20] },
     'Envigado': { c: [-75.540, 6.172], o: [52, -52] },
-    'Medellín': { c: [-75.560, 6.198], o: [-46, -4] }
+    'Medellín': { c: [-75.560, 6.198], o: [-46, -4] },
+    // Propiedades lejos de Antioquia: no cuentan para el encuadre del acercamiento; la cámara viaja hasta ellas al final.
+    'Cartagena': { c: [-75.600, 10.200], o: [44, -20], lejos: true }
   };
   const SIN_ROTULO = ['BOGOTÁ, D.C.', 'QUINDIO', 'ATLÁNTICO', 'ANTIOQUIA', 'CUNDINAMARCA', 'SUCRE'];
   const NOMBRE = { 'NORTE DE SANTANDER': 'Norte de Santander', 'VALLE DEL CAUCA': 'Valle del Cauca', 'LA GUAJIRA': 'La Guajira' };
@@ -3338,19 +3341,27 @@ main:focus{outline:none;}
     });
     // Cámara del acercamiento final: encuadra todos los puntos con sus etiquetas
     let a0 = 1e9, a1 = -1e9, b0 = 1e9, b1 = -1e9;
-    pines.forEach(q => { a0 = Math.min(a0, q.c[0]); a1 = Math.max(a1, q.c[0]); b0 = Math.min(b0, q.c[1]); b1 = Math.max(b1, q.c[1]); });
+    pines.forEach(q => { if (q.lejos) return; a0 = Math.min(a0, q.c[0]); a1 = Math.max(a1, q.c[0]); b0 = Math.min(b0, q.c[1]); b1 = Math.max(b1, q.c[1]); });
     const Zmax = clamp(Math.min(.48 * rw / (Math.max(.05, a1 - a0) * sc), .62 * rh / (Math.max(.05, b1 - b0) * sc)), 1.4, 4.6);
-    const cam = { c: proj((a0 + a1) / 2, (b0 + b1) / 2), T: [rx + rw * (mob ? .5 : .42), ry + rh * .44], Zmax };
+    const lej = pines.find(q => q.lejos);
+    const cam = { c: proj((a0 + a1) / 2, (b0 + b1) / 2), T: [rx + rw * (mob ? .5 : .42), ry + rh * .44], Zmax,
+      C2: lej ? proj(lej.c[0], lej.c[1]) : null, Z2: clamp(.9 * rh / (2.2 * sc), 1.3, 3.2) };
     B = { W, H, gx, gy, cell, sdf, pts, proj, nb, dpr, cam, items: [], lastU: -1 };
     pintar();
   }
 
-  function camara(u) {
-    const { c, T, Zmax } = B.cam, Zk = 1 + (Zmax - 1) * u, ax0 = c[0] + (T[0] - c[0]) * u, ay0 = c[1] + (T[1] - c[1]) * u;
+  /* u = acercamiento a las propiedades de Antioquia; v = viaje final al Caribe (se aleja y sube hasta Cartagena y Barú). */
+  function camara(u, v = 0) {
+    const { c, T, Zmax, C2, Z2 } = B.cam, Zk = 1 + (Zmax - 1) * u, ax0 = c[0] + (T[0] - c[0]) * u, ay0 = c[1] + (T[1] - c[1]) * u;
+    if (v > 0 && C2) {
+      const cx0 = c[0] + (C2[0] - c[0]) * v, cy0 = c[1] + (C2[1] - c[1]) * v;
+      const Zv = Math.exp(Math.log(Zmax) + (Math.log(Z2) - Math.log(Zmax)) * v) * (1 - .3 * Math.sin(Math.PI * v));
+      return { Zk: Zv, ax: T[0] - cx0 * Zv, ay: T[1] - cy0 * Zv };
+    }
     return { Zk, ax: ax0 - c[0] * Zk, ay: ay0 - c[1] * Zk };
   }
-  function colocar(u) {
-    const g = camara(u);
+  function colocar(u, v) {
+    const g = camara(u, v);
     B.items.forEach(it => {
       const x = g.ax + it.x * g.Zk, y = g.ay + it.y * g.Zk;
       it.d.style.left = x + 'px'; it.d.style.top = y + 'px';
@@ -3434,7 +3445,7 @@ main:focus{outline:none;}
     pines.forEach((p, i) => {
       const [x, y] = B.proj(p.c[0], p.c[1]);
       const d = document.createElement(p.ref ? 'div' : 'button');
-      d.className = 'mp-pin' + (p.ref ? ' is-ref' : ''); if (p.z) d.dataset.z = '1';
+      d.className = 'mp-pin' + (p.ref ? ' is-ref' : ''); if (p.z) d.dataset.z = '1'; if (p.lejos) d.dataset.lejos = '1';
       if (!p.ref) { d.type = 'button'; d.setAttribute('aria-label', 'Ver ' + p.n + ' en ' + p.mun); d.dataset.id = p.id; }
       const izq = p.o[0] < 0;
       d.innerHTML = '<i></i><span style="left:' + p.o[0] + 'px;top:' + (p.o[1] - 9) + 'px' + (izq ? ';transform:translateX(-100%);text-align:right' : '') + '">' + p.n + (p.s ? '<small>' + p.s + '</small>' : '') + '</span>';
@@ -3451,16 +3462,22 @@ main:focus{outline:none;}
 
   const LV = []; for (let k = -6; k <= 13; k++) LV.push(k);
   const SEGS = LV.map(() => []); // segmentos de cada curva de nivel, reutilizados en cada cuadro
-  function dibujar(p, t) {
+  function dibujar(P, t) {
+    // P = avance total del scroll; p = avance de la parte de Antioquia (los primeros 80 %); v = viaje final al Caribe
+    const p = clamp(P / .8), v = sstep(.82, .985, P);
     const { W, H, gx, gy, cell, sdf, pts, dpr } = B, w = sstep(.2, .58, p), mob = W < 760 || H > W * 1.1;
-    const zu = sstep(.80, .94, p), g = camara(zu), Zk = g.Zk, av = sstep(.46, .64, p), kv = 1 - zu * .95;
+    const zu = sstep(.80, .94, p), g = camara(zu, v), Zk = g.Zk, av = sstep(.46, .64, p), kv = 1 - zu * .95;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     cx.fillStyle = '#0A0A0A'; cx.fillRect(0, 0, W, H);
     cx.save(); cx.setTransform(dpr * Zk, 0, 0, dpr * Zk, dpr * g.ax, dpr * g.ay);
     if (w > 0) { cx.beginPath(); pts.forEach((q, i) => i ? cx.lineTo(q[0], q[1]) : cx.moveTo(q[0], q[1])); cx.closePath(); cx.fillStyle = 'rgba(216,173,107,' + (.07 * w) + ')'; cx.fill(); }
     if (av > 0) {
       cx.lineCap = 'butt'; cx.setLineDash([2 / Zk, 5 / Zk]); cx.lineWidth = 1 / Zk; cx.strokeStyle = 'rgba(250,238,218,' + (.3 * av) + ')';
-      B.nb.forEach(d => { cx.beginPath(); d.rings.forEach(r => r.forEach((q, i) => i ? cx.lineTo(q[0], q[1]) : cx.moveTo(q[0], q[1]))); cx.stroke(); });
+      B.nb.forEach(d => {
+        cx.beginPath(); d.rings.forEach(r => r.forEach((q, i) => i ? cx.lineTo(q[0], q[1]) : cx.moveTo(q[0], q[1])));
+        if (v > 0 && d.n === 'BOLÍVAR') { cx.save(); cx.fillStyle = 'rgba(216,173,107,' + (.07 * v) + ')'; cx.fill(); cx.restore(); } // el departamento de Cartagena toma el mismo tono que Antioquia
+        cx.stroke();
+      });
       cx.setLineDash([]);
     }
     if (zu < .98) {
@@ -3496,7 +3513,7 @@ main:focus{outline:none;}
     }
     if (zu > 0 && w > .35) {
       cx.beginPath(); pts.forEach((q, i) => i ? cx.lineTo(q[0], q[1]) : cx.moveTo(q[0], q[1])); cx.closePath();
-      cx.lineJoin = 'round'; cx.strokeStyle = 'rgba(216,173,107,' + ((.35 + .65 * w) * sstep(0, .05, zu)) + ')'; cx.lineWidth = (1.2 + 1.6 * w) / Zk; cx.stroke();
+      cx.lineJoin = 'round'; cx.strokeStyle = 'rgba(216,173,107,' + ((.35 + .65 * w) * sstep(0, .05, zu) * (1 - .75 * v)) + ')'; cx.lineWidth = (1.2 + 1.6 * w) / Zk; cx.stroke();
     }
     cx.restore();
     if (av > 0 && zu < .9) {
@@ -3514,15 +3531,32 @@ main:focus{outline:none;}
       });
       if ('letterSpacing' in cx) cx.letterSpacing = '0px';
     }
-    if (B.lastU !== zu) { colocar(zu); B.lastU = zu; }
+    if (v > .4) {
+      const [mx, my] = B.proj(-75.9, 11.05), sx = g.ax + mx * g.Zk, sy = g.ay + my * g.Zk;
+      cx.font = '500 ' + (mob ? 9.5 : 10.5) + 'px Inter, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+      if ('letterSpacing' in cx) cx.letterSpacing = '3px';
+      cx.fillStyle = 'rgba(207,198,176,' + (.5 * (v - .4) / .6) + ')';
+      if (sx > 40 && sx < W - 40 && sy > 70 && sy < H - 20) cx.fillText('MAR CARIBE', sx, sy);
+      if ('letterSpacing' in cx) cx.letterSpacing = '0px';
+    }
+    const llave = zu + 7 * v;
+    if (B.lastU !== llave) { colocar(zu, v); B.lastU = llave; }
     let kp = 0;
-    pinsEl.querySelectorAll('.mp-pin').forEach(e => { const on = e.dataset.z === '1' ? zu > .4 : p > .64 + (kp++) * .045; e.classList.toggle('is-on', on); e.inert = !on; });
-    ov.querySelectorAll('line').forEach(l => l.style.opacity = p > .64 + (+l.dataset.i) * .045 + .03 ? 1 : 0);
+    pinsEl.querySelectorAll('.mp-pin').forEach(e => {
+      let on;
+      if (e.dataset.lejos === '1') on = v > .55;
+      else { const base = e.dataset.z === '1' ? zu > .4 : p > .64 + (kp++) * .045; on = base && v < .12; }
+      e.classList.toggle('is-on', on); e.inert = !on;
+    });
+    ov.querySelectorAll('line').forEach(l => {
+      const lejos = pinsEl.children[+l.dataset.i] && pinsEl.children[+l.dataset.i].dataset.lejos === '1';
+      l.style.opacity = lejos ? (v > .6 ? 1 : 0) : (p > .64 + (+l.dataset.i) * .045 + .03 && v < .12 ? 1 : 0);
+    });
     mini.classList.toggle('is-on', p > .5);
     const E = .035;
     caps.forEach(c => {
-      const a = +c.dataset.a, b = +c.dataset.b; let o = Math.min((p - a) / E, (b - p) / E); if (a < 0) o = (b - p) / E; o = clamp(o);
-      c.style.opacity = o; c.style.transform = 'translateY(' + ((1 - o) * (p < (a + b) / 2 ? 24 : -18)) + 'px)'; c.classList.toggle('is-on', o > .5); c.inert = o <= .5;
+      const a = +c.dataset.a, b = +c.dataset.b, q = c.dataset.s === 'P' ? P : p; let o = Math.min((q - a) / E, (b - q) / E); if (a < 0) o = (b - q) / E; o = clamp(o);
+      c.style.opacity = o; c.style.transform = 'translateY(' + ((1 - o) * (q < (a + b) / 2 ? 24 : -18)) + 'px)'; c.classList.toggle('is-on', o > .5); c.inert = o <= .5;
     });
   }
 
@@ -3539,7 +3573,7 @@ main:focus{outline:none;}
         tgt = clamp(-r.top / m);
         cur += (tgt - cur) * (reduce ? 1 : .14); if (Math.abs(tgt - cur) < .0005) cur = tgt;
       }
-      const deriva = !reduce && sstep(.2, .58, cur) < 1;
+      const deriva = !reduce && sstep(.2, .58, cur / .8) < 1;
       if (forzar || cur !== ultimoCur || (deriva && now - ultimoT > 100)) {
         forzar = false; ultimoCur = cur; ultimoT = now;
         dibujar(cur, (now - t0) / 1000);
@@ -3570,7 +3604,7 @@ main:focus{outline:none;}
       const co = u.coordenadas, exacto = !!(co && co.lat != null && co.lng != null);
       // Sin coordenadas exactas, varias propiedades de un mismo municipio caerían en el mismo punto: se separan un poco (y la etiqueta cambia de lado).
       const k = exacto ? 0 : pines.filter(q => q.mun === u.municipio && !q.exacto).length;
-      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, c: exacto ? [co.lng, co.lat] : (k ? [m.c[0] - .014 * k, m.c[1] - .032 * k] : m.c), o: k ? [m.o[0], -m.o[1] + 12 * k] : m.o });
+      pines.push({ id: p.id, n: String(p.titulo).split(' — ')[0], s: u.municipio, mun: u.municipio, sec: u.sector, exacto, lejos: !!m.lejos, c: exacto ? [co.lng, co.lat] : (k ? [m.c[0] - .014 * k, m.c[1] - .032 * k] : m.c), o: k ? [m.o[0], -m.o[1] + 12 * k] : m.o });
     });
     LUGARES.forEach(l => { if (!pines.some(q => q.mun === l.n || q.sec === l.n)) pines.push({ ref: true, z: 1, n: l.n, s: '', c: l.c, o: l.o }); });
     const conPunto = pub.filter(p => MUN[(p.ubicacion || {}).municipio]);
