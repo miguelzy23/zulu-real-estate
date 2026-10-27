@@ -3,6 +3,8 @@ media/originales/
 *.mp4
 # Excepción: el clip corto de cada propiedad (recorrido*.mp4) sí se publica
 !assets/*/recorrido*.mp4
+# Video de la portada
+!assets/hero/*.mp4
 *.mov
 .DS_Store
 

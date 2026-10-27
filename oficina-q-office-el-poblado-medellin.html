@@ -1314,6 +1314,18 @@ main:focus{outline:none;}
 .vt-k{color:#EFD09A;}
 .vt-k::before{background:#EFD09A;}
 @media (prefers-reduced-motion:reduce){.skip{transition:none;}}
+
+/* ---- Portada con video de dron: aparece por encima de la foto cuando ya está reproduciéndose ---- */
+.hero-video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:68% 50%; opacity:0; filter:brightness(.78) saturate(1.05); transition:opacity 1.6s var(--ease-out);}
+.hero-video.is-on{opacity:1;}
+.hero-pausa{position:absolute; right:clamp(16px,3vw,32px); top:88px; z-index:3; width:44px; height:44px; padding:0; border-radius:50%; border:1px solid rgba(250,238,218,.55); background:rgba(10,10,10,.5); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); color:#FAEEDA; cursor:pointer; display:grid; place-items:center; transition:background .2s var(--ease-out), transform .16s var(--ease-out);}
+.hero-pausa[hidden]{display:none;}
+.hero-pausa::before{content:""; width:12px; height:14px; border-left:4px solid currentColor; border-right:4px solid currentColor; box-sizing:border-box;}
+.hero-pausa.is-pausado::before{width:0; height:0; border-left:13px solid currentColor; border-right:0; border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px;}
+.hero-pausa:hover{background:rgba(10,10,10,.8);}
+.hero-pausa:active{transform:scale(.94);}
+.hero-pausa:focus-visible{outline:2px solid #d8ad6b; outline-offset:4px;}
+@media (prefers-reduced-motion:reduce){.hero-video,.hero-pausa{display:none;}}
 </style>
 </head>
 <body data-abrir="ZUL-2026-005" data-titulo="Zulu Real Estate — Lotes, fincas y propiedades en Antioquia">
@@ -1348,6 +1360,7 @@ main:focus{outline:none;}
 <header class="hero on-ink" id="top">
   <div class="hero-photo" aria-hidden="true">
     <img src="assets/hero-baru-noche-hd-1200.jpg" srcset="assets/hero-baru-noche-hd-1200.jpg 1200w, assets/hero-baru-noche-hd.jpg 2400w" sizes="100vw" alt="" width="2400" height="1350" fetchpriority="high" decoding="async">
+    <video class="hero-video" id="heroVideo" muted loop playsinline preload="none" tabindex="-1"></video>
   </div>
   <div class="hero-contours" aria-hidden="true">
     <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
@@ -1378,6 +1391,7 @@ main:focus{outline:none;}
       <div class="rail-item"><span class="rail-n" data-count="24" data-suffix=" h">24 h</span><span class="rail-t">tiempo promedio de respuesta</span></div>
     </div>
   </div>
+  <button type="button" class="hero-pausa" id="heroPausa" aria-label="Pausar el video de fondo" hidden></button>
 </header>
 
 <!-- ===================== NOSOTROS ===================== -->
@@ -3577,6 +3591,49 @@ main:focus{outline:none;}
   addEventListener('resize', () => { if (listo) montar(); });
   const fuentes = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('800 100px "Baloo 2"'), document.fonts.ready]) : Promise.resolve();
   fuentes.then(() => { montar(); listo = true; if (reduce) { cur = tgt = 1; } dibujar(cur); requestAnimationFrame(bucle); });
+})();
+</script>
+<script>
+/* --- Portada: video de dron de fondo (la foto se queda como respaldo y de arranque) -------------------------------
+   Se carga después de que la página terminó de cargar, no arranca con "reducir movimiento" ni con ahorro de datos,
+   se detiene cuando la portada sale de pantalla o la pestaña se oculta, y se puede pausar con el botón. */
+(function () {
+  const v = document.getElementById('heroVideo'), bt = document.getElementById('heroPausa'), hero = document.getElementById('top');
+  if (!v || !bt || !hero) return;
+  const con = navigator.connection || {};
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || con.saveData || /^(slow-2g|2g|3g)$/.test(con.effectiveType || '')) return;
+  let pausadoPorPersona = false, enPantalla = true;
+  const jugar = () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+  // En el celular (pantalla vertical) solo cabe una franja del video: el encuadre sigue a la casa mientras el video avanza.
+  const CASA = [[0, .88], [2, .80], [4, .62], [6, .58], [8, .60], [12, .61], [14, .55], [18, .56], [19.5, .80], [20, .88]];
+  const encuadre = () => {
+    if (v.paused) return;
+    const f = Math.min(1, (hero.clientWidth / hero.clientHeight) / ((v.videoWidth || 16) / (v.videoHeight || 9)));
+    if (f < .95) {
+      const t = v.currentTime;
+      let i = 1; while (i < CASA.length - 1 && CASA[i][0] < t) i++;
+      const [t0, x0] = CASA[i - 1], [t1, x1] = CASA[i], x = x0 + (x1 - x0) * Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+      v.style.objectPosition = Math.min(100, Math.max(0, (x - f / 2) / (1 - f) * 100)).toFixed(1) + '% 50%';
+    } else v.style.objectPosition = '';
+    requestAnimationFrame(encuadre);
+  };
+  v.addEventListener('play', () => requestAnimationFrame(encuadre));
+  const sincronizar = () => { if (enPantalla && !document.hidden && !pausadoPorPersona) jugar(); else v.pause(); };
+  const iniciar = () => {
+    v.src = 'assets/hero/hero-baru-bucle-hd.mp4';
+    v.addEventListener('playing', () => { v.classList.add('is-on'); bt.hidden = false; }, { once: true });
+    if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { enPantalla = e.isIntersecting; sincronizar(); }).observe(hero);
+    document.addEventListener('visibilitychange', sincronizar);
+    bt.addEventListener('click', () => {
+      pausadoPorPersona = !pausadoPorPersona;
+      bt.classList.toggle('is-pausado', pausadoPorPersona);
+      bt.setAttribute('aria-label', pausadoPorPersona ? 'Reproducir el video de fondo' : 'Pausar el video de fondo');
+      sincronizar();
+    });
+    sincronizar();
+  };
+  if (document.readyState === 'complete') setTimeout(iniciar, 300);
+  else addEventListener('load', () => setTimeout(iniciar, 300), { once: true });
 })();
 </script>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
