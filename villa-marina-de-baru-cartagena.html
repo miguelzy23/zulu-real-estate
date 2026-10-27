@@ -9,6 +9,9 @@
 <meta name="description" content="Villa sobre el canal, rodeada de manglar y zonas verdes. Tiene piscina, muelle y una palapa de techo de paja. Alquiler: $6.000.000 por noche." />
 <meta name="theme-color" content="#0A0A0A" />
 <link rel="canonical" href="https://www.zulurealstate.com/villa-marina-de-baru-cartagena" />
+<link rel="alternate" hreflang="es" href="https://www.zulurealstate.com/villa-marina-de-baru-cartagena" />
+<link rel="alternate" hreflang="en" href="https://www.zulurealstate.com/en/villa-marina-de-baru-cartagena" />
+<link rel="alternate" hreflang="x-default" href="https://www.zulurealstate.com/villa-marina-de-baru-cartagena" />
 
 <!-- Íconos de pestaña / pantalla de inicio -->
 <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
@@ -19,6 +22,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Zulu Real Estate" />
 <meta property="og:locale" content="es_CO" />
+<meta property="og:locale:alternate" content="en_US" />
 <meta property="og:url" content="https://www.zulurealstate.com/villa-marina-de-baru-cartagena" />
 <meta property="og:title" content="Villa en Marina de Barú — Cartagena" />
 <meta property="og:description" content="Villa sobre el canal, rodeada de manglar y zonas verdes. Tiene piscina, muelle y una palapa de techo de paja. Alquiler: $6.000.000 por noche." />
@@ -101,6 +105,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" />
+<script>
+/* Idioma: la versión en inglés (/en) es esta misma página con lang="en" y un diccionario (window.ZULU_EN) que genera scripts/paginas-lote.py. */
+window.ZULU_LANG = document.documentElement.lang === 'en' ? 'en' : 'es';
+window.ZULU_BASE = window.ZULU_LANG === 'en' ? '/en/' : '/';
+window.ZULU_HOME = window.ZULU_LANG === 'en' ? '/en' : '/';
+window.ZULU_LOC = window.ZULU_LANG === 'en' ? 'en-US' : 'es-CO';
+window.T = function (s) { var d = window.ZULU_EN; return (window.ZULU_LANG === 'en' && d && d[s]) || s; };
+// Las rutas de las fotos y videos del JSON se vuelven absolutas (así sirven igual en /, /slug, /en y /en/slug)
+window.zuluAbs = function (o) { return JSON.parse(JSON.stringify(o), function (k, v) { return typeof v === 'string' && /^assets\//.test(v) ? '/' + v : v; }); };
+// En inglés: textos de cada propiedad (título, descripción, etc.)
+window.zuluAplicarIdioma = function (lista) {
+  var P = window.ZULU_EN && window.ZULU_EN.__props; if (window.ZULU_LANG !== 'en' || !P) return lista;
+  lista.forEach(function (p) { var e = P[p.slug]; if (!e) return; Object.keys(e).forEach(function (k) { if (k === 'ubicacion') Object.assign(p.ubicacion, e[k]); else p[k] = e[k]; }); });
+  return lista;
+};
+</script>
 <style>
 /* ============================================================
    ZULU REAL ESTATE
@@ -1347,6 +1367,22 @@ main:focus{outline:none;}
 ::view-transition-old(foto-lote),::view-transition-new(foto-lote){height:100%; object-fit:cover;}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.3s;}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important;}}
+
+/* ---- Idioma: selector ES | EN y aviso de la primera visita ---- */
+.lang-sel{font-size:12px; font-weight:600; letter-spacing:.12em; padding:6px 11px; border:1px solid var(--rule-dark); border-radius:99px; color:inherit; text-decoration:none; opacity:1 !important;}
+.lang-sel::after{display:none !important;}
+.lang-sel:hover{border-color:var(--cream);}
+.sheet .lang-sel,.foot-nav .lang-sel{display:inline-block; width:auto; align-self:flex-start; letter-spacing:.06em; font-size:14px;}
+.idioma-aviso{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:70; display:flex; align-items:center; gap:14px 18px; flex-wrap:wrap; justify-content:center; max-width:min(560px,calc(100vw - 32px)); padding:14px 44px 14px 18px; background:rgba(10,10,10,.94); border:1px solid #d8ad6b; border-radius:14px; color:var(--cream); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow:0 14px 40px -12px rgba(0,0,0,.7);}
+.idioma-aviso[hidden]{display:none;}
+.idioma-aviso p{margin:0; font-size:14px; line-height:1.4;}
+.idioma-bot{display:flex; gap:8px;}
+.idioma-bot button{min-height:44px; padding:0 18px; border-radius:99px; border:1px solid rgba(250,238,218,.45); background:transparent; color:var(--cream); font:600 13.5px/1 Inter,sans-serif; cursor:pointer;}
+.idioma-bot button:hover{border-color:var(--cream);}
+.idioma-aviso.sugiere-en .idioma-bot button[data-i="en"]{background:var(--cream); color:var(--ink); border-color:var(--cream);}
+.idioma-x{position:absolute; top:4px; right:4px; width:40px; height:40px; border:0; background:none; color:var(--on-ink-dim); font-size:22px; line-height:1; cursor:pointer;}
+.idioma-aviso button:focus-visible{outline:2px solid #d8ad6b; outline-offset:2px;}
+@media (max-width:760px){.idioma-aviso{left:16px; right:16px; transform:none; max-width:none;}}
 </style>
 </head>
 <body data-abrir="ZUL-2026-006" data-titulo="Zulu Real Estate — Lotes, fincas y propiedades en Antioquia">
@@ -1361,6 +1397,7 @@ main:focus{outline:none;}
     <a href="#proceso">Cómo funciona</a>
     <a href="#propiedades">Propiedades</a>
     <a href="#preguntas">Preguntas</a>
+    <a class="lang-sel" href="/en" hreflang="en" lang="en" aria-label="View this page in English">EN</a>
     <a href="#contacto" class="nav-cta"><span class="nav-cta-t">Hablemos</span></a>
   </div>
   <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="sheet">
@@ -1374,13 +1411,14 @@ main:focus{outline:none;}
   <a href="#propiedades">Propiedades</a>
   <a href="#preguntas">Preguntas</a>
   <a href="#contacto">Hablemos</a>
+  <a class="lang-sel" data-t="largo" href="/en" hreflang="en" lang="en" aria-label="View this page in English">English</a>
 </div>
 
 <main id="contenido" tabindex="-1">
 <!-- ===================== HERO ===================== -->
 <header class="hero on-ink" id="top">
   <div class="hero-photo" aria-hidden="true">
-    <img src="assets/hero-baru-noche-hd-1200.jpg" srcset="assets/hero-baru-noche-hd-1200.jpg 1200w, assets/hero-baru-noche-hd.jpg 2400w" sizes="100vw" alt="" width="2400" height="1350" fetchpriority="high" decoding="async">
+    <img src="/assets/hero-baru-noche-hd-1200.jpg" srcset="/assets/hero-baru-noche-hd-1200.jpg 1200w, /assets/hero-baru-noche-hd.jpg 2400w" sizes="100vw" alt="" width="2400" height="1350" fetchpriority="high" decoding="async">
     <video class="hero-video" id="heroVideo" muted loop playsinline preload="none" tabindex="-1"></video>
   </div>
   <div class="hero-contours" aria-hidden="true">
@@ -1433,7 +1471,7 @@ main:focus{outline:none;}
       </div>
     </div>
     <div class="frame reveal" data-d="2">
-      <img src="assets/nosotros-dron-nitida-1200.jpg" srcset="assets/nosotros-dron-nitida-1200.jpg 1200w, assets/nosotros-dron-nitida.jpg 2200w" sizes="(max-width:900px) 100vw, 50vw" alt="Vista aérea de la vía a Llanogrande, con fincas, bosque y montañas en el horizonte" width="2200" height="1649" style="object-position:50% 55%" loading="lazy" decoding="async">
+      <img src="/assets/nosotros-dron-nitida-1200.jpg" srcset="/assets/nosotros-dron-nitida-1200.jpg 1200w, /assets/nosotros-dron-nitida.jpg 2200w" sizes="(max-width:900px) 100vw, 50vw" alt="Vista aérea de la vía a Llanogrande, con fincas, bosque y montañas en el horizonte" width="2200" height="1649" style="object-position:50% 55%" loading="lazy" decoding="async">
       <div class="frame-cap">Vía a Llanogrande</div>
     </div>
   </div>
@@ -1487,7 +1525,7 @@ main:focus{outline:none;}
 
 <section class="vent" id="ventana" aria-label="Fotos reales, tomadas por nosotros">
   <div class="vt-stage">
-    <img class="vt-ph" id="vtPh" src="assets/pausa-valle-nitida-1200.jpg" srcset="assets/pausa-valle-nitida-1200.jpg 1200w, assets/pausa-valle-nitida.jpg 2400w" sizes="100vw" alt="Foto aérea, tomada por nosotros, de fincas y bosque en Antioquia" width="2400" height="1799" loading="lazy" decoding="async">
+    <img class="vt-ph" id="vtPh" src="/assets/pausa-valle-nitida-1200.jpg" srcset="/assets/pausa-valle-nitida-1200.jpg 1200w, /assets/pausa-valle-nitida.jpg 2400w" sizes="100vw" alt="Foto aérea, tomada por nosotros, de fincas y bosque en Antioquia" width="2400" height="1799" loading="lazy" decoding="async">
     <svg id="vtSvg" aria-hidden="true"><defs><mask id="vtMk" maskUnits="userSpaceOnUse"><rect id="vtMr" fill="#fff"/><g id="vtG"><text id="vtT" fill="#000" font-family="'Baloo 2',sans-serif" font-weight="800">ZULU</text></g></mask></defs><rect id="vtCr" style="fill:var(--vt-bg)" mask="url(#vtMk)"/></svg>
     <div class="vt-veil" id="vtVl"></div>
     <p class="vt-intro" id="vtIn">Mira por la ventana.</p>
@@ -1799,6 +1837,7 @@ main:focus{outline:none;}
         <a href="#preguntas">Preguntas</a>
         <a href="#contacto">Contacto</a>
         <a href="/privacidad">Privacidad</a>
+        <a class="lang-sel" data-t="largo" href="/en" hreflang="en" lang="en" aria-label="View this page in English">English</a>
       </nav>
     </div>
   </div>
@@ -2181,7 +2220,7 @@ main:focus{outline:none;}
     nav.classList.toggle('is-open', open);
     sheet.classList.toggle('is-open', open);
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    toggle.setAttribute('aria-label', open ? T('Cerrar menú') : T('Abrir menú'));
     document.body.style.overflow = open ? 'hidden' : '';
   };
   toggle.addEventListener('click', () => setMenu(!sheet.classList.contains('is-open')));
@@ -2208,7 +2247,7 @@ main:focus{outline:none;}
   const setWaOpen = (abierto) => {
     waGroup.classList.toggle('is-open', abierto);
     waToggle.setAttribute('aria-expanded', String(abierto));
-    waToggle.setAttribute('aria-label', abierto ? 'Cerrar contactos de WhatsApp' : 'Escribir por WhatsApp');
+    waToggle.setAttribute('aria-label', abierto ? T('Cerrar contactos de WhatsApp') : T('Escribir por WhatsApp'));
   };
   waToggle.addEventListener('click', () => setWaOpen(!waGroup.classList.contains('is-open')));
   document.addEventListener('click', e => {
@@ -2234,7 +2273,7 @@ main:focus{outline:none;}
   const MEDIA_PLACEHOLDER = '<svg viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1" opacity=".38"><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,46)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,92)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,138)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,184)"/><path d="M-20 40 C 80 12,150 62,240 34 C 320 8,362 48,420 22" transform="translate(0,230)"/></g></svg>';
   const FLECHA = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-  const formatoCOP = valor => '$' + valor.toLocaleString('es-CO');
+  const formatoCOP = valor => (window.ZULU_LANG === 'en' ? 'COP $' : '$') + valor.toLocaleString(window.ZULU_LOC);
 
   function ultimoPrecio(propiedad) {
     const historico = (propiedad.precio && propiedad.precio.precio_historico) || [];
@@ -2245,10 +2284,10 @@ main:focus{outline:none;}
   const esAlquiler = p => p.operacion === 'alquiler';
   const periodoDe = p => (p.precio && p.precio.periodo) || '';
   const aConsultar = p => !!(p.precio && p.precio.consultar);
-  const precioTexto = p => esGestionada(p) ? 'Arrendada por Zulu Real Estate' : (aConsultar(p) ? 'Precio a consultar' : formatoCOP(ultimoPrecio(p)) + (periodoDe(p) ? ' por ' + periodoDe(p) : ''));
+  const precioTexto = p => esGestionada(p) ? T('Arrendada por Zulu Real Estate') : (aConsultar(p) ? T('Precio a consultar') : formatoCOP(ultimoPrecio(p)) + (periodoDe(p) ? ' ' + T('por') + ' ' + T(periodoDe(p)) : ''));
   const precioDivHTML = p => esGestionada(p)
-    ? '<div class="price price-gest">Arrendada por Zulu Real Estate</div>'
-    : (aConsultar(p) ? '<div class="price price-gest">Precio a consultar</div>' : `<div class="price">${formatoCOP(ultimoPrecio(p))}${periodoDe(p) ? `<small class="price-per"> / ${periodoDe(p)}</small>` : ''}</div>`);
+    ? '<div class="price price-gest">' + T('Arrendada por Zulu Real Estate') + '</div>'
+    : (aConsultar(p) ? '<div class="price price-gest">' + T('Precio a consultar') + '</div>' : `<div class="price">${formatoCOP(ultimoPrecio(p))}${periodoDe(p) ? `<small class="price-per"> / ${T(periodoDe(p))}</small>` : ''}</div>`);
 
   /* Zona ancha para el panel "Cuéntanos qué buscas" — deriva de la
      subregión/ubicación real, con Llanogrande como caso especial
@@ -2277,16 +2316,16 @@ main:focus{outline:none;}
     if (propiedad.tipo === 'oficina') {
       const pq = propiedad.parqueaderos ? `<span>${ICO_CARRO}${propiedad.parqueaderos}</span>` : '';
       const bn = propiedad.banos ? `<span>${ICO_BANO}${propiedad.banos}</span>` : '';
-      return `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>${bn}${pq}`;
+      return `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString(window.ZULU_LOC)} m²</span>${bn}${pq}`;
     }
     if (propiedad.tipo === 'lote') {
-      return `<span>${ICO_AREA}${propiedad.area.escritura_m2.toLocaleString('es-CO')} m² de escritura</span>`;
+      return `<span>${ICO_AREA}${propiedad.area.escritura_m2.toLocaleString(window.ZULU_LOC)} m² ${T('de escritura')}</span>`;
     }
     const info = TIPO_INFO[propiedad.tipo];
     const banos = propiedad.banos ? `<span>${ICO_BANO}${propiedad.banos}</span>` : '';
     const hab = propiedad.habitaciones ? `<span>${ICO_CAMA}${propiedad.habitaciones}</span>` : '';
-    const cap = propiedad.capacidad ? `<span title="Capacidad para ${propiedad.capacidad} personas">${ICO_PERSONAS}${propiedad.capacidad}</span>` : '';
-    const area = propiedad.area_construida ? `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString('es-CO')} m²</span>` : '';
+    const cap = propiedad.capacidad ? `<span title="${T('Capacidad para')} ${propiedad.capacidad} ${T('personas')}">${ICO_PERSONAS}${propiedad.capacidad}</span>` : '';
+    const area = propiedad.area_construida ? `<span>${ICO_AREA}${propiedad.area_construida.toLocaleString(window.ZULU_LOC)} m²</span>` : '';
     return hab + banos + cap + area;
   }
 
@@ -2316,11 +2355,11 @@ main:focus{outline:none;}
     const principal = propiedad.media && propiedad.media.foto_principal;
     if (principal) {
       const verFotos = fotos && fotos.length
-        ? `<button type="button" class="tag tag-fotos">Ver ${fotos.length} fotos</button>`
+        ? `<button type="button" class="tag tag-fotos">${T('Ver')} ${fotos.length} ${T('fotos')}</button>`
         : '';
       return `<img src="${principal}" alt="${propiedad.titulo}" loading="lazy">${verFotos}`;
     }
-    return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
+    return `${MEDIA_PLACEHOLDER}<b>${T('Foto próximamente')}</b>`;
   }
 
   const CHEV_IZQ = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
@@ -2333,14 +2372,14 @@ main:focus{outline:none;}
      disponible desde la ficha al abrir la propiedad. */
   function cardMediaHTML(propiedad) {
     const principal = propiedad.media && propiedad.media.foto_principal;
-    if (!principal) return `${MEDIA_PLACEHOLDER}<b>Foto próximamente</b>`;
+    if (!principal) return `${MEDIA_PLACEHOLDER}<b>${T('Foto próximamente')}</b>`;
     const fotos = (propiedad.media && propiedad.media.fotos && propiedad.media.fotos.length)
       ? propiedad.media.fotos : [principal];
     /* Las tarjetas usan miniaturas (assets/<slug>/card/NN.jpg, ~760 px) y solo
        la primera foto carga de entrada; las demás esperan a que la persona
        toque/pase el mouse por la tarjeta. La ficha sigue usando la foto grande.
        Si no existe la miniatura, cae a la foto original. */
-    const mini = src => /^assets\/.+\/[^/]+$/.test(src) ? src.replace(/([^/]+)$/, 'card/$1') : src;
+    const mini = src => /^\/?assets\/.+\/[^/]+$/.test(src) ? src.replace(/([^/]+)$/, 'card/$1') : src;
     const imgs = fotos.map((src, i) => {
       const attrSrc = i === 0 ? `src="${mini(src)}"` : `data-src="${mini(src)}"`;
       return `<img ${attrSrc} data-full="${src}" alt="${propiedad.titulo}" loading="lazy" class="${i === 0 ? 'is-active' : ''}" onerror="if(this.dataset.full&&this.getAttribute('src')!==this.dataset.full){this.src=this.dataset.full;}">`;
@@ -2370,22 +2409,22 @@ main:focus{outline:none;}
     const info = TIPO_INFO[propiedad.tipo];
     const proximamente = propiedad.estado === 'proximamente';
     const sello = proximamente
-      ? '<div class="tag tag-proximamente">Próximamente</div>'
-      : (esGestionada(propiedad) ? '' : (esAlquiler(propiedad) ? '<div class="tag tag-verified">Alquiler</div>' : '<div class="tag tag-verified">En venta</div>'));
+      ? '<div class="tag tag-proximamente">' + T('Próximamente') + '</div>'
+      : (esGestionada(propiedad) ? '' : (esAlquiler(propiedad) ? '<div class="tag tag-verified">' + T('Alquiler') + '</div>' : '<div class="tag tag-verified">' + T('En venta') + '</div>'));
     const cta = proximamente
-      ? `<span class="more" aria-disabled="true">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero algo así' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
+      ? `<span class="more" aria-disabled="true">${T('Video en camino')}${FLECHA}</span>`
+      : `<a href="#contacto" class="more"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? T('Quiero algo así') : (esAlquiler(propiedad) ? T('Consultar disponibilidad') : T('Quiero saber más'))}${FLECHA}</a>`;
     const esFavorita = favoritos.has(propiedad.id);
     return `<article class="card" data-cat="${info.categoria}" data-id="${propiedad.id}" data-tipo="${propiedad.tipo}" data-precio="${Math.round(ultimoPrecio(propiedad) / 1000000)}" data-zona="${zonaDe(propiedad)}" data-op="${propiedad.operacion || 'venta'}">
         ${propiedad.estado === 'publicado' && propiedad.slug
-          ? `<a href="/${propiedad.slug}" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></a>`
-          : `<button type="button" class="card-open" aria-label="Ver la ficha de ${propiedad.titulo}"></button>`}
+          ? `<a href="${window.ZULU_BASE}${propiedad.slug}" class="card-open" aria-label="${T('Ver la ficha de')} ${propiedad.titulo}"></a>`
+          : `<button type="button" class="card-open" aria-label="${T('Ver la ficha de')} ${propiedad.titulo}"></button>`}
         <div class="card-media">
           ${cardMediaHTML(propiedad)}
-          <div class="tag">${propiedad.subtipo || info.etiqueta}</div>
-          ${propiedad.media && propiedad.media.clip ? '<span class="card-reco">Recorrido</span>' : ''}
+          <div class="tag">${T(propiedad.subtipo || info.etiqueta)}</div>
+          ${propiedad.media && propiedad.media.clip ? '<span class="card-reco">' + T('Recorrido') + '</span>' : ''}
           ${sello}
-          <button type="button" class="fav-btn${esFavorita ? ' is-fav' : ''}" aria-label="Guardar en favoritos" aria-pressed="${esFavorita}">${ICO_CORAZON}</button>
+          <button type="button" class="fav-btn${esFavorita ? ' is-fav' : ''}" aria-label="${T('Guardar en favoritos')}" aria-pressed="${esFavorita}">${ICO_CORAZON}</button>
         </div>
         <div class="card-body">
           <div class="price-row">
@@ -2405,43 +2444,43 @@ main:focus{outline:none;}
   function caracteristicasHTML(propiedad) {
     const items = [];
     if (propiedad.tipo !== 'lote' && propiedad.area_construida) {
-      items.push(['Área construida', `${propiedad.area_construida.toLocaleString('es-CO')} m²`]);
+      items.push([T('Área construida'), `${propiedad.area_construida.toLocaleString(window.ZULU_LOC)} m²`]);
     }
-    if (propiedad.edificio) items.push(['Edificio', propiedad.edificio + (propiedad.unidad ? ' · Oficina ' + propiedad.unidad : '')]);
-    if (propiedad.estado_inmueble) items.push(['Estado', propiedad.estado_inmueble]);
-    if (propiedad.piso) items.push(['Piso', String(propiedad.piso)]);
-    if (propiedad.pisos) items.push(['Niveles', String(propiedad.pisos)]);
-    if (propiedad.habitaciones) items.push(['Habitaciones', String(propiedad.habitaciones)]);
-    if (propiedad.banos) items.push(['Baños', String(propiedad.banos)]);
+    if (propiedad.edificio) items.push([T('Edificio'), propiedad.edificio + (propiedad.unidad ? ' · ' + T('Oficina') + ' ' + propiedad.unidad : '')]);
+    if (propiedad.estado_inmueble) items.push([T('Estado'), propiedad.estado_inmueble]);
+    if (propiedad.piso) items.push([T('Piso'), String(propiedad.piso)]);
+    if (propiedad.pisos) items.push([T('Niveles'), String(propiedad.pisos)]);
+    if (propiedad.habitaciones) items.push([T('Habitaciones'), String(propiedad.habitaciones)]);
+    if (propiedad.banos) items.push([T('Baños'), String(propiedad.banos)]);
     (propiedad.filas_extra || []).forEach(f => items.push(f));
-    if (propiedad.capacidad) items.push(['Capacidad', propiedad.capacidad + ' personas']);
-    if (propiedad.condominio) items.push(['Condominio', propiedad.unidad_cerrada ? 'Unidad cerrada' : propiedad.condominio]);
-    if (propiedad.llegada) items.push(['Cómo llegar', propiedad.llegada]);
-    if (propiedad.cocina) items.push(['Cocina', propiedad.cocina]);
-    if (propiedad.utiles) items.push(['Cuartos útiles', String(propiedad.utiles)]);
-    if (propiedad.ascensor) items.push(['Ascensor', 'Sí']);
-    if (propiedad.parqueaderos) items.push(['Parqueaderos', propiedad.parqueaderos + (propiedad.parqueaderos_detalle ? ' · ' + propiedad.parqueaderos_detalle : '')]);
-    if (propiedad.casa_de_mayordomo) items.push(['Casa de mayordomo', 'Sí']);
+    if (propiedad.capacidad) items.push([T('Capacidad'), propiedad.capacidad + ' ' + T('personas')]);
+    if (propiedad.condominio) items.push([T('Condominio'), propiedad.unidad_cerrada ? T('Unidad cerrada') : propiedad.condominio]);
+    if (propiedad.llegada) items.push([T('Cómo llegar'), propiedad.llegada]);
+    if (propiedad.cocina) items.push([T('Cocina'), propiedad.cocina]);
+    if (propiedad.utiles) items.push([T('Cuartos útiles'), String(propiedad.utiles)]);
+    if (propiedad.ascensor) items.push([T('Ascensor'), T('Sí')]);
+    if (propiedad.parqueaderos) items.push([T('Parqueaderos'), propiedad.parqueaderos + (propiedad.parqueaderos_detalle ? ' · ' + propiedad.parqueaderos_detalle : '')]);
+    if (propiedad.casa_de_mayordomo) items.push([T('Casa de mayordomo'), T('Sí')]);
     if (propiedad.area) {
-      const etiquetaArea = propiedad.tipo === 'lote' ? 'Área de escritura' : 'Área del lote';
-      items.push([etiquetaArea, `${propiedad.area.escritura_m2.toLocaleString('es-CO')} m²`]);
+      const etiquetaArea = propiedad.tipo === 'lote' ? T('Área de escritura') : T('Área del lote');
+      items.push([etiquetaArea, `${propiedad.area.escritura_m2.toLocaleString(window.ZULU_LOC)} m²`]);
     }
     if (propiedad.terreno) {
-      if (propiedad.terreno.frentes_via) items.push(['Frentes a vía', String(propiedad.terreno.frentes_via)]);
-      if (propiedad.terreno.explanacion_existente) items.push(['Explanación', 'Existente']);
+      if (propiedad.terreno.frentes_via) items.push([T('Frentes a vía'), String(propiedad.terreno.frentes_via)]);
+      if (propiedad.terreno.explanacion_existente) items.push([T('Explanación'), T('Existente')]);
     }
     if (propiedad.acceso && propiedad.acceso.tipo_via) {
-      items.push(['Vía de acceso', propiedad.acceso.tipo_via]);
+      items.push([T('Vía de acceso'), T(propiedad.acceso.tipo_via)]);
     }
     if (propiedad.ubicacion.parcelacion) {
-      items.push(['Parcelación', propiedad.ubicacion.parcelacion.nombre]);
-      if (propiedad.ubicacion.parcelacion.regimen) items.push(['Régimen', propiedad.ubicacion.parcelacion.regimen]);
+      items.push([T('Parcelación'), propiedad.ubicacion.parcelacion.nombre]);
+      if (propiedad.ubicacion.parcelacion.regimen) items.push([T('Régimen'), T(propiedad.ubicacion.parcelacion.regimen)]);
     }
     if (propiedad.legal && propiedad.legal.estrato) {
-      items.push(['Estrato', String(propiedad.legal.estrato)]);
+      items.push([T('Estrato'), String(propiedad.legal.estrato)]);
     }
     if (propiedad.precio && propiedad.precio.valor_m2) {
-      items.push(['Valor por m²', formatoCOP(propiedad.precio.valor_m2)]);
+      items.push([T('Valor por m²'), formatoCOP(propiedad.precio.valor_m2)]);
     }
     return items.map(([etiqueta, valor]) =>
       `<div class="ficha-fila"><dt>${etiqueta}</dt><dd>${valor}</dd></div>`
@@ -2454,11 +2493,11 @@ main:focus{outline:none;}
     if (!url) return '';
     const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
     if (yt) {
-      return `<div class="ficha-video"><iframe src="https://www.youtube.com/embed/${yt[1]}" title="Video de la propiedad" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+      return `<div class="ficha-video"><iframe src="https://www.youtube.com/embed/${yt[1]}" title="${T('Video de la propiedad')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
     }
     const vimeo = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/);
     if (vimeo) {
-      return `<div class="ficha-video"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="Video de la propiedad" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+      return `<div class="ficha-video"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="${T('Video de la propiedad')}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
     }
     return `<div class="ficha-video"><video controls preload="metadata" src="${url}"></video></div>`;
   }
@@ -2478,10 +2517,10 @@ main:focus{outline:none;}
       ? `<video class="reco-clip" src="${clip}" poster="${foto}" ${quieto ? '' : 'autoplay '}muted loop playsinline></video>`
       : `<img class="reco-clip" src="${foto}" alt="">`;
     const boton = m.video_archivo
-      ? `<button type="button" class="reco-play" data-mp4="${m.video_archivo}"><i></i>Ver el recorrido completo</button>`
-      : (yt ? `<button type="button" class="reco-play" data-yt="${yt[1]}"><i></i>Ver el video completo</button>` : '');
-    const pausa = clip ? `<button type="button" class="reco-pausa${quieto ? ' is-pausado' : ''}" aria-label="${quieto ? 'Reproducir el video' : 'Pausar el video'}"></button>` : '';
-    return `<div class="ficha-reco" role="group" aria-label="Recorrido de la propiedad">${vista}<div class="reco-veil"></div><span class="reco-tag">Recorrido</span>${pausa}${boton}</div>`;
+      ? `<button type="button" class="reco-play" data-mp4="${m.video_archivo}"><i></i>${T('Ver el recorrido completo')}</button>`
+      : (yt ? `<button type="button" class="reco-play" data-yt="${yt[1]}"><i></i>${T('Ver el video completo')}</button>` : '');
+    const pausa = clip ? `<button type="button" class="reco-pausa${quieto ? ' is-pausado' : ''}" aria-label="${quieto ? T('Reproducir el video') : T('Pausar el video')}"></button>` : '';
+    return `<div class="ficha-reco" role="group" aria-label="${T('Recorrido de la propiedad')}">${vista}<div class="reco-veil"></div><span class="reco-tag">${T('Recorrido')}</span>${pausa}${boton}</div>`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('.reco-play'); if (!b) return;
@@ -2489,7 +2528,7 @@ main:focus{outline:none;}
       b.closest('.ficha-reco').innerHTML = `<video class="reco-clip reco-full" src="${b.dataset.mp4}" controls autoplay playsinline preload="metadata"></video>`;
       return;
     }
-    b.closest('.ficha-reco').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1&rel=0" title="Video de la propiedad" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    b.closest('.ficha-reco').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1&rel=0" title="${T('Video de la propiedad')}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
   });
 
   function fichaHTML(propiedad) {
@@ -2497,12 +2536,12 @@ main:focus{outline:none;}
     const dataFotos = fotos.length ? ` data-fotos='${JSON.stringify(fotos)}'` : '';
     const proximamente = propiedad.estado === 'proximamente';
     const cta = proximamente
-      ? `<span class="more" aria-disabled="true" id="ficha-contacto">Video en camino${FLECHA}</span>`
-      : `<a href="#contacto" class="more" id="ficha-contacto"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? 'Quiero arrendar la mía' : (esAlquiler(propiedad) ? 'Consultar disponibilidad' : 'Quiero saber más')}${FLECHA}</a>`;
+      ? `<span class="more" aria-disabled="true" id="ficha-contacto">${T('Video en camino')}${FLECHA}</span>`
+      : `<a href="#contacto" class="more" id="ficha-contacto"${esGestionada(propiedad) ? ' data-rol="tengo"' : ''}>${esGestionada(propiedad) ? T('Quiero arrendar la mía') : (esAlquiler(propiedad) ? T('Consultar disponibilidad') : T('Quiero saber más'))}${FLECHA}</a>`;
     const aviso = proximamente
-      ? '<p class="ficha-desc"><b>Próximamente:</b> estamos terminando el video de esta propiedad antes de recibir contactos.</p>'
+      ? '<p class="ficha-desc"><b>' + T('Próximamente:') + '</b> ' + T('estamos terminando el video de esta propiedad antes de recibir contactos.') + '</p>'
       : (esGestionada(propiedad)
-        ? '<p class="ficha-gest"><b>Una propiedad que manejamos nosotros.</b> La mostramos para que veas cómo trabajamos. Si tienes una oficina, un local o una casa que quieras poner en arriendo, escríbenos.</p>'
+        ? '<p class="ficha-gest"><b>' + T('Una propiedad que manejamos nosotros.') + '</b> ' + T('La mostramos para que veas cómo trabajamos. Si tienes una oficina, un local o una casa que quieras poner en arriendo, escríbenos.') + '</p>'
         : '');
     const video = propiedad.media ? recorridoHTML(propiedad) : '';
     return `
@@ -2519,7 +2558,7 @@ main:focus{outline:none;}
         <div class="ficha-caracteristicas">${caracteristicasHTML(propiedad)}</div>
         <div class="ficha-acciones">
           ${cta}
-          ${propiedad.estado === 'publicado' && propiedad.slug ? `<button type="button" class="ficha-compartir" data-slug="${propiedad.slug}" data-id="${propiedad.id}">${ICO_COMPARTIR}<span>Compartir</span></button>` : ''}
+          ${propiedad.estado === 'publicado' && propiedad.slug ? `<button type="button" class="ficha-compartir" data-slug="${propiedad.slug}" data-id="${propiedad.id}">${ICO_COMPARTIR}<span>${T('Compartir')}</span></button>` : ''}
         </div>
       </div>`;
   }
@@ -2535,12 +2574,12 @@ main:focus{outline:none;}
   const fraseEl = document.getElementById('fraseDinamica');
   function actualizarFrase() {
     if (!fraseEl) return;
-    const intencionLbl = document.querySelector(`[data-group="intencion"] [data-v="${intencionActiva}"]`)?.dataset.label || 'comprar';
+    const intencionLbl = document.querySelector(`[data-group="intencion"] [data-v="${intencionActiva}"]`)?.dataset.label || T('comprar');
     const tipoLbls = [...intake.tipo].map(v => document.querySelector(`[data-group="tipo"] [data-v="${v}"]`)?.dataset.label).filter(Boolean);
-    const tipoTxt = tipoLbls.length ? tipoLbls.join(' o ') : 'una propiedad';
+    const tipoTxt = tipoLbls.length ? tipoLbls.join(' ' + T('o') + ' ') : T('una propiedad');
     const presLbl = intake.presupuesto !== 'todos' ? ', ' + document.querySelector(`[data-group="presupuesto"] [data-v="${intake.presupuesto}"]`).dataset.label : '';
     const zonaLbl = intake.zona !== 'todas' ? ' ' + document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).dataset.label : '';
-    fraseEl.innerHTML = `Buscas <b>${intencionLbl}</b> ${tipoTxt}${zonaLbl}${presLbl}.`;
+    fraseEl.innerHTML = `${T('Buscas')} <b>${intencionLbl}</b> ${tipoTxt}${zonaLbl}${presLbl}.`;
   }
 
   /* Ripple con la curva de nivel de la marca, desde el chip tocado */
@@ -2604,8 +2643,8 @@ main:focus{outline:none;}
     if (mostradas === 0) {
       const hayFiltros = intake.zona !== 'todas' || intake.presupuesto !== 'todos' || intake.tipo.size > 0 || intencionActiva === 'alquilar';
       if (hayFiltros) {
-        const que = intencionActiva === 'alquilar' ? 'propiedades en alquiler publicadas' : 'una propiedad así publicada';
-        empty.innerHTML = `<strong class="empty-t">Todavía no tenemos ${que}.</strong> Lo estamos consiguiendo. <span class="empty-acts"><button type="button" class="btn btn-solid empty-aviso" data-avisame>Avísame cuando haya algo así</button><button type="button" class="empty-reset" data-reset-filtros>o mira todo el catálogo</button></span>`;
+        const que = intencionActiva === 'alquilar' ? T('propiedades en alquiler publicadas') : T('una propiedad así publicada');
+        empty.innerHTML = `<strong class="empty-t">${T('Todavía no tenemos')} ${que}.</strong> ${T('Lo estamos consiguiendo.')} <span class="empty-acts"><button type="button" class="btn btn-solid empty-aviso" data-avisame>${T('Avísame cuando haya algo así')}</button><button type="button" class="empty-reset" data-reset-filtros>${T('o mira todo el catálogo')}</button></span>`;
       } else {
         empty.innerHTML = EMPTY_DEFAULT_HTML;
       }
@@ -2686,9 +2725,9 @@ main:focus{outline:none;}
     if (intake.zona !== 'todas') {
       sel('zona').value = document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).textContent.trim();
     }
-    const resto = [...intake.tipo].length > 1 ? ' (También me interesan otros tipos de propiedad.)' : '';
+    const resto = [...intake.tipo].length > 1 ? ' ' + T('(También me interesan otros tipos de propiedad.)') : '';
     setRol('busco');
-    sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(/^Buscas/, 'Busco').replace('encaje contigo', 'encaje conmigo') : '') + resto + ' Avísenme cuando tengan algo así.';
+    sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(T('Buscas'), T('Busco')).replace('encaje contigo', 'encaje conmigo') : '') + resto + ' ' + T('Avísenme cuando tengan algo así.');
     sel('contacto').scrollIntoView({ behavior: 'smooth', block: 'start' });
     setTimeout(() => sel('nombre').focus({ preventScroll: true }), 700);
   }
@@ -2796,8 +2835,8 @@ main:focus{outline:none;}
     favBarCount.textContent = favoritos.size;
     favBar.classList.toggle('is-visible', favoritos.size > 0);
     const elegidas = propiedadesCargadas.filter(p => favoritos.has(p.id));
-    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + precioTexto(p)}${p.slug && p.estado === 'publicado' ? '\n  ' + DOMINIO_SITIO + '/' + p.slug : ''}`).join('\n');
-    const msg = `Hola, me interesan estas propiedades de Zulu:\n${lineas}\n¿Me cuentan más?`;
+    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + precioTexto(p)}${p.slug && p.estado === 'publicado' ? '\n  ' + DOMINIO_SITIO + window.ZULU_BASE + p.slug : ''}`).join('\n');
+    const msg = `${T('Hola, me interesan estas propiedades de Zulu:')}\n${lineas}\n${T('¿Me cuentan más?')}`;
     favBarWa.href = `https://wa.me/573107311282?text=${encodeURIComponent(msg)}`;
   }
 
@@ -2819,7 +2858,7 @@ main:focus{outline:none;}
   let idFichaAbierta = null, entradaDirecta = false;
   function idDesdeRuta() {
     let slug = '';
-    try { slug = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, '').replace(/\.html$/, ''); } catch (err) { return null; }
+    try { slug = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, '').replace(/\.html$/, '').replace(/^en(\/|$)/, ''); } catch (err) { return null; }
     const p = slug && propiedadesCargadas.find(x => x.slug === slug && x.estado === 'publicado');
     return p ? p.id : null;
   }
@@ -2827,7 +2866,8 @@ main:focus{outline:none;}
     const propiedad = propiedadesCargadas.find(p => p.id === id);
     if (!propiedad) return;
     if (desdeHistorial !== true && propiedad.estado === 'publicado' && propiedad.slug) {
-      try { history.pushState({ ficha: id }, '', '/' + propiedad.slug); } catch (err) {}
+      try { history.pushState({ ficha: id }, '', window.ZULU_BASE + propiedad.slug); } catch (err) {}
+      if (window.zuluIdioma) window.zuluIdioma.actualizar();
     }
     idFichaAbierta = id;
     document.title = propiedad.titulo + ' | Zulu Real Estate';
@@ -2875,7 +2915,7 @@ main:focus{outline:none;}
       // Si la dirección la puso la propia ficha, se retrocede una entrada (popstate termina de cerrarla); si se entró
       // directo a /<slug>, solo se vuelve a la portada.
       if (history.state && history.state.ficha) { history.back(); return; }
-      if (location.pathname !== '/') { try { history.replaceState({}, '', '/'); } catch (err) {} }
+      if (location.pathname !== window.ZULU_HOME) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} if (window.zuluIdioma) window.zuluIdioma.actualizar(); }
     }
     const idCerrado = idFichaAbierta;
     idFichaAbierta = null;
@@ -2905,7 +2945,7 @@ main:focus{outline:none;}
   async function compartirPropiedad(boton) {
     const p = propiedadesCargadas.find(x => x.id === boton.dataset.id);
     if (!p) return;
-    const url = DOMINIO_SITIO + '/' + boton.dataset.slug;
+    const url = DOMINIO_SITIO + window.ZULU_BASE + boton.dataset.slug;
     const texto = p.titulo + (esGestionada(p) ? '' : ' · ' + precioTexto(p));
     const etiqueta = boton.querySelector('span');
     if (navigator.share) {
@@ -2917,10 +2957,10 @@ main:focus{outline:none;}
       const t = document.createElement('textarea'); t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
       document.body.appendChild(t); t.select(); try { ok = document.execCommand('copy'); } catch (e2) {} t.remove();
     }
-    etiqueta.textContent = ok ? 'Enlace copiado' : 'No se pudo copiar';
+    etiqueta.textContent = ok ? T('Enlace copiado') : T('No se pudo copiar');
     boton.setAttribute('role', 'status');
     clearTimeout(temporizadorCompartir);
-    temporizadorCompartir = setTimeout(() => { etiqueta.textContent = 'Compartir'; boton.removeAttribute('role'); }, 2200);
+    temporizadorCompartir = setTimeout(() => { etiqueta.textContent = T('Compartir'); boton.removeAttribute('role'); }, 2200);
   }
   document.getElementById('ficha-close').addEventListener('click', cerrarFicha);
   fichaBackdrop.addEventListener('click', e => { if (e.target === fichaBackdrop) cerrarFicha(); });
@@ -2931,7 +2971,7 @@ main:focus{outline:none;}
       if (v) {
         if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else { v.pause(); }
         pausa.classList.toggle('is-pausado', v.paused);
-        pausa.setAttribute('aria-label', v.paused ? 'Reproducir el video' : 'Pausar el video');
+        pausa.setAttribute('aria-label', v.paused ? T('Reproducir el video') : T('Pausar el video'));
       }
       return;
     }
@@ -2939,7 +2979,8 @@ main:focus{outline:none;}
     if (compartir) { compartirPropiedad(compartir); return; }
     if (e.target.closest('#ficha-contacto')) {
       // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
-      if (history.state && history.state.ficha) { try { history.replaceState({}, '', '/'); } catch (err) {} }
+      if (history.state && history.state.ficha) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} }
+      if (window.zuluIdioma) window.zuluIdioma.actualizar();
       cerrarFicha(true, true);
       return;
     }
@@ -2951,6 +2992,7 @@ main:focus{outline:none;}
   });
 
   addEventListener('popstate', () => {
+    if (window.zuluIdioma) window.zuluIdioma.actualizar();
     if (!lightbox.hidden) cerrarGaleria();
     const id = idDesdeRuta();
     if (id) { if (fichaBackdrop.hidden || idFichaAbierta !== id) abrirFicha(id, true); }
@@ -3075,9 +3117,10 @@ main:focus{outline:none;}
     });
   }
 
-  fetch('data/properties.json')
+  fetch('/data/properties.json')
     .then(r => r.json())
     .then(propiedades => {
+      propiedades = window.zuluAplicarIdioma(window.zuluAbs(propiedades));
       propiedadesCargadas = propiedades;
       const publicadas = propiedades.filter(p => p.estado === 'publicado' || p.estado === 'proximamente');
       const disponibles = publicadas.filter(p => !esGestionada(p));
@@ -3087,7 +3130,7 @@ main:focus{outline:none;}
       const bloqueHecho = document.getElementById('hecho');
       if (bloqueHecho && hechas.length) {
         gridHecho.innerHTML = hechas.map(tarjetaHTML).join('');
-        document.getElementById('hechoN').textContent = hechas.length === 1 ? '1 propiedad arrendada' : hechas.length + ' propiedades arrendadas';
+        document.getElementById('hechoN').textContent = hechas.length === 1 ? T('1 propiedad arrendada') : hechas.length + ' ' + T('propiedades arrendadas');
         bloqueHecho.hidden = false;
       }
       // El chip de una categoría solo aparece si hay algo disponible en ella ("Oficinas" hoy solo tiene propiedades ya arrendadas)
@@ -3129,8 +3172,8 @@ main:focus{outline:none;}
   const form = document.getElementById('form');
   const ok   = document.getElementById('ok');
   const TXT_ROL = {
-    busco: { lede: 'Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.', zona: 'Zona de interés', zonaPh: 'Ej. El Poblado, Rionegro, Envigado…', notas: 'Cuéntanos más', notasPh: 'Qué buscas, para cuándo, cualquier detalle que nos ayude.', ok: 'Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.' },
-    tengo: { lede: 'Cuéntanos de tu propiedad y te decimos cómo podemos ayudarte a venderla o arrendarla.', zona: '¿Dónde está?', zonaPh: 'Municipio y sector. Ej. Envigado, Alto de las Palmas', notas: 'Cuéntanos de tu propiedad', notasPh: 'Tamaño, estado, si está desocupada o arrendada, cualquier detalle.', ok: 'Gracias — recibimos tu mensaje. Te contactamos pronto para conocer tu propiedad.' }
+    busco: { lede: T('Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.'), zona: T('Zona de interés'), zonaPh: T('Ej. El Poblado, Rionegro, Envigado…'), notas: T('Cuéntanos más'), notasPh: T('Qué buscas, para cuándo, cualquier detalle que nos ayude.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.') },
+    tengo: { lede: T('Cuéntanos de tu propiedad y te decimos cómo podemos ayudarte a venderla o arrendarla.'), zona: T('¿Dónde está?'), zonaPh: T('Municipio y sector. Ej. Envigado, Alto de las Palmas'), notas: T('Cuéntanos de tu propiedad'), notasPh: T('Tamaño, estado, si está desocupada o arrendada, cualquier detalle.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para conocer tu propiedad.') }
   };
   function setRol(r) {
     const radio = form.querySelector(`input[name="rol"][value="${r}"]`);
@@ -3446,7 +3489,7 @@ main:focus{outline:none;}
       const [x, y] = B.proj(p.c[0], p.c[1]);
       const d = document.createElement(p.ref ? 'div' : 'button');
       d.className = 'mp-pin' + (p.ref ? ' is-ref' : ''); if (p.z) d.dataset.z = '1'; if (p.lejos) d.dataset.lejos = '1';
-      if (!p.ref) { d.type = 'button'; d.setAttribute('aria-label', 'Ver ' + p.n + ' en ' + p.mun); d.dataset.id = p.id; }
+      if (!p.ref) { d.type = 'button'; d.setAttribute('aria-label', T('Ver') + ' ' + p.n + ' ' + T('en') + ' ' + p.mun); d.dataset.id = p.id; }
       const izq = p.o[0] < 0;
       d.innerHTML = '<i></i><span style="left:' + p.o[0] + 'px;top:' + (p.o[1] - 9) + 'px' + (izq ? ';transform:translateX(-100%);text-align:right' : '') + '">' + p.n + (p.s ? '<small>' + p.s + '</small>' : '') + '</span>';
       pinsEl.appendChild(d);
@@ -3536,7 +3579,7 @@ main:focus{outline:none;}
       cx.font = '500 ' + (mob ? 9.5 : 10.5) + 'px Inter, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
       if ('letterSpacing' in cx) cx.letterSpacing = '3px';
       cx.fillStyle = 'rgba(207,198,176,' + (.5 * (v - .4) / .6) + ')';
-      if (sx > 40 && sx < W - 40 && sy > 70 && sy < H - 20) cx.fillText('MAR CARIBE', sx, sy);
+      if (sx > 40 && sx < W - 40 && sy > 70 && sy < H - 20) cx.fillText(T('MAR CARIBE'), sx, sy);
       if ('letterSpacing' in cx) cx.letterSpacing = '0px';
     }
     const llave = zu + 7 * v;
@@ -3593,9 +3636,10 @@ main:focus{outline:none;}
   addEventListener('resize', () => { if (ready) montar(); });
   const fuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
   Promise.all([
-    fetch('data/properties.json').then(r => r.json()).catch(() => []),
+    fetch('/data/properties.json').then(r => r.json()).catch(() => []),
     fuentes
   ]).then(([props]) => {
+    props = window.zuluAplicarIdioma(props || []);
     const pub = (props || []).filter(p => p.estado === 'publicado');
     const subs = new Set();
     pub.forEach(p => {
@@ -3610,7 +3654,7 @@ main:focus{outline:none;}
     const conPunto = pub.filter(p => MUN[(p.ubicacion || {}).municipio]);
     if (conPunto.length) {
       document.getElementById('mpN').textContent = conPunto.length;
-      document.getElementById('mpS').innerHTML = (conPunto.length === 1 ? 'propiedad' : 'propiedades') + (subs.size ? ',<br>' + subs.size + (subs.size === 1 ? ' subregión' : ' subregiones') : '');
+      document.getElementById('mpS').innerHTML = (conPunto.length === 1 ? T('propiedad') : T('propiedades')) + (subs.size ? ',<br>' + subs.size + ' ' + (subs.size === 1 ? T('subregión') : T('subregiones')) : '');
     }
     montar(); ready = true; dibujar(0, 0); requestAnimationFrame(bucle);
   });
@@ -3711,20 +3755,66 @@ main:focus{outline:none;}
   v.addEventListener('play', () => requestAnimationFrame(encuadre));
   const sincronizar = () => { if (enPantalla && !document.hidden && !pausadoPorPersona) jugar(); else v.pause(); };
   const iniciar = () => {
-    v.src = 'assets/hero/hero-baru-bucle-hd.mp4';
+    v.src = '/assets/hero/hero-baru-bucle-hd.mp4';
     v.addEventListener('playing', () => { v.classList.add('is-on'); bt.hidden = false; }, { once: true });
     if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { enPantalla = e.isIntersecting; sincronizar(); }).observe(hero);
     document.addEventListener('visibilitychange', sincronizar);
     bt.addEventListener('click', () => {
       pausadoPorPersona = !pausadoPorPersona;
       bt.classList.toggle('is-pausado', pausadoPorPersona);
-      bt.setAttribute('aria-label', pausadoPorPersona ? 'Reproducir el video de fondo' : 'Pausar el video de fondo');
+      bt.setAttribute('aria-label', pausadoPorPersona ? T('Reproducir el video de fondo') : T('Pausar el video de fondo'));
       sincronizar();
     });
     sincronizar();
   };
   if (document.readyState === 'complete') setTimeout(iniciar, 300);
   else addEventListener('load', () => setTimeout(iniciar, 300), { once: true });
+})();
+</script>
+<div class="idioma-aviso" id="idiomaAviso" role="dialog" aria-label="Idioma / Language" hidden>
+  <p><span lang="es">¿Prefieres ver la página en español?</span><br><span lang="en">Prefer to view the site in English?</span></p>
+  <div class="idioma-bot"><button type="button" data-i="es" lang="es">Español</button><button type="button" data-i="en" lang="en">English</button></div>
+  <button type="button" class="idioma-x" aria-label="Cerrar / Close">×</button>
+</div>
+<script>
+/* --- Idioma: selector ES | EN, aviso la primera vez y preferencia recordada ---------------------------------------- */
+(function () {
+  var en = window.ZULU_LANG === 'en', KEY = 'zulu-idioma';
+  function leer() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function guardar(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function ruta(aEn) {
+    var p = location.pathname.replace(/\.html$/, '');
+    if (aEn) return '/en' + (p === '/' ? '' : p);
+    return p.replace(/^\/en(\/|$)/, '/') || '/';
+  }
+  function actualizar() {
+    document.querySelectorAll('.lang-sel').forEach(function (a) {
+      a.setAttribute('href', ruta(!en) + location.search);
+      a.textContent = a.dataset.t === 'largo' ? (en ? 'Español' : 'English') : (en ? 'ES' : 'EN');
+      a.setAttribute('hreflang', en ? 'es' : 'en'); a.setAttribute('lang', en ? 'es' : 'en');
+      a.setAttribute('aria-label', en ? 'Ver esta página en español' : 'View this page in English');
+    });
+  }
+  window.zuluIdioma = { actualizar: actualizar };
+  actualizar();
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('.lang-sel'); if (a) guardar(en ? 'es' : 'en'); });
+  var pref = leer();
+  if (en) { if (!pref) guardar('en'); return; }          // entrar a /en cuenta como elegir inglés
+  if (pref === 'en') { location.replace(ruta(true) + location.search + location.hash); return; }
+  if (pref) return;
+  var caja = document.getElementById('idiomaAviso'), visto = false;
+  try { visto = sessionStorage.getItem('zulu-idioma-visto') === '1'; } catch (e) {}
+  if (!caja || visto) return;
+  if (/^en/i.test(navigator.language || '')) caja.classList.add('sugiere-en');
+  function cerrar() { caja.hidden = true; try { sessionStorage.setItem('zulu-idioma-visto', '1'); } catch (e) {} }
+  caja.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.classList.contains('idioma-x')) { cerrar(); return; }
+    guardar(b.dataset.i);
+    if (b.dataset.i === 'en') location.href = ruta(true) + location.search; else cerrar();
+  });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && !caja.hidden) cerrar(); });
+  setTimeout(function () { caja.hidden = false; }, 1500);
 })();
 </script>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>

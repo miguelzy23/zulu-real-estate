@@ -1,0 +1,229 @@
+diff --git a/index.html b/index.html
+index 645e941..8131f3e 100644
+--- a/index.html
++++ b/index.html
+@@ -1298,6 +1298,55 @@ main:focus{outline:none;}
+ ::view-transition-old(foto-lote),::view-transition-new(foto-lote){height:100%; object-fit:cover;}
+ ::view-transition-old(root),::view-transition-new(root){animation-duration:.3s;}
+ @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important;}}
++
++/* ---- Buscador: vista de mapa y lista ---- */
++.vbarra{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 16px; margin:0 0 18px;}
++.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--rule-dark); border-radius:99px;}
++.seg button{border:0; background:none; color:var(--on-ink-dim); font:600 13px/1 Inter,sans-serif; padding:0 18px; min-height:40px; border-radius:99px; cursor:pointer; transition:background .2s var(--ease-out), color .2s var(--ease-out);}
++.seg button[aria-pressed="true"]{background:var(--cream); color:var(--ink);}
++.seg button:focus-visible{outline:2px solid #d8ad6b; outline-offset:2px;}
++.vmapa[hidden],.grid[hidden]{display:none;}
++.vsub{display:none; margin:0 0 12px;}
++.vsplit{display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:18px; align-items:start;}
++.vlista{display:grid; gap:10px; max-height:660px; overflow:auto; padding-right:6px; align-content:start;}
++.vit{display:grid; grid-template-columns:116px 1fr; gap:12px; padding:8px; border:1px solid var(--rule-dark); border-radius:8px; background:var(--ink-soft); color:var(--cream); text-align:left; font:inherit; cursor:pointer; transition:border-color .2s var(--ease-out), transform .2s var(--ease-out);}
++.vit img{width:116px; height:88px; object-fit:cover; border-radius:5px; display:block;}
++.vit b{display:block; font:400 17px/1.2 'Fraunces',Georgia,serif;}
++.vit .vp{font-weight:600; margin-top:2px;}
++.vit .vl{color:var(--on-ink-dim); font-size:13px;}
++.vit .vt{display:inline-block; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:#d8ad6b; margin-bottom:2px;}
++.vit.on{border-color:#d8ad6b; transform:translateX(3px);}
++.vit:focus-visible{outline:2px solid #d8ad6b; outline-offset:2px;}
++.vmap{position:sticky; top:84px; height:660px; border:1px solid var(--rule-dark); border-radius:10px; background:#0d0c0b; overflow:hidden;}
++.vmap svg{width:100%; height:100%; display:block;}
++.vmap svg path{fill:none; stroke:rgba(250,238,218,.28); stroke-width:1; stroke-dasharray:2 4; vector-effect:non-scaling-stroke;}
++.vmap svg path.ant{fill:rgba(216,173,107,.08); stroke:#d8ad6b; stroke-dasharray:none; stroke-width:1.6;}
++.vmap svg path.bol{fill:rgba(216,173,107,.06);}
++.vpin{cursor:pointer; transition:opacity .4s var(--ease-out);}
++.vpin .c{fill:#d8ad6b; stroke:#0a0a0a; stroke-width:2; vector-effect:non-scaling-stroke;}
++.vpin .h{fill:rgba(216,173,107,.25); opacity:0; transform-box:fill-box; transform-origin:center;}
++.vpin.on .h{opacity:1; animation:vpulso 1.6s infinite;}
++.vpin:focus-visible{outline:none;}
++.vpin:focus-visible .c{stroke:#FAEEDA; stroke-width:3;}
++@keyframes vpulso{70%{transform:scale(1.7); opacity:0;} 100%{opacity:0;}}
++.vpop{color:var(--cream); font-size:14px; position:absolute; left:16px; bottom:16px; width:min(330px,calc(100% - 32px)); display:grid; grid-template-columns:96px 1fr; gap:10px; padding:8px; background:rgba(10,10,10,.92); border:1px solid #d8ad6b; border-radius:8px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);}
++.vpop[hidden]{display:none;}
++.vpop img{width:96px; height:72px; object-fit:cover; border-radius:4px;}
++.vpop b{font:400 16px/1.2 'Fraunces',Georgia,serif; display:block;}
++.vpop button{border:0; background:none; padding:6px 0 0; color:#d8ad6b; font:600 13px/1 Inter,sans-serif; cursor:pointer; min-height:36px;}
++.vpop button:focus-visible{outline:2px solid #d8ad6b; outline-offset:2px;}
++.vreg{position:absolute; top:12px; left:12px; z-index:2;}
++.vreg.seg{background:rgba(10,10,10,.7); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);}
++.vnada{padding:28px 18px; color:var(--on-ink-dim);}
++@media (max-width:760px){
++  .vsplit{grid-template-columns:1fr;}
++  .vmap{position:relative; top:0; height:430px;}
++  .vlista{max-height:none;}
++  .vsub{display:inline-flex;}
++  .vsplit[data-v="mapa"] .vlista{display:none;}
++  .vsplit[data-v="lista"] .vmap{display:none;}
++}
++@media (prefers-reduced-motion:reduce){.vpin.on .h{animation:none;} .vit,.vpin{transition:none;}}
+ </style>
+ </head>
+ <body>
+@@ -1544,6 +1593,26 @@ main:focus{outline:none;}
+       </div>
+     </div>
+ 
++    <div class="vbarra reveal">
++      <div class="seg" role="group" aria-label="Cómo ver las propiedades">
++        <button type="button" id="vistaGrid" aria-pressed="true">Cuadrícula</button>
++        <button type="button" id="vistaMapa" aria-pressed="false">Mapa</button>
++      </div>
++    </div>
++    <div class="vmapa" id="vmapa" hidden>
++      <div class="seg vsub" role="group" aria-label="Lista o mapa">
++        <button type="button" id="vsubLista" aria-pressed="false">Lista</button>
++        <button type="button" id="vsubMapa" aria-pressed="true">Mapa</button>
++      </div>
++      <div class="vsplit" id="vsplit" data-v="mapa">
++        <div class="vlista" id="vlista" aria-label="Propiedades"></div>
++        <div class="vmap">
++          <div class="seg vreg" id="vreg" role="group" aria-label="Región del mapa"></div>
++          <svg id="vsvg" viewBox="280 310 340 350" preserveAspectRatio="xMidYMid slice" role="group" aria-label="Mapa con las propiedades"><g id="vpaths"></g><g id="vpines"></g></svg>
++          <div class="vpop" id="vpop" hidden></div>
++        </div>
++      </div>
++    </div>
+     <div class="grid" id="grid"></div>
+     <p class="empty" id="empty" hidden>No hay propiedades en esta categoría todavía. <a href="#contacto">Escríbenos</a> y te avisamos apenas entre una.</p>
+ 
+@@ -2563,6 +2632,7 @@ main:focus{outline:none;}
+     }
+     empty.hidden = mostradas > 0;
+     asignarColumnas();
++    if (typeof actualizarVistaMapa === 'function') actualizarVistaMapa();
+   }
+ 
+   document.querySelectorAll('.q-chips[data-group]').forEach(grupo => {
+@@ -3026,6 +3096,125 @@ main:focus{outline:none;}
+     });
+   }
+ 
++  /* --- Buscador: mapa y lista sincronizados ---------------------------------------------------------------------
++     Muestra las mismas propiedades que la cuadrícula (respeta todos los filtros) en una lista y en un mapa. */
++  let vistaMapa = false, regionMapa = 'antioquia', elegidaMapa = null, svgListo = false, ptsMapa = [];
++  const VISTAS = { antioquia: [280, 310, 340, 350], caribe: [372, 110, 160, 165] };
++  const NS = 'http://www.w3.org/2000/svg';
++  const crearSvg = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
++  const regionDe = p => (p.ubicacion && (p.ubicacion.departamento === 'Bolívar' || p.ubicacion.municipio === 'Cartagena')) ? 'caribe' : 'antioquia';
++  function prepararSvgMapa() {
++    if (svgListo || !window.ZULU_DEPT) return;
++    const g = document.getElementById('vpaths');
++    window.ZULU_DEPT.forEach(d => {
++      const p = crearSvg('path', { d: d.r.map(r => 'M' + r.map(q => ((q[0] + 80) * 100).toFixed(0) + ' ' + ((12 - q[1]) * 100).toFixed(0)).join('L') + 'Z').join('') });
++      if (d.n === 'ANTIOQUIA') p.setAttribute('class', 'ant'); else if (d.n === 'BOLÍVAR') p.setAttribute('class', 'bol');
++      g.appendChild(p);
++    });
++    svgListo = true;
++  }
++  function puntosVisibles() {
++    const visibles = [...grid.querySelectorAll('.card[data-id]:not(.card-cta)')].filter(c => !c.hidden).map(c => c.dataset.id);
++    const cuentaMun = {};
++    return propiedadesCargadas.filter(p => visibles.includes(p.id)).map(p => {
++      const u = p.ubicacion || {}, co = u.coordenadas, exacto = !!(co && co.lat != null && co.lng != null), m = window.ZULU_MUN && window.ZULU_MUN[u.municipio];
++      let lon, lat;
++      if (exacto) { lon = co.lng; lat = co.lat; }
++      else if (m) { const k = cuentaMun[u.municipio] = (cuentaMun[u.municipio] || 0) + (cuentaMun[u.municipio] === undefined ? 0 : 1); lon = k ? m.c[0] - .014 * k : m.c[0]; lat = k ? m.c[1] - .032 * k : m.c[1]; }
++      else return null;
++      return { p, x: (lon + 80) * 100, y: (12 - lat) * 100, reg: regionDe(p) };
++    }).filter(Boolean);
++  }
++  function miniatura(src) { return /^assets\/.+\/[^/]+$/.test(src) ? src.replace(/([^/]+)$/, 'card/$1') : src; }
++  function actualizarVistaMapa() {
++    if (!vistaMapa) return;
++    prepararSvgMapa();
++    const pts = ptsMapa = puntosVisibles(), lista = document.getElementById('vlista'), pines = document.getElementById('vpines');
++    const nAnt = pts.filter(q => q.reg === 'antioquia').length, nCar = pts.filter(q => q.reg === 'caribe').length;
++    if (regionMapa === 'antioquia' && !nAnt && nCar) regionMapa = 'caribe'; else if (regionMapa === 'caribe' && !nCar && nAnt) regionMapa = 'antioquia';
++    if (elegidaMapa && !pts.some(q => q.p.id === elegidaMapa)) elegidaMapa = null;
++    const rg = document.getElementById('vreg');
++    rg.innerHTML = '<button type="button" data-r="antioquia" aria-pressed="' + (regionMapa === 'antioquia') + '">Antioquia (' + nAnt + ')</button><button type="button" data-r="caribe" aria-pressed="' + (regionMapa === 'caribe') + '">Caribe (' + nCar + ')</button>';
++    lista.innerHTML = pts.length ? '' : '<p class="vnada">No hay propiedades con esos filtros.</p>';
++    pines.innerHTML = '';
++    pts.forEach(q => {
++      const p = q.p, precio = esGestionada(p) ? 'Arrendada por Zulu' : precioTexto(p), lugar = lugarTexto(p).replace(/<[^>]*>/g, '');
++      const b = document.createElement('button');
++      b.type = 'button'; b.className = 'vit'; b.dataset.id = p.id;
++      b.innerHTML = '<img src="' + miniatura(p.media.foto_principal) + '" alt=""><span><span class="vt">' + (esAlquiler(p) ? 'Alquiler' : 'En venta') + '</span><b>' + p.titulo.split(' — ')[0] + '</b><span class="vp">' + precio + '</span><br><span class="vl">' + lugar + '</span></span>';
++      b.addEventListener('mouseenter', () => resaltarMapa(p.id, true));
++      b.addEventListener('mouseleave', () => resaltarMapa(p.id, false));
++      b.addEventListener('focus', () => resaltarMapa(p.id, true));
++      b.addEventListener('blur', () => resaltarMapa(p.id, false));
++      b.addEventListener('click', () => elegirMapa(p.id, true));
++      lista.appendChild(b);
++      const g = crearSvg('g', { class: 'vpin', tabindex: '0', role: 'button', 'aria-label': 'Ver ' + p.titulo.split(' — ')[0], 'data-id': p.id, 'data-r': q.reg });
++      g.appendChild(crearSvg('circle', { class: 'h', cx: q.x, cy: q.y, r: 9 }));
++      g.appendChild(crearSvg('circle', { class: 'c', cx: q.x, cy: q.y, r: 4 }));
++      g.addEventListener('click', () => elegirMapa(p.id, false));
++      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegirMapa(p.id, false); } });
++      g.style.opacity = q.reg === regionMapa ? 1 : .15;
++      pines.appendChild(g);
++    });
++    lista.querySelectorAll('.vit').forEach(b => { const q = pts.find(x => x.p.id === b.dataset.id); b.style.opacity = q.reg === regionMapa ? 1 : .45; });
++    fijarVista(regionMapa, false);
++    pintarSeleccion();
++  }
++  // Encuadre de la región: Caribe es fijo; Antioquia se ajusta a las propiedades visibles (con margen) para que los puntos no queden amontonados.
++  function encuadre(r) {
++    const pts = ptsMapa.filter(q => q.reg === r);
++    if (r === 'caribe' || !pts.length) return VISTAS[r];
++    const caja = document.querySelector('.vmap'), A = (caja.clientWidth || 700) / (caja.clientHeight || 660);
++    const xs = pts.map(q => q.x), ys = pts.map(q => q.y), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
++    let w = Math.max((Math.max(...xs) - Math.min(...xs)) * 2.1, (Math.max(...ys) - Math.min(...ys)) * 2.1 * A, 120), hh = w / A;
++    return [cx - w / 2, cy - hh / 2, w, hh];
++  }
++  function fijarVista(r, animar) {
++    const svg = document.getElementById('vsvg'), t = encuadre(r), a = svg.viewBox.baseVal, f = [a.x, a.y, a.width, a.height];
++    // El tamaño del punto se mantiene igual en pantalla aunque el mapa se acerque (el radio va en unidades del mapa)
++    document.querySelectorAll('.vpin .c').forEach(c => c.setAttribute('r', (4.5 * t[2] / 340).toFixed(2)));
++    document.querySelectorAll('.vpin .h').forEach(c => c.setAttribute('r', (10 * t[2] / 340).toFixed(2)));
++    const sinMov = matchMedia('(prefers-reduced-motion: reduce)').matches;
++    if (!animar || sinMov) { svg.setAttribute('viewBox', t.join(' ')); return; }
++    const t0 = performance.now();
++    (function paso(n) { let k = Math.min(1, (n - t0) / 700); k = k * k * (3 - 2 * k); svg.setAttribute('viewBox', f.map((v, i) => v + (t[i] - v) * k).join(' ')); if (k < 1) requestAnimationFrame(paso); })(t0);
++  }
++  function resaltarMapa(id, on) {
++    document.querySelectorAll('.vpin').forEach(g => g.classList.toggle('on', (on && g.dataset.id === id) || elegidaMapa === g.dataset.id));
++    document.querySelectorAll('.vit').forEach(b => b.classList.toggle('on', (on && b.dataset.id === id) || elegidaMapa === b.dataset.id));
++  }
++  function pintarSeleccion() {
++    const pop = document.getElementById('vpop'), p = propiedadesCargadas.find(x => x.id === elegidaMapa);
++    resaltarMapa('', false);
++    if (!p) { pop.hidden = true; return; }
++    pop.hidden = false;
++    pop.innerHTML = '<img src="' + miniatura(p.media.foto_principal) + '" alt=""><span><b>' + p.titulo.split(' — ')[0] + '</b><span>' + (esGestionada(p) ? 'Arrendada por Zulu' : precioTexto(p)) + '</span><br><button type="button" data-ficha="' + p.id + '">Ver ficha →</button></span>';
++  }
++  function elegirMapa(id, desdeLista) {
++    elegidaMapa = id;
++    const p = propiedadesCargadas.find(x => x.id === id);
++    if (p && regionDe(p) !== regionMapa) { regionMapa = regionDe(p); actualizarVistaMapa(); } else pintarSeleccion();
++    if (!desdeLista) { const it = document.querySelector('.vit[data-id="' + id + '"]'); if (it) it.scrollIntoView({ block: 'nearest' }); }
++    const sp = document.getElementById('vsplit'); if (desdeLista && sp.dataset.v === 'lista') { /* en celular, tocar la lista no cambia de vista */ }
++  }
++  function ponerVista(mapa) {
++    vistaMapa = mapa;
++    document.getElementById('vistaGrid').setAttribute('aria-pressed', String(!mapa));
++    document.getElementById('vistaMapa').setAttribute('aria-pressed', String(mapa));
++    document.getElementById('vmapa').hidden = !mapa;
++    grid.hidden = mapa;
++    if (mapa) actualizarVistaMapa();
++  }
++  document.getElementById('vistaGrid').addEventListener('click', () => ponerVista(false));
++  document.getElementById('vistaMapa').addEventListener('click', () => ponerVista(true));
++  document.getElementById('vreg').addEventListener('click', e => { const b = e.target.closest('button[data-r]'); if (!b) return; regionMapa = b.dataset.r; elegidaMapa = null; actualizarVistaMapa(); fijarVista(regionMapa, true); });
++  document.getElementById('vpop').addEventListener('click', e => { const b = e.target.closest('button[data-ficha]'); if (b) abrirFicha(b.dataset.ficha); });
++  [['vsubLista', 'lista'], ['vsubMapa', 'mapa']].forEach(([id, v]) => document.getElementById(id).addEventListener('click', () => {
++    document.getElementById('vsplit').dataset.v = v;
++    document.getElementById('vsubLista').setAttribute('aria-pressed', String(v === 'lista'));
++    document.getElementById('vsubMapa').setAttribute('aria-pressed', String(v === 'mapa'));
++  }));
++
+   fetch('data/properties.json')
+     .then(r => r.json())
+     .then(propiedades => {
+@@ -3238,6 +3427,7 @@ main:focus{outline:none;}
+     // Propiedades lejos de Antioquia: no cuentan para el encuadre del acercamiento; la cámara viaja hasta ellas al final.
+     'Cartagena': { c: [-75.600, 10.200], o: [44, -20], lejos: true }
+   };
++  window.ZULU_DEPT = DEPT; window.ZULU_MUN = MUN;
+   const SIN_ROTULO = ['BOGOTÁ, D.C.', 'QUINDIO', 'ATLÁNTICO', 'ANTIOQUIA', 'CUNDINAMARCA', 'SUCRE'];
+   const NOMBRE = { 'NORTE DE SANTANDER': 'Norte de Santander', 'VALLE DEL CAUCA': 'Valle del Cauca', 'LA GUAJIRA': 'La Guajira' };
+   const titulo = s => NOMBRE[s] || (s.charAt(0) + s.slice(1).toLowerCase());
