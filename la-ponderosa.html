@@ -1339,6 +1339,12 @@ main:focus{outline:none;}
 .hero-pausa:active{transform:scale(.94);}
 .hero-pausa:focus-visible{outline:2px solid #d8ad6b; outline-offset:4px;}
 @media (prefers-reduced-motion:reduce){.hero-video,.hero-pausa{display:none;}}
+
+/* ---- Transición de la foto entre la tarjeta y la ficha (View Transitions) ---- */
+::view-transition-group(foto-lote){animation-duration:.45s; animation-timing-function:cubic-bezier(.23,1,.32,1);}
+::view-transition-old(foto-lote),::view-transition-new(foto-lote){height:100%; object-fit:cover;}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.3s;}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important;}}
 </style>
 </head>
 <body data-abrir="ZUL-2026-008" data-titulo="Zulu Real Estate — Lotes, fincas y propiedades en Antioquia">
@@ -2822,37 +2828,73 @@ main:focus{outline:none;}
     }
     idFichaAbierta = id;
     document.title = propiedad.titulo + ' | Zulu Real Estate';
-    if (fichaBackdrop.hidden) focoPrevio = document.activeElement;
-    fichaContenido.innerHTML = fichaHTML(propiedad);
-    fichaBackdrop.hidden = false;
-    document.body.style.overflow = 'hidden';
-    aislarFondo(fichaBackdrop);
-    const cerrar = document.getElementById('ficha-close');
-    if (cerrar) cerrar.focus({ preventScroll: true });
+    const estabaCerrada = fichaBackdrop.hidden;
+    if (estabaCerrada) focoPrevio = document.activeElement;
+    const mostrar = async () => {
+      fichaContenido.innerHTML = fichaHTML(propiedad);
+      fichaBackdrop.hidden = false;
+      document.body.style.overflow = 'hidden';
+      aislarFondo(fichaBackdrop);
+      const cerrar = document.getElementById('ficha-close');
+      if (cerrar) cerrar.focus({ preventScroll: true });
+      // Para que la foto grande ya esté lista cuando la transición la necesita (máx. 0,7 s)
+      const foto = fichaContenido.querySelector('.ficha-media img');
+      if (foto && foto.decode) await Promise.race([foto.decode().catch(() => {}), new Promise(r => setTimeout(r, 700))]);
+    };
+    transicionFoto(estabaCerrada ? fotoActivaTarjeta(id) : null, mostrar, () => fichaContenido.querySelector('.ficha-media img'));
+  }
+  /* Transición: la foto de la tarjeta crece hasta ser la de la ficha (y al revés al cerrar). Solo con View Transitions y sin
+     "reducir movimiento"; si no, todo ocurre como siempre. El nombre de transición vive en un solo elemento a la vez. */
+  const NOMBRE_FOTO = 'foto-lote';
+  function fotoActivaTarjeta(id) {
+    const tarjeta = document.querySelector('.card[data-id="' + id + '"]');
+    const im = tarjeta && tarjeta.querySelector('.card-media img.is-active');
+    if (!im) return null;
+    const r = im.getBoundingClientRect();
+    return (r.width > 40 && r.bottom > 0 && r.top < innerHeight) ? im : null;
+  }
+  function transicionFoto(fotoVieja, cambiar, fotoNueva) {
+    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches || !fotoVieja) { cambiar(); return; }
+    fotoVieja.style.viewTransitionName = NOMBRE_FOTO;
+    const limpiar = () => { fotoVieja.style.viewTransitionName = ''; const n = fotoNueva(); if (n) n.style.viewTransitionName = ''; };
+    try {
+      const t = document.startViewTransition(async () => {
+        fotoVieja.style.viewTransitionName = '';
+        await cambiar();
+        const n = fotoNueva(); if (n) n.style.viewTransitionName = NOMBRE_FOTO;
+      });
+      t.finished.then(limpiar, limpiar);
+    } catch (err) { limpiar(); cambiar(); }
   }
   let focoPrevio = null;
-  function cerrarFicha(desdeHistorial) {
+  function cerrarFicha(desdeHistorial, sinFoto) {
     if (desdeHistorial !== true) {
       // Si la dirección la puso la propia ficha, se retrocede una entrada (popstate termina de cerrarla); si se entró
       // directo a /<slug>, solo se vuelve a la portada.
       if (history.state && history.state.ficha) { history.back(); return; }
       if (location.pathname !== '/') { try { history.replaceState({}, '', '/'); } catch (err) {} }
     }
+    const idCerrado = idFichaAbierta;
     idFichaAbierta = null;
     document.title = tituloPagina;
-    fichaBackdrop.hidden = true;
-    document.body.style.overflow = '';
-    aislarFondo(null);
-    if (entradaDirecta) {
-      entradaDirecta = false;
-      const lista = document.getElementById('propiedades');
-      if (lista) lista.scrollIntoView({ block: 'start' });
-    }
-    // Se vacía después del clic para no romper el enlace "Quiero saber más"; así el clip o el
-    // video de YouTube dejan de reproducirse (antes seguía sonando oculto).
-    setTimeout(() => { if (fichaBackdrop.hidden) fichaContenido.innerHTML = ''; }, 60);
-    if (focoPrevio && document.contains(focoPrevio)) focoPrevio.focus({ preventScroll: true });
-    focoPrevio = null;
+    const cerrarDom = () => {
+      fichaBackdrop.hidden = true;
+      document.body.style.overflow = '';
+      aislarFondo(null);
+      if (entradaDirecta) {
+        entradaDirecta = false;
+        const lista = document.getElementById('propiedades');
+        if (lista) lista.scrollIntoView({ block: 'start' });
+      }
+      // Se vacía después del clic para no romper el enlace "Quiero saber más"; así el clip o el
+      // video de YouTube dejan de reproducirse (antes seguía sonando oculto).
+      setTimeout(() => { if (fichaBackdrop.hidden) fichaContenido.innerHTML = ''; }, 60);
+      if (focoPrevio && document.contains(focoPrevio)) focoPrevio.focus({ preventScroll: true });
+      focoPrevio = null;
+    };
+    let fotoFicha = fichaContenido.querySelector('.ficha-media img');
+    if (fotoFicha) { const r = fotoFicha.getBoundingClientRect(); if (!(r.width > 40 && r.bottom > 0 && r.top < innerHeight)) fotoFicha = null; }
+    transicionFoto(sinFoto || entradaDirecta || !idCerrado ? null : fotoFicha, cerrarDom, () => fotoActivaTarjeta(idCerrado));
   }
   /* Compartir: en el celular abre el menú de compartir del sistema (WhatsApp, Instagram, Mensajes…); donde no existe,
      copia el enlace de la propiedad. */
@@ -2895,7 +2937,7 @@ main:focus{outline:none;}
     if (e.target.closest('#ficha-contacto')) {
       // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
       if (history.state && history.state.ficha) { try { history.replaceState({}, '', '/'); } catch (err) {} }
-      cerrarFicha(true);
+      cerrarFicha(true, true);
       return;
     }
     const botonFotos = e.target.closest('.tag-fotos');
