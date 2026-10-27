@@ -732,6 +732,12 @@ p{margin:0; text-wrap:pretty;}
 .ficha-fila dt{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--on-cream-dim);}
 .ficha-fila dd{margin:3px 0 0; font-size:14.5px;}
 .ficha-body .more{margin-top:24px;}
+.ficha-acciones{display:flex; align-items:center; flex-wrap:wrap; gap:14px 24px; margin-top:24px;}
+.ficha-acciones .more{margin-top:0;}
+.ficha-compartir{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 18px; border:1px solid rgba(10,10,10,.28); border-radius:99px; background:transparent; color:var(--ink); font:600 13.5px/1 Inter,sans-serif; cursor:pointer; transition:background .2s var(--ease-out), border-color .2s var(--ease-out), transform .16s var(--ease-out);}
+.ficha-compartir:hover{background:rgba(10,10,10,.05); border-color:var(--ink);}
+.ficha-compartir:active{transform:scale(.97);}
+.ficha-compartir svg{width:16px; height:16px;}
 .card-body{padding:21px; display:flex; flex-direction:column; flex:1;}
 .price-row{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;}
 .price{
@@ -2233,6 +2239,8 @@ main:focus{outline:none;}
     return '';
   }
 
+  const DOMINIO_SITIO = 'https://www.zulurealstate.com';
+  const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
   function mediaHTML(propiedad) {
     const fotos = propiedad.media && propiedad.media.fotos;
     const principal = propiedad.media && propiedad.media.foto_principal;
@@ -2439,7 +2447,10 @@ main:focus{outline:none;}
         <p class="ficha-desc">${propiedad.descripcion_corta}</p>
         ${aviso}
         <div class="ficha-caracteristicas">${caracteristicasHTML(propiedad)}</div>
-        ${cta}
+        <div class="ficha-acciones">
+          ${cta}
+          ${propiedad.estado === 'publicado' && propiedad.slug ? `<button type="button" class="ficha-compartir" data-slug="${propiedad.slug}" data-id="${propiedad.id}">${ICO_COMPARTIR}<span>Compartir</span></button>` : ''}
+        </div>
       </div>`;
   }
 
@@ -2715,7 +2726,7 @@ main:focus{outline:none;}
     favBarCount.textContent = favoritos.size;
     favBar.classList.toggle('is-visible', favoritos.size > 0);
     const elegidas = propiedadesCargadas.filter(p => favoritos.has(p.id));
-    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + precioTexto(p)}`).join('\n');
+    const lineas = elegidas.map(p => `• ${p.titulo}${esGestionada(p) ? '' : ' — ' + precioTexto(p)}${p.slug && p.estado === 'publicado' ? '\n  ' + DOMINIO_SITIO + '/' + p.slug : ''}`).join('\n');
     const msg = `Hola, me interesan estas propiedades de Zulu:\n${lineas}\n¿Me cuentan más?`;
     favBarWa.href = `https://wa.me/573107311282?text=${encodeURIComponent(msg)}`;
   }
@@ -2782,6 +2793,29 @@ main:focus{outline:none;}
     if (focoPrevio && document.contains(focoPrevio)) focoPrevio.focus({ preventScroll: true });
     focoPrevio = null;
   }
+  /* Compartir: en el celular abre el menú de compartir del sistema (WhatsApp, Instagram, Mensajes…); donde no existe,
+     copia el enlace de la propiedad. */
+  let temporizadorCompartir = null;
+  async function compartirPropiedad(boton) {
+    const p = propiedadesCargadas.find(x => x.id === boton.dataset.id);
+    if (!p) return;
+    const url = DOMINIO_SITIO + '/' + boton.dataset.slug;
+    const texto = p.titulo + (esGestionada(p) ? '' : ' · ' + precioTexto(p));
+    const etiqueta = boton.querySelector('span');
+    if (navigator.share) {
+      try { await navigator.share({ title: p.titulo, text: texto, url }); } catch (err) { /* la persona cerró el menú */ }
+      return;
+    }
+    let ok = false;
+    try { await navigator.clipboard.writeText(url); ok = true; } catch (err) {
+      const t = document.createElement('textarea'); t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select(); try { ok = document.execCommand('copy'); } catch (e2) {} t.remove();
+    }
+    etiqueta.textContent = ok ? 'Enlace copiado' : 'No se pudo copiar';
+    boton.setAttribute('role', 'status');
+    clearTimeout(temporizadorCompartir);
+    temporizadorCompartir = setTimeout(() => { etiqueta.textContent = 'Compartir'; boton.removeAttribute('role'); }, 2200);
+  }
   document.getElementById('ficha-close').addEventListener('click', cerrarFicha);
   fichaBackdrop.addEventListener('click', e => { if (e.target === fichaBackdrop) cerrarFicha(); });
   fichaContenido.addEventListener('click', e => {
@@ -2795,6 +2829,8 @@ main:focus{outline:none;}
       }
       return;
     }
+    const compartir = e.target.closest('.ficha-compartir');
+    if (compartir) { compartirPropiedad(compartir); return; }
     if (e.target.closest('#ficha-contacto')) {
       // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
       if (history.state && history.state.ficha) { try { history.replaceState({}, '', '/'); } catch (err) {} }
