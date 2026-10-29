@@ -3192,10 +3192,10 @@ main:focus{outline:none;}
   const ok   = document.getElementById('ok');
   const errorForm = document.getElementById('formError'), okRef = document.getElementById('okRef');
   const TIEMPO_MAX_MS = 20000;
-  let envioId = null, huellaEnvio = null;
+  let envioId = null, huellaEnvio = null, reemplazaIds = [];
   // Huella del contenido (no criptográfica): sirve para saber si lo que se reintenta es idéntico a lo del intento anterior.
   const huellaDe = d => {
-    const t = JSON.stringify([d.nombre, d.contacto, d.presupuesto, d.tipo, d.zona, d.notas, d.propiedad_id || '']);
+    const t = JSON.stringify([d.nombre, d.contacto, d.presupuesto, d.tipo, d.zona, d.notas, d.propiedad_id || '', d.propiedad_titulo || '', d.propiedad_url || '']);
     let h = 0x811c9dc5;
     for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
     return 'h' + h.toString(16).padStart(8, '0') + t.length.toString(16);   // la 'h' evita que Sheets lo tome por número
@@ -3314,17 +3314,24 @@ main:focus{outline:none;}
       };
     }
 
-    // Datos para identificar la consulta (no tocan el mensaje de la persona)
+    // Datos para identificar la consulta (no tocan el mensaje de la persona). Van COMPLETOS antes de calcular la huella:
+    // cambiar solo de propiedad, por ejemplo, ya cuenta como contenido distinto.
+    datos.idioma = window.ZULU_LANG || 'es';
+    if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
     // Un reintento con el mismo contenido reutiliza el envio_id (el script no lo duplica). Si la persona corrigió algo, es un envío
-    // distinto: id nuevo y referencia al anterior, para que no se descarte en silencio ni se confunda con el original.
+    // distinto: id nuevo, y los ids anteriores se acumulan en "reemplaza" hasta que haya confirmación (así un reintento de la
+    // corrección sigue apuntando a lo que corrige, y nada se descarta en silencio ni se confunde con el original).
     const huella = huellaDe(datos);
-    if (envioId && huellaEnvio !== huella) { datos.reemplaza = envioId; envioId = null; }
+    if (envioId && huellaEnvio !== huella) {
+      reemplazaIds.push(envioId);
+      if (reemplazaIds.length > 10) reemplazaIds.splice(1, 1);   // se conserva siempre el primero
+      envioId = null;
+    }
     envioId = envioId || nuevoEnvioId();
     huellaEnvio = huella;
     datos.envio_id = envioId;
     datos.huella = huella;
-    datos.idioma = window.ZULU_LANG || 'es';
-    if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
+    if (reemplazaIds.length) datos.reemplaza = reemplazaIds.join(',');
 
     const marcarEnviado = (resp) => {
       form.removeAttribute('aria-busy');
@@ -3335,7 +3342,7 @@ main:focus{outline:none;}
       okRef.hidden = !codigo;
       ok.hidden = false;
       requestAnimationFrame(() => ok.classList.add('is-in'));
-      envioId = null; huellaEnvio = null;
+      envioId = null; huellaEnvio = null; reemplazaIds = [];
       fijarConsulta(null);
     };
     // Si no se pudo confirmar: no se muestra éxito, se conserva lo escrito y se puede reintentar (mismo envio_id: no se duplica).
@@ -3369,8 +3376,8 @@ main:focus{outline:none;}
       .then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
       .then(resp => {
         if (!resp || resp.ok !== true) throw new Error('rechazado');
-        // El script devuelve la huella de lo que guardó: si no coincide con lo enviado, no se presenta como guardado.
-        if (resp.huella && resp.huella !== huella) throw new Error('contenido-distinto');
+        // Se exige la huella de lo que guardó y que sea idéntica a la enviada. Sin huella (script viejo) o con otra, no se presenta como guardado.
+        if (resp.huella !== huella) throw new Error(resp.huella ? 'contenido-distinto' : 'sin-huella');
         marcarEnviado(resp);
       })
       .catch(err => fallar(err && err.name === 'AbortError' ? 'tiempo' : (err && err.message) || 'error'))

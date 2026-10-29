@@ -23,7 +23,7 @@ function limpiar(v) {
 
 // Abrir la dirección del script en el navegador (GET) sirve para comprobar que está activo; no muestra datos.
 function doGet() {
-  return responder({ ok: true, servicio: 'contactos', version: '2026-10-29' });
+  return responder({ ok: true, servicio: 'contactos', version: '2026-10-29.2', huella: true });
 }
 
 function doPost(e) {
@@ -41,7 +41,7 @@ function doPost(e) {
   const codigo = envio ? envio.replace(/-/g, '').slice(0, 8).toUpperCase() : '';
   // Huella del contenido que calculó el navegador: distingue un reintento idéntico de uno con datos corregidos.
   const huella = limpiar(datos.huella).replace(/[^0-9A-Za-z]/g, '').slice(0, 24);
-  const reemplaza = limpiar(datos.reemplaza).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  const reemplaza = limpiar(datos.reemplaza).replace(/[^A-Za-z0-9,-]/g, '').slice(0, 200);   // ids anteriores separados por coma
 
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(15000)) return responder({ ok: false, error: 'ocupado' });
