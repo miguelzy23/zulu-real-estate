@@ -63,10 +63,16 @@ Pasos manuales **antes** de publicar la rama en producción (en este orden):
    persona". La URL `/exec` no cambia.
 3. Abre la URL `/exec` en el navegador (GET): debe mostrar `{"ok":true,"servicio":"contactos","version":"2026-10-29"}`.
 4. Con la vista previa de Vercel de la rama, envía UNA consulta de prueba (nombre "PRUEBA", un correo tuyo) y comprueba: sale
-   "Código de tu consulta", aparece la fila con las columnas nuevas (ID propiedad, Propiedad, Enlace, ID de envío, Idioma) y
+   "Código de tu consulta", aparece la fila con las columnas nuevas (ID propiedad, Propiedad, Enlace, ID de envío, Idioma, Huella, Reemplaza a) y
    el teléfono que empieza con + se ve sin apóstrofe. Borra esa fila después.
 5. Si en el paso 4 el formulario muestra error aunque la fila sí se guardó, el navegador no puede leer la respuesta de Google
    (CORS): no publicar y avisar. Mientras tanto producción sigue funcionando como hoy.
 
 Orden seguro: el formulario nuevo funciona también con el script viejo (la respuesta `{"ok":true}` basta para confirmar),
 pero sin el script nuevo no se guardan las columnas de propiedad ni se evitan duplicados al reintentar.
+
+Reintentos con datos corregidos: si un envío se guarda pero la respuesta se pierde y la persona corrige algo antes de
+reintentar, el navegador manda un `envio_id` nuevo y `reemplaza` = el id anterior. En la hoja quedan DOS filas (la original y
+la corregida, marcada en "Reemplaza a"): nada se descarta en silencio y la persona solo ve "enviado" cuando el script
+devuelve la huella de lo corregido. Un reintento idéntico (misma huella) no crea otra fila. Quien atiende debe quedarse con la fila más reciente de
+cada "Reemplaza a".

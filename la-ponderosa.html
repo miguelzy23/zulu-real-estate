@@ -2999,9 +2999,12 @@ main:focus{outline:none;}
     const compartir = e.target.closest('.ficha-compartir');
     if (compartir) { compartirPropiedad(compartir); return; }
     if (e.target.closest('#ficha-contacto')) {
-      // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
-      if (history.state && history.state.ficha) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} }
+      // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección. Se hace también
+      // al entrar directo a /<slug> (sin estado de ficha): si no, el salto a #contacto dispara popstate, la ruta sigue siendo la
+      // de la propiedad y la ficha se reabre encima del formulario.
+      if (location.pathname !== window.ZULU_HOME) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} }
       if (window.zuluIdioma) window.zuluIdioma.actualizar();
+      entradaDirecta = false;   // el destino es el formulario: no se desplaza a la lista de propiedades al cerrar
       cerrarFicha(true, true);
       return;
     }
@@ -3194,8 +3197,15 @@ main:focus{outline:none;}
   const ok   = document.getElementById('ok');
   const errorForm = document.getElementById('formError'), okRef = document.getElementById('okRef');
   const TIEMPO_MAX_MS = 20000;
-  let envioId = null;
-  const nuevoEnvioId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  let envioId = null, huellaEnvio = null;
+  // Huella del contenido (no criptográfica): sirve para saber si lo que se reintenta es idéntico a lo del intento anterior.
+  const huellaDe = d => {
+    const t = JSON.stringify([d.nombre, d.contacto, d.presupuesto, d.tipo, d.zona, d.notas, d.propiedad_id || '']);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return 'h' + h.toString(16).padStart(8, '0') + t.length.toString(16);   // la 'h' evita que Sheets lo tome por número
+  };
+  const nuevoEnvioId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   const TXT_ROL = {
     busco: { lede: T('Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.'), zona: T('Zona de interés'), zonaPh: T('Ej. El Poblado, Rionegro, Envigado…'), notas: T('Cuéntanos más'), notasPh: T('Qué buscas, para cuándo, cualquier detalle que nos ayude.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.') },
     tengo: { lede: T('Cuéntanos de tu propiedad y te decimos cómo podemos ayudarte a venderla o arrendarla.'), zona: T('¿Dónde está?'), zonaPh: T('Municipio y sector. Ej. Envigado, Alto de las Palmas'), notas: T('Cuéntanos de tu propiedad'), notasPh: T('Tamaño, estado, si está desocupada o arrendada, cualquier detalle.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para conocer tu propiedad.') }
@@ -3310,8 +3320,14 @@ main:focus{outline:none;}
     }
 
     // Datos para identificar la consulta (no tocan el mensaje de la persona)
+    // Un reintento con el mismo contenido reutiliza el envio_id (el script no lo duplica). Si la persona corrigió algo, es un envío
+    // distinto: id nuevo y referencia al anterior, para que no se descarte en silencio ni se confunda con el original.
+    const huella = huellaDe(datos);
+    if (envioId && huellaEnvio !== huella) { datos.reemplaza = envioId; envioId = null; }
     envioId = envioId || nuevoEnvioId();
+    huellaEnvio = huella;
     datos.envio_id = envioId;
+    datos.huella = huella;
     datos.idioma = window.ZULU_LANG || 'es';
     if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
 
@@ -3324,7 +3340,7 @@ main:focus{outline:none;}
       okRef.hidden = !codigo;
       ok.hidden = false;
       requestAnimationFrame(() => ok.classList.add('is-in'));
-      envioId = null;
+      envioId = null; huellaEnvio = null;
       fijarConsulta(null);
     };
     // Si no se pudo confirmar: no se muestra éxito, se conserva lo escrito y se puede reintentar (mismo envio_id: no se duplica).
@@ -3356,7 +3372,12 @@ main:focus{outline:none;}
       signal: ctrl.signal
     })
       .then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
-      .then(resp => { if (!resp || resp.ok !== true) throw new Error('rechazado'); marcarEnviado(resp); })
+      .then(resp => {
+        if (!resp || resp.ok !== true) throw new Error('rechazado');
+        // El script devuelve la huella de lo que guardó: si no coincide con lo enviado, no se presenta como guardado.
+        if (resp.huella && resp.huella !== huella) throw new Error('contenido-distinto');
+        marcarEnviado(resp);
+      })
       .catch(err => fallar(err && err.name === 'AbortError' ? 'tiempo' : (err && err.message) || 'error'))
       .finally(() => clearTimeout(reloj));
   });

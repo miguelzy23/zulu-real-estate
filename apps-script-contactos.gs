@@ -4,8 +4,9 @@
    Después de pegar este código hay que crear una NUEVA VERSIÓN de la implementación (ver CONTACTOS.md). */
 
 const ENCABEZADO = ['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propiedad', 'Zona de interés', 'Notas', 'Página',
-                    'ID propiedad', 'Propiedad', 'Enlace de la propiedad', 'ID de envío', 'Idioma'];
+                    'ID propiedad', 'Propiedad', 'Enlace de la propiedad', 'ID de envío', 'Idioma', 'Huella', 'Reemplaza a'];
 const COL_ID_ENVIO = 12;
+const COL_HUELLA = 14;
 const MAX_TEXTO = 2000;
 
 function responder(obj) {
@@ -38,6 +39,9 @@ function doPost(e) {
 
   const envio = limpiar(datos.envio_id).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
   const codigo = envio ? envio.replace(/-/g, '').slice(0, 8).toUpperCase() : '';
+  // Huella del contenido que calculó el navegador: distingue un reintento idéntico de uno con datos corregidos.
+  const huella = limpiar(datos.huella).replace(/[^0-9A-Za-z]/g, '').slice(0, 24);
+  const reemplaza = limpiar(datos.reemplaza).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
 
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(15000)) return responder({ ok: false, error: 'ocupado' });
@@ -46,10 +50,17 @@ function doPost(e) {
     const hoja = libro.getSheetByName('Contactos') || libro.insertSheet('Contactos');
     asegurarEncabezado(hoja);
 
-    // Reintento del mismo envío (el navegador no alcanzó a leer la respuesta): no se guarda otra fila.
+    // Reintento del mismo envío con el MISMO contenido (el navegador no alcanzó a leer la respuesta): no se guarda otra fila.
+    // Si el id ya existe pero el contenido es distinto, no se descarta ni se da por repetido: se guarda como fila nueva marcada.
+    let correccionDe = '';
     if (envio && hoja.getLastRow() > 1) {
-      const hallado = hoja.getRange(2, COL_ID_ENVIO, hoja.getLastRow() - 1, 1).createTextFinder(envio).matchEntireCell(true).findNext();
-      if (hallado) return responder({ ok: true, repetido: true, codigo: codigo });
+      const hallados = hoja.getRange(2, COL_ID_ENVIO, hoja.getLastRow() - 1, 1).createTextFinder(envio).matchEntireCell(true).findAll();
+      for (let i = 0; i < hallados.length; i++) {
+        if (String(hoja.getRange(hallados[i].getRow(), COL_HUELLA).getValue()) === huella) {
+          return responder({ ok: true, repetido: true, codigo: codigo, huella: huella });
+        }
+      }
+      if (hallados.length) correccionDe = envio;
     }
 
     hoja.appendRow([
@@ -65,11 +76,13 @@ function doPost(e) {
       limpiar(datos.propiedad_titulo),
       limpiar(datos.propiedad_url),
       envio,
-      limpiar(datos.idioma)
+      limpiar(datos.idioma),
+      huella,
+      reemplaza || correccionDe
     ]);
     SpreadsheetApp.flush();   // confirma la escritura antes de responder ok
     formatearHoja(hoja);
-    return responder({ ok: true, codigo: codigo });
+    return responder({ ok: true, codigo: codigo, huella: huella, correccion: !!(reemplaza || correccionDe) });
   } catch (err) {
     return responder({ ok: false, error: 'guardado' });
   } finally {
@@ -99,7 +112,7 @@ function formatearHoja(hoja) {
   const encabezado = hoja.getRange(1, 1, 1, columnas);
   encabezado.setFontWeight('bold').setBackground('#0A0A0A').setFontColor('#FAEEDA');
 
-  const anchos = [140, 160, 190, 170, 150, 170, 320, 260, 130, 220, 260, 150, 70];
+  const anchos = [140, 160, 190, 170, 150, 170, 320, 260, 130, 220, 260, 150, 70, 110, 150];
   anchos.forEach((ancho, i) => hoja.setColumnWidth(i + 1, ancho));
 
   const filas = hoja.getLastRow();
