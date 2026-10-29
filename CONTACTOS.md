@@ -74,4 +74,10 @@ guardará otra fila duplicada (el script viejo no evita duplicados). Por eso el 
 nuevo y crear la nueva versión de la implementación; comprobar con GET que la respuesta trae `"huella":true` y
 `"version":"2026-10-29.2"`; y solo entonces publicar la página. No publicar la página con el script viejo.
 
+Reintentos con datos corregidos: un reintento idéntico (misma huella, que incluye nombre, contacto, mensaje y la propiedad) no crea
+otra fila. Si la persona cambia algo (incluso solo la propiedad), el navegador manda un `envio_id` nuevo y `reemplaza` con los ids
+anteriores de ese envío (separados por coma); `reemplaza` se conserva en todos los reintentos de la corrección hasta que haya
+confirmación. En la hoja quedan varias filas (la original y las correcciones, marcadas en "Reemplaza a"): nada se descarta en
+silencio. Quien atiende debe quedarse con la fila más reciente de cada cadena.
+
 Pruebas reproducibles (sin enviar nada real): `tests/formulario/README.md`.
