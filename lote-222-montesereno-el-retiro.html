@@ -1417,7 +1417,7 @@ main:focus{outline:none;}
       <source media="(max-aspect-ratio: 1/1)" srcset="/assets/hero-noche-vertical-1170.jpg">
       <img src="/assets/hero-baru-noche-hd-1200.jpg" srcset="/assets/hero-baru-noche-hd-1200.jpg 1200w, /assets/hero-baru-noche-hd.jpg 2400w" sizes="100vw" alt="" width="2400" height="1350" fetchpriority="high" decoding="async">
     </picture>
-    <video class="hero-video" id="heroVideo" muted playsinline preload="none" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
+    <video class="hero-video" id="heroVideo" muted loop playsinline preload="none" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
   </div>
   <div class="hero-contours" aria-hidden="true">
     <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
@@ -3728,7 +3728,7 @@ main:focus{outline:none;}
 </script>
 <script>
 /* --- Portada: video de dron de fondo (la foto se queda como respaldo y de arranque) -------------------------------
-   Celular en vertical: video vertical propio (1080x1920, recortado del 4K, a 55 % de velocidad y 30 cuadros, ~14 MB); computador: horizontal 1440p a 60 cuadros.
+   Celular en vertical: video vertical propio (1080x1920, recortado del 4K, a 40 % de velocidad, ~12 MB); computador: horizontal 1440p a 60 cuadros, 36 % de velocidad. Bucle de ~23-34 s sin salto, cortado antes de que entre la construcción a la derecha.
    Se carga después de que la página terminó de cargar, se detiene cuando la portada sale de pantalla o la pestaña se oculta
    y se puede pausar con el botón. Si el navegador no deja arrancarlo solo (modo de bajo consumo del iPhone, ahorro de datos,
    "reducir movimiento"), el botón aparece como "reproducir" y un toque lo inicia. */
@@ -3737,7 +3737,7 @@ main:focus{outline:none;}
   if (!v || !bt || !hero) return;
   const foto = hero.querySelector('.hero-photo'), con = navigator.connection || {};
   const vertical = matchMedia('(max-aspect-ratio: 1/1)');
-  const fuente = () => vertical.matches ? '/assets/hero/hero-baru-vertical-lento55.mp4' : '/assets/hero/hero-baru-60-2k.mp4';
+  const fuente = () => vertical.matches ? '/assets/hero/hero-baru-vertical-bucle4.mp4' : '/assets/hero/hero-baru-bucle-60d.mp4';
   let pausadoPorPersona = false, enPantalla = true, cargado = false;
   v.muted = true; v.defaultMuted = true; v.setAttribute('playsinline', '');
   const etiqueta = () => {
@@ -3752,11 +3752,10 @@ main:focus{outline:none;}
   const sincronizar = () => { if (enPantalla && !document.hidden && !pausadoPorPersona) { cargar(); jugar(); } else v.pause(); };
   v.addEventListener('playing', () => { v.classList.add('is-on'); if (foto) foto.classList.add('con-video'); bt.hidden = false; pausadoPorPersona = false; etiqueta(); });
   vertical.addEventListener('change', () => { if (cargado) { v.src = fuente(); if (!pausadoPorPersona) jugar(); } });
-  v.addEventListener('ended', () => { pausadoPorPersona = true; etiqueta(); });   // se reproduce una vez, progresivo, y queda en el último cuadro; el botón lo repite
   const iniciar = () => {
     if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { enPantalla = e.isIntersecting; sincronizar(); }).observe(hero);
     document.addEventListener('visibilitychange', sincronizar);
-    bt.addEventListener('click', () => { pausadoPorPersona = !pausadoPorPersona; if (!pausadoPorPersona && v.ended) v.currentTime = 0; etiqueta(); sincronizar(); });
+    bt.addEventListener('click', () => { pausadoPorPersona = !pausadoPorPersona; etiqueta(); sincronizar(); });
     const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches, pocoDato = con.saveData || /^(slow-2g|2g)$/.test(con.effectiveType || '');
     if (sinMovimiento || pocoDato) { pausadoPorPersona = true; etiqueta(); bt.hidden = false; return; }   // no arranca solo; un toque lo inicia
     sincronizar();
