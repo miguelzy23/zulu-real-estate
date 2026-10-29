@@ -969,6 +969,16 @@ p{margin:0; text-wrap:pretty;}
   transition:opacity .5s var(--ease-out), transform .5s var(--ease-out);
 }
 .ok.is-in{opacity:1; transform:none;}
+.consulta{display:flex; gap:14px; align-items:center; justify-content:space-between; margin:0 0 16px; padding:12px 14px; border:1px solid var(--rule-dark); border-radius:3px; font-size:14px; line-height:1.45; color:var(--on-ink-dim);}
+.consulta[hidden]{display:none;}
+.consulta-txt{margin:0;}
+.consulta-txt b{color:var(--cream); font-weight:600;}
+.consulta-x{flex:none; min-height:44px; padding:0 8px; background:none; border:0; color:var(--cream); font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+.consulta-x:focus-visible{outline:2px solid var(--cream); outline-offset:2px;}
+.form-error{margin:14px 0 0; padding:12px 14px; border:1px solid #e8a07a; border-radius:3px; font-size:14px; line-height:1.55; color:#f1b99a;}
+.form-error[hidden]{display:none;}
+.ok-ref[hidden]{display:none;}
+.ok-ref{display:block; margin-top:6px; font-size:13px; color:var(--on-ink-dim);}
 .ok svg{flex:none; margin-top:2px; color:var(--cream-deep);}
 
 /* ============================================================
@@ -1789,11 +1799,17 @@ main:focus{outline:none;}
         </label>
         <p class="consent-error" id="aceptoError" role="alert" hidden>Marca la casilla para poder enviar tu mensaje.</p>
       </div>
+      <div class="consulta" id="consulta" hidden>
+        <p class="consulta-txt"><span>Consulta sobre:</span> <b id="consultaNombre"></b></p>
+        <button type="button" class="consulta-x" id="consultaQuitar">Quitar</button>
+      </div>
       <button type="submit" class="submit" id="submit">Enviar</button>
+      <p class="form-error" id="formError" role="alert" hidden></p>
       <p class="note">Tu información solo la usamos para contactarte — nada de spam.</p>
       <div class="ok" id="ok" hidden role="status">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-        <span id="ok-t">Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.</span>
+        <div><span id="ok-t">Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.</span>
+        <span class="ok-ref" id="okRef" hidden></span></div>
       </div>
     </form>
   </div>
@@ -2725,6 +2741,7 @@ main:focus{outline:none;}
       sel('zona').value = document.querySelector(`[data-group="zona"] [data-v="${intake.zona}"]`).textContent.trim();
     }
     const resto = [...intake.tipo].length > 1 ? ' ' + T('(También me interesan otros tipos de propiedad.)') : '';
+    fijarConsulta(null);
     setRol('busco');
     sel('notas').value = (fraseEl ? fraseEl.textContent.trim().replace(T('Buscas'), T('Busco')).replace('encaje contigo', 'encaje conmigo') : '') + resto + ' ' + T('Avísenme cuando tengan algo así.');
     sel('contacto').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2977,9 +2994,12 @@ main:focus{outline:none;}
     const compartir = e.target.closest('.ficha-compartir');
     if (compartir) { compartirPropiedad(compartir); return; }
     if (e.target.closest('#ficha-contacto')) {
-      // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección.
-      if (history.state && history.state.ficha) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} }
+      // El enlace va a #contacto: se deja la dirección en la portada antes de que el navegador salte a la sección. Se hace también
+      // al entrar directo a /<slug> (sin estado de ficha): si no, el salto a #contacto dispara popstate, la ruta sigue siendo la
+      // de la propiedad y la ficha se reabre encima del formulario.
+      if (location.pathname !== window.ZULU_HOME) { try { history.replaceState({}, '', window.ZULU_HOME); } catch (err) {} }
       if (window.zuluIdioma) window.zuluIdioma.actualizar();
+      entradaDirecta = false;   // el destino es el formulario: no se desplaza a la lista de propiedades al cerrar
       cerrarFicha(true, true);
       return;
     }
@@ -3170,6 +3190,17 @@ main:focus{outline:none;}
 
   const form = document.getElementById('form');
   const ok   = document.getElementById('ok');
+  const errorForm = document.getElementById('formError'), okRef = document.getElementById('okRef');
+  const TIEMPO_MAX_MS = 20000;
+  let envioId = null, huellaEnvio = null, reemplazaIds = [];
+  // Huella del contenido (no criptográfica): sirve para saber si lo que se reintenta es idéntico a lo del intento anterior.
+  const huellaDe = d => {
+    const t = JSON.stringify([d.nombre, d.contacto, d.presupuesto, d.tipo, d.zona, d.notas, d.propiedad_id || '', d.propiedad_titulo || '', d.propiedad_url || '']);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return 'h' + h.toString(16).padStart(8, '0') + t.length.toString(16);   // la 'h' evita que Sheets lo tome por número
+  };
+  const nuevoEnvioId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   const TXT_ROL = {
     busco: { lede: T('Cuéntanos qué necesitas y te contactamos con propiedades que tengan sentido para ti.'), zona: T('Zona de interés'), zonaPh: T('Ej. El Poblado, Rionegro, Envigado…'), notas: T('Cuéntanos más'), notasPh: T('Qué buscas, para cuándo, cualquier detalle que nos ayude.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para entender mejor qué buscas.') },
     tengo: { lede: T('Cuéntanos de tu propiedad y te decimos cómo podemos ayudarte a venderla o arrendarla.'), zona: T('¿Dónde está?'), zonaPh: T('Municipio y sector. Ej. Envigado, Alto de las Palmas'), notas: T('Cuéntanos de tu propiedad'), notasPh: T('Tamaño, estado, si está desocupada o arrendada, cualquier detalle.'), ok: T('Gracias — recibimos tu mensaje. Te contactamos pronto para conocer tu propiedad.') }
@@ -3192,6 +3223,22 @@ main:focus{outline:none;}
   form.querySelectorAll('input[name="rol"]').forEach(r => r.addEventListener('change', () => setRol(r.value)));
   document.addEventListener('click', e => { const a = e.target.closest('[data-rol]'); if (a) setRol(a.dataset.rol); });
   const submit = document.getElementById('submit');
+  /* Propiedad de la que viene la consulta: se guarda aparte (id, título y enlace); nunca se escribe dentro del mensaje de la persona. */
+  const consultaEl = document.getElementById('consulta'), consultaNombre = document.getElementById('consultaNombre');
+  let consulta = null;
+  function fijarConsulta(p) {
+    consulta = p ? { id: p.id, titulo: p.titulo, url: (p.slug && p.estado === 'publicado') ? 'https://www.zulurealstate.com' + window.ZULU_BASE + p.slug : '' } : null;
+    consultaEl.hidden = !consulta;
+    consultaNombre.textContent = consulta ? consulta.titulo : '';
+  }
+  document.getElementById('consultaQuitar').addEventListener('click', () => { fijarConsulta(null); form.nombre.focus(); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href="#contacto"]');
+    if (!a) return;
+    const tarjeta = a.closest('.card[data-id]');
+    const id = tarjeta ? tarjeta.dataset.id : (a.id === 'ficha-contacto' ? idFichaAbierta : null);
+    fijarConsulta(id ? propiedadesCargadas.find(x => x.id === id) : null);
+  }, true);
   document.getElementById('acepto').addEventListener('change', e => {
     if (e.target.checked) {
       e.target.closest('.consent').classList.remove('has-error');
@@ -3235,7 +3282,9 @@ main:focus{outline:none;}
     consentError.hidden = true;
 
     submit.disabled = true;
-    submit.textContent = 'Enviando…';
+    submit.textContent = T('Enviando…');
+    form.setAttribute('aria-busy', 'true');
+    errorForm.hidden = true;
 
     // La columna "Página" también deja constancia de la autorización y de
     // la versión de la política que aceptó la persona.
@@ -3265,36 +3314,74 @@ main:focus{outline:none;}
       };
     }
 
-    const marcarEnviado = () => {
-      submit.textContent = 'Enviado';
+    // Datos para identificar la consulta (no tocan el mensaje de la persona). Van COMPLETOS antes de calcular la huella:
+    // cambiar solo de propiedad, por ejemplo, ya cuenta como contenido distinto.
+    datos.idioma = window.ZULU_LANG || 'es';
+    if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
+    // Un reintento con el mismo contenido reutiliza el envio_id (el script no lo duplica). Si la persona corrigió algo, es un envío
+    // distinto: id nuevo, y los ids anteriores se acumulan en "reemplaza" hasta que haya confirmación (así un reintento de la
+    // corrección sigue apuntando a lo que corrige, y nada se descarta en silencio ni se confunde con el original).
+    const huella = huellaDe(datos);
+    if (envioId && huellaEnvio !== huella) {
+      reemplazaIds.push(envioId);
+      if (reemplazaIds.length > 10) reemplazaIds.splice(1, 1);   // se conserva siempre el primero
+      envioId = null;
+    }
+    envioId = envioId || nuevoEnvioId();
+    huellaEnvio = huella;
+    datos.envio_id = envioId;
+    datos.huella = huella;
+    if (reemplazaIds.length) datos.reemplaza = reemplazaIds.join(',');
+
+    const marcarEnviado = (resp) => {
+      form.removeAttribute('aria-busy');
+      errorForm.hidden = true;
+      submit.textContent = T('Enviado');
+      const codigo = resp && resp.codigo ? String(resp.codigo) : '';
+      okRef.textContent = codigo ? T('Código de tu consulta:') + ' ' + codigo : '';
+      okRef.hidden = !codigo;
       ok.hidden = false;
       requestAnimationFrame(() => ok.classList.add('is-in'));
+      envioId = null; huellaEnvio = null; reemplazaIds = [];
+      fijarConsulta(null);
+    };
+    // Si no se pudo confirmar: no se muestra éxito, se conserva lo escrito y se puede reintentar (mismo envio_id: no se duplica).
+    const fallar = (motivo) => {
+      console.error('Contacto no confirmado:', motivo);   // sin datos de la persona
+      form.removeAttribute('aria-busy');
+      submit.disabled = false;
+      submit.textContent = T('Reintentar');
+      errorForm.textContent = motivo === 'tiempo'
+        ? T('No pudimos confirmar que tu mensaje se guardó (la conexión tardó demasiado). Tus datos siguen aquí: inténtalo de nuevo en unos segundos o escríbenos por WhatsApp.')
+        : T('No pudimos guardar tu mensaje. Tus datos siguen aquí: revisa tu conexión e inténtalo de nuevo, o escríbenos por WhatsApp.');
+      errorForm.hidden = false;
     };
 
     if (!CONTACT_ENDPOINT || CONTACT_ENDPOINT.includes('PON_AQUI')) {
-      // Todavía no está conectada la hoja de cálculo: no perdemos el envío
-      // silenciosamente, avisamos en consola para no confundir en producción.
       console.warn('CONTACT_ENDPOINT sin configurar: el formulario no está guardando datos todavía.');
-      submit.disabled = false;
-      submit.textContent = 'Enviar';
+      fallar('sin-configurar');
       return;
     }
 
-    // Apps Script no responde con cabeceras CORS, así que usamos "no-cors":
-    // el envío llega igual, pero no podemos leer la respuesta desde aquí.
+    // Se lee la respuesta del script (JSON con ok:true) para confirmar que la fila quedó guardada.
+    // "text/plain" evita la consulta previa (preflight) que Apps Script no contesta.
+    const ctrl = new AbortController();
+    const reloj = setTimeout(() => ctrl.abort(), TIEMPO_MAX_MS);
     fetch(CONTACT_ENDPOINT, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(datos)
+      body: JSON.stringify(datos),
+      signal: ctrl.signal
     })
-      .then(marcarEnviado)
-      .catch(err => {
-        console.error('No se pudo guardar el contacto:', err);
-        submit.disabled = false;
-        submit.textContent = 'Enviar';
-        form.nombre.focus();
-      });
+      .then(r => { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
+      .then(resp => {
+        if (!resp || resp.ok !== true) throw new Error('rechazado');
+        // Se exige la huella de lo que guardó y que sea idéntica a la enviada. Sin huella (script viejo) o con otra, no se presenta como guardado.
+        if (resp.huella !== huella) throw new Error(resp.huella ? 'contenido-distinto' : 'sin-huella');
+        marcarEnviado(resp);
+      })
+      .catch(err => fallar(err && err.name === 'AbortError' ? 'tiempo' : (err && err.message) || 'error'))
+      .finally(() => clearTimeout(reloj));
   });
 })();
 </script>
