@@ -49,3 +49,24 @@ el script que recibe los datos.
 Se puede cambiar a un servicio externo tipo Formspree (con cuenta y panel
 propio) o simplemente recibir cada envío por correo — dile a Claude cuál
 prefieres y se reconecta el formulario a esa opción en vez de esta.
+
+## Actualización 2026-10-29: formulario que confirma que guardó (pendiente de activar)
+
+Qué cambia: el formulario ya no muestra "Enviado" a ciegas. Lee la respuesta del script (`{"ok":true,"codigo":"…"}`); si no
+llega, o llega con error, muestra un aviso y deja reintentar sin perder lo escrito. Cada consulta guarda además de qué
+propiedad viene (ID, título y enlace) en columnas nuevas, sin tocar el mensaje de la persona, y los reintentos no duplican filas.
+
+Pasos manuales **antes** de publicar la rama en producción (en este orden):
+1. Abre el Apps Script del formulario, reemplaza el código por el de `apps-script-contactos.gs` y guarda.
+2. **Implementar → Administrar implementaciones → editar (lápiz) → Versión: "Nueva versión" → Implementar.** Sin la nueva
+   versión, el enlace `/exec` sigue ejecutando el código viejo. Mantén "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier
+   persona". La URL `/exec` no cambia.
+3. Abre la URL `/exec` en el navegador (GET): debe mostrar `{"ok":true,"servicio":"contactos","version":"2026-10-29"}`.
+4. Con la vista previa de Vercel de la rama, envía UNA consulta de prueba (nombre "PRUEBA", un correo tuyo) y comprueba: sale
+   "Código de tu consulta", aparece la fila con las columnas nuevas (ID propiedad, Propiedad, Enlace, ID de envío, Idioma) y
+   el teléfono que empieza con + se ve sin apóstrofe. Borra esa fila después.
+5. Si en el paso 4 el formulario muestra error aunque la fila sí se guardó, el navegador no puede leer la respuesta de Google
+   (CORS): no publicar y avisar. Mientras tanto producción sigue funcionando como hoy.
+
+Orden seguro: el formulario nuevo funciona también con el script viejo (la respuesta `{"ok":true}` basta para confirmar),
+pero sin el script nuevo no se guardan las columnas de propiedad ni se evitan duplicados al reintentar.

@@ -1,27 +1,90 @@
+/* Contactos de zulurealstate.com -> hoja "Contactos".
+   Versión 2026-10-29 (formulario confiable): responde JSON legible desde el navegador, no duplica reintentos
+   (mismo "envio_id") y guarda de qué propiedad viene la consulta, sin tocar el mensaje de la persona.
+   Después de pegar este código hay que crear una NUEVA VERSIÓN de la implementación (ver CONTACTOS.md). */
+
+const ENCABEZADO = ['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propiedad', 'Zona de interés', 'Notas', 'Página',
+                    'ID propiedad', 'Propiedad', 'Enlace de la propiedad', 'ID de envío', 'Idioma'];
+const COL_ID_ENVIO = 12;
+const MAX_TEXTO = 2000;
+
+function responder(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Texto seguro para la hoja: recorta y evita que algo que parezca una fórmula (empieza con = o @, o con + / - seguido
+// de algo que no sea un teléfono) se interprete como tal. Los teléfonos como "+57 300 123 4567" se guardan tal cual.
+function limpiar(v) {
+  let t = (v === undefined || v === null) ? '' : String(v).slice(0, MAX_TEXTO);
+  if (/^[=@]/.test(t) || (/^[+\-]/.test(t) && !/^[+\-][\d\s().\-]*$/.test(t))) t = "'" + t;
+  return t;
+}
+
+// Abrir la dirección del script en el navegador (GET) sirve para comprobar que está activo; no muestra datos.
+function doGet() {
+  return responder({ ok: true, servicio: 'contactos', version: '2026-10-29' });
+}
+
 function doPost(e) {
-  const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Contactos')
-    || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Contactos');
-
-  if (hoja.getLastRow() === 0) {
-    hoja.appendRow(['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propiedad', 'Zona de interés', 'Notas', 'Página']);
+  let datos;
+  try {
+    datos = JSON.parse((e && e.postData && e.postData.contents) || '');
+  } catch (err) {
+    return responder({ ok: false, error: 'json' });
   }
+  if (!datos || typeof datos !== 'object') return responder({ ok: false, error: 'json' });
+  const nombre = limpiar(datos.nombre).trim(), contacto = limpiar(datos.contacto).trim();
+  if (!nombre || !contacto) return responder({ ok: false, error: 'faltan-datos' });
 
-  const datos = JSON.parse(e.postData.contents);
-  hoja.appendRow([
-    new Date(),
-    datos.nombre || '',
-    datos.contacto || '',
-    datos.presupuesto || '',
-    datos.tipo || '',
-    datos.zona || '',
-    datos.notas || '',
-    datos.pagina || ''
-  ]);
+  const envio = limpiar(datos.envio_id).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  const codigo = envio ? envio.replace(/-/g, '').slice(0, 8).toUpperCase() : '';
 
-  formatearHoja(hoja);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) return responder({ ok: false, error: 'ocupado' });
+  try {
+    const libro = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = libro.getSheetByName('Contactos') || libro.insertSheet('Contactos');
+    asegurarEncabezado(hoja);
 
-  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+    // Reintento del mismo envío (el navegador no alcanzó a leer la respuesta): no se guarda otra fila.
+    if (envio && hoja.getLastRow() > 1) {
+      const hallado = hoja.getRange(2, COL_ID_ENVIO, hoja.getLastRow() - 1, 1).createTextFinder(envio).matchEntireCell(true).findNext();
+      if (hallado) return responder({ ok: true, repetido: true, codigo: codigo });
+    }
+
+    hoja.appendRow([
+      new Date(),
+      nombre,
+      contacto,
+      limpiar(datos.presupuesto),
+      limpiar(datos.tipo),
+      limpiar(datos.zona),
+      limpiar(datos.notas),
+      limpiar(datos.pagina),
+      limpiar(datos.propiedad_id),
+      limpiar(datos.propiedad_titulo),
+      limpiar(datos.propiedad_url),
+      envio,
+      limpiar(datos.idioma)
+    ]);
+    SpreadsheetApp.flush();   // confirma la escritura antes de responder ok
+    formatearHoja(hoja);
+    return responder({ ok: true, codigo: codigo });
+  } catch (err) {
+    return responder({ ok: false, error: 'guardado' });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Crea el encabezado si la hoja es nueva, o agrega las columnas nuevas a una hoja que ya tenía las 8 originales.
+function asegurarEncabezado(hoja) {
+  if (hoja.getLastRow() === 0) {
+    hoja.appendRow(ENCABEZADO);
+  } else {
+    const actual = hoja.getRange(1, 1, 1, ENCABEZADO.length).getValues()[0];
+    ENCABEZADO.forEach((t, i) => { if (!actual[i]) hoja.getRange(1, i + 1).setValue(t); });
+  }
 }
 
 /* Deja la hoja legible: encabezado fijo y resaltado, columnas con un
@@ -30,19 +93,20 @@ function doPost(e) {
    fila separada con una línea gruesa para diferenciar un cliente del
    siguiente de un vistazo. */
 function formatearHoja(hoja) {
-  const columnas = 8;
+  const columnas = ENCABEZADO.length;
   hoja.setFrozenRows(1);
 
   const encabezado = hoja.getRange(1, 1, 1, columnas);
   encabezado.setFontWeight('bold').setBackground('#0A0A0A').setFontColor('#FAEEDA');
 
-  const anchos = [140, 160, 190, 170, 150, 170, 320, 260];
+  const anchos = [140, 160, 190, 170, 150, 170, 320, 260, 130, 220, 260, 150, 70];
   anchos.forEach((ancho, i) => hoja.setColumnWidth(i + 1, ancho));
 
   const filas = hoja.getLastRow();
   if (filas > 1) {
     hoja.getRange(2, 1, filas - 1, 1).setNumberFormat('dd/mm/yyyy hh:mm');
     hoja.getRange(2, 7, filas - 1, 2).setWrap(true); // Notas y Página
+    hoja.getRange(2, 10, filas - 1, 2).setWrap(true); // Propiedad y su enlace
     hoja.setRowHeightsForced(2, filas - 1, 21);
   }
 
