@@ -18,3 +18,17 @@ errores del servidor/red/tiempo, reintento idéntico, cambio de propiedad, `reem
 corrección, y que `{ok:true}` sin huella o con otra huella no se muestre como guardado.
 
 No cubren (siguen pendientes): la prueba real contra Google y que el navegador pueda leer su respuesta (CORS).
+
+## Prueba real contra Google (manual, escribe filas en la hoja)
+
+Solo después de pegar el script nuevo y crear la nueva versión de la implementación. Cada comando guarda una fila marcada PRUEBA
+(las filas 2 y 4 no guardan nada porque son reintentos idénticos). **Borra las filas de prueba al terminar.**
+Importante: no uses `curl -X POST` con `-L`: curl repite el POST en el redireccionamiento y Google responde una página de error (aunque
+la fila sí se haya guardado). Usa `--data`, que convierte el redireccionamiento en GET, igual que el navegador.
+
+```bash
+U="https://script.google.com/macros/s/<ID>/exec"   # la misma URL de CONTACT_ENDPOINT en index.html
+curl -sL -H 'Content-Type: text/plain;charset=utf-8' --data '{"nombre":"PRUEBA","contacto":"prueba@example.com","envio_id":"prueba-1","huella":"hPRUEBA1"}' "$U"   # {"ok":true,...}
+curl -sL -H 'Content-Type: text/plain;charset=utf-8' --data '{"nombre":"PRUEBA","contacto":"prueba@example.com","envio_id":"prueba-1","huella":"hPRUEBA1"}' "$U"   # {"ok":true,"repetido":true,...}  (sin fila nueva)
+curl -sL -H 'Content-Type: text/plain;charset=utf-8' --data '{"contacto":"x@example.com"}' "$U"                                                                      # {"ok":false,"error":"faltan-datos"}
+```

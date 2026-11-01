@@ -57,7 +57,7 @@ llega, o llega con error, muestra un aviso y deja reintentar sin perder lo escri
 propiedad viene (ID, título y enlace) en columnas nuevas, sin tocar el mensaje de la persona, y los reintentos no duplican filas.
 
 Pasos manuales **antes** de publicar la rama en producción (en este orden):
-1. Abre el Apps Script del formulario, reemplaza el código por el de `apps-script-contactos.gs` y guarda.
+1. Abre el Apps Script del formulario, reemplaza el código por el de `apps-script-contactos.gs` y guarda. Si lo copias con `pbcopy` desde la terminal, usa `LC_ALL=en_US.UTF-8 pbcopy` (con la configuración regional por defecto los acentos se corrompen: el 1-nov-2026 el encabezado quedó como "ID de env√≠o").
 2. **Implementar → Administrar implementaciones → editar (lápiz) → Versión: "Nueva versión" → Implementar.** Sin la nueva
    versión, el enlace `/exec` sigue ejecutando el código viejo. Mantén "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier
    persona". La URL `/exec` no cambia.
