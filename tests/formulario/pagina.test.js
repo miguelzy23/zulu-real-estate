@@ -141,6 +141,97 @@
       igual(s.llamadas[2].reemplaza, ids[0] + ',' + ids[1]); p.cerrar();
     });
 
+    /* ---- Analítica (Vercel Web Analytics): eventos simulados, sin datos personales ---- */
+    function espiar(p) { var ev = []; p.w.va = function () { ev.push(Array.prototype.slice.call(arguments)); }; return ev; }
+    var nombres = function (ev) { return ev.map(function (e) { return e[1].name; }); };
+    function sinNavegar(p) { p.d.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a')) e.preventDefault(); }); }
+    var PERMITIDAS = ['lang', 'property_id', 'location', 'operation', 'role', 'has_property', 'category', 'field', 'test'];
+
+    await prueba('ANALÍTICA: un clic en "Quiero saber más" de una tarjeta genera UN solo evento property_contact_click (es)', async function () {
+      var p = await cargar('/index.html'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] a.more[href="#contacto"]').click(); await dormir(150);
+      igual(ev.length, 1, 'un clic = un evento'); igual(ev[0], ['event', { name: 'property_contact_click', data: { lang: 'es', property_id: 'ZUL-2026-001', location: 'tarjeta', operation: 'venta' } }]); p.cerrar();
+    });
+    await prueba('ANALÍTICA: lo mismo en inglés (lang = en) y con una propiedad en alquiler', async function () {
+      var p = await cargar('/en/index.html'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-006"] a.more[href="#contacto"]').click(); await dormir(150);
+      igual(ev.length, 1); igual(ev[0][1].data, { lang: 'en', property_id: 'ZUL-2026-006', location: 'tarjeta', operation: 'alquiler' }); p.cerrar();
+    });
+    await prueba('ANALÍTICA: el botón de la ficha (dinámico, entrada directa) genera un solo evento con location ficha', async function () {
+      var p = await cargar('/lote-222-montesereno-el-retiro.html'); var ev = espiar(p);
+      for (var i = 0; i < 40 && !p.$('ficha-contacto'); i++) await dormir(100);
+      p.$('ficha-contacto').click(); await dormir(500);
+      igual(ev.length, 1); igual(ev[0][1].data, { lang: 'es', property_id: 'ZUL-2026-001', location: 'ficha', operation: 'venta' }); p.cerrar();
+    });
+    await prueba('ANALÍTICA: WhatsApp: un clic = un evento whatsapp_click con la ubicación (flotante, pie, favoritos)', async function () {
+      var p = await cargar('/index.html'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.wa-group a.wa').click(); await dormir(80);
+      p.d.querySelector('.foot-channels a.chan[href^="https://wa.me/"]').click(); await dormir(80);
+      var fav = p.$('favBarWa'); fav.setAttribute('href', 'https://wa.me/573107311282?text=lista'); fav.click(); await dormir(80);
+      igual(nombres(ev), ['whatsapp_click', 'whatsapp_click', 'whatsapp_click']);
+      igual(ev.map(function (e) { return e[1].data.location; }), ['flotante', 'pie', 'favoritos']); igual(ev[0][1].data.lang, 'es'); p.cerrar();
+    });
+    await prueba('ANALÍTICA: enlaces que no son de WhatsApp ("Hablemos", "#") no generan evento de WhatsApp', async function () {
+      var p = await cargar('/index.html'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.nav-cta').click(); p.d.querySelector('.foot-channels a.chan[href="#"]').click(); await dormir(100);
+      igual(ev.length, 0); p.cerrar();
+    });
+    await prueba('ANALÍTICA: validación fallida genera solo contact_form_error (validation), nunca éxito', async function () {
+      var p = await cargar('/index.html'); var s = await servidor(p); var ev = espiar(p);
+      await enviar(p); var f = p.$('form'); f.nombre.value = 'Ana'; await enviar(p); f.contacto.value = 'a@example.com'; await enviar(p);
+      igual(nombres(ev), ['contact_form_error', 'contact_form_error', 'contact_form_error']);
+      igual(ev.map(function (e) { return e[1].data.field; }), ['name', 'contact', 'consent']); cierto(ev.every(function (e) { return e[1].data.category === 'validation'; }));
+      igual(s.llamadas.length, 0); p.cerrar();
+    });
+    await prueba('ANALÍTICA: respuestas NO confirmadas dan un error con su categoría y jamás éxito; el éxito llega una sola vez', async function () {
+      var p = await cargar('/index.html'); var s = await servidor(p); var ev = espiar(p); llenar(p, 'a@example.com', 'mensaje');
+      var casos = [['500', 'http_error'], ['html', 'invalid_response'], ['rechazo', 'server_rejected'], ['red', 'network'], ['sinhuella', 'no_confirmation'], ['otrahuella', 'mismatch']];
+      for (var i = 0; i < casos.length; i++) { s.modo = casos[i][0]; await enviar(p); }
+      var st = p.w.setTimeout; p.w.setTimeout = function (fn, ms) { return st.call(p.w, fn, ms === 20000 ? 60 : ms, arguments[2]); };
+      s.modo = 'cuelga'; await enviar(p); await dormir(300); p.w.setTimeout = st;
+      igual(ev.map(function (e) { return e[1].data.category; }), casos.map(function (c) { return c[1]; }).concat(['timeout']));
+      cierto(nombres(ev).every(function (n) { return n === 'contact_form_error'; }), 'ningún éxito antes de confirmar');
+      s.modo = 'ok'; await enviar(p);
+      igual(nombres(ev).filter(function (n) { return n === 'contact_form_success'; }).length, 1, 'un solo éxito'); igual(nombres(ev).length, 8); p.cerrar();
+    });
+    await prueba('ANALÍTICA: el éxito lleva solo contexto no sensible (rol, propiedad pública)', async function () {
+      var p = await cargar('/index.html'); var s = await servidor(p); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] a.more[href="#contacto"]').click(); await dormir(100);
+      llenar(p, 'a@example.com', 'm'); await enviar(p);
+      igual(ev[1], ['event', { name: 'contact_form_success', data: { lang: 'es', role: 'busco', property_id: 'ZUL-2026-001', has_property: true } }]); p.cerrar();
+    });
+    await prueba('ANALÍTICA: ningún dato personal, código, id de envío, huella ni URL en ningún evento', async function () {
+      var p = await cargar('/lote-222-montesereno-el-retiro.html'); var s = await servidor(p); var ev = espiar(p); sinNavegar(p);
+      for (var i = 0; i < 40 && !p.$('ficha-contacto'); i++) await dormir(100);
+      p.$('ficha-contacto').click(); await dormir(300);
+      var f = p.$('form'); f.nombre.value = 'Ana Secreta Pérez'; f.contacto.value = 'ana.secreta@example.com'; f.notas.value = 'mensaje privado 998877'; p.$('acepto').click();
+      s.modo = '500'; await enviar(p); s.modo = 'ok'; await enviar(p); p.d.querySelector('.wa-group a.wa').click(); await dormir(100);
+      var texto = JSON.stringify(ev), codigo = (p.$('okRef').textContent.match(/[A-Z0-9]{8}$/) || [''])[0];
+      ['Ana', 'Secreta', 'example.com', '@', 'mensaje privado', '998877', '://', 'wa.me', 'zulurealstate', s.llamadas[0].envio_id, s.llamadas[0].huella].forEach(function (x) { cierto(texto.indexOf(x) < 0, 'el evento contiene "' + x + '"'); });
+      cierto(codigo.length === 8 && texto.indexOf(codigo) < 0, 'el código de consulta no debe viajar');
+      ev.forEach(function (e) { Object.keys(e[1].data).forEach(function (k) { cierto(PERMITIDAS.indexOf(k) >= 0, 'clave no permitida: ' + k); var t = typeof e[1].data[k]; cierto(t === 'string' || t === 'boolean' || t === 'number', 'tipo ' + t); }); });
+      cierto(ev.length >= 4, 'se esperaban varios eventos'); p.cerrar();
+    });
+    await prueba('ANALÍTICA: con ?prueba=1 los eventos llevan test:true (y sin ese parámetro no), para separar pruebas de visitas reales', async function () {
+      var p = await cargar('/index.html?prueba=1'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual(ev[0][1].data.test, true); igual(p.w.location.href.indexOf('prueba=1') > 0, true); p.cerrar();
+      try { sessionStorage.removeItem('zulu-prueba'); } catch (e) {}
+      var q = await cargar('/index.html'); var ev2 = espiar(q); sinNavegar(q);
+      q.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual('test' in ev2[0][1].data, false); q.cerrar();
+    });
+    await prueba('SIN ANALÍTICA (ausente o bloqueada): formulario, WhatsApp y botones de propiedad siguen funcionando', async function () {
+      var variantes = [['ausente', function (w) { w.va = undefined; }], ['lanza error', function (w) { w.va = function () { throw new Error('bloqueado'); }; }], ['no es función', function (w) { w.va = 'x'; }]];
+      for (var i = 0; i < variantes.length; i++) {
+        var p = await cargar('/index.html'); variantes[i][1](p.w); var s = await servidor(p); sinNavegar(p);
+        var errores = []; p.w.addEventListener('error', function (e) { errores.push(e.message); });
+        p.d.querySelector('.wa-group a.wa').click(); await dormir(50);
+        p.d.querySelector('.card[data-id="ZUL-2026-001"] a.more[href="#contacto"]').click(); await dormir(100);
+        igual(p.$('consultaNombre').textContent, 'Lote 222 — Montesereno, El Retiro', 'la propiedad sigue seleccionándose (' + variantes[i][0] + ')');
+        await enviar(p); llenar(p, 'a@example.com', 'm'); await enviar(p);
+        igual([estado(p).exito, s.filas().length, errores.length], [true, 1, 0], variantes[i][0]); p.cerrar();
+      }
+    });
+
     document.getElementById('resumen').innerHTML = '<b>' + pasadas + ' pasaron, ' + falladas + ' fallaron</b>';
     document.title = (falladas ? 'FALLAN ' + falladas : 'TODAS PASAN ' + pasadas) + ' · pruebas del formulario';
   })();

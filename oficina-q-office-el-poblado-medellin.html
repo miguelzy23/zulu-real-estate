@@ -3229,8 +3229,35 @@ main:focus{outline:none;}
     if (!a) return;
     const tarjeta = a.closest('.card[data-id]');
     const id = tarjeta ? tarjeta.dataset.id : (a.id === 'ficha-contacto' ? idFichaAbierta : null);
-    fijarConsulta(id ? propiedadesCargadas.find(x => x.id === id) : null);
+    const propiedad = id ? propiedadesCargadas.find(x => x.id === id) : null;
+    fijarConsulta(propiedad);
+    if (propiedad && a.classList.contains('more')) evento('property_contact_click', { property_id: propiedad.id, location: tarjeta ? 'tarjeta' : 'ficha', operation: propiedad.operacion || 'venta' });
   }, true);
+
+  /* --- Analítica (Vercel Web Analytics): eventos sin datos personales ---------------------------------------------------
+     Solo contexto público: idioma, id público de la propiedad (ZUL-…), ubicación del botón, categoría del error. Nunca nombres,
+     contactos, mensajes, códigos de consulta, ids de envío ni URLs. Si la analítica falla o está bloqueada, no pasa nada.
+     Ver docs/analitica.md. */
+  function esPrueba() {
+    try {
+      if (/[?&]prueba=1(&|$)/.test(location.search)) sessionStorage.setItem('zulu-prueba', '1');
+      return sessionStorage.getItem('zulu-prueba') === '1';
+    } catch (err) { return false; }
+  }
+  function evento(nombre, extra) {
+    try {
+      const datos = { lang: window.ZULU_LANG || 'es' };
+      if (esPrueba()) datos.test = true;   // visitas con ?prueba=1: así las pruebas del equipo no se confunden con visitas reales
+      for (const k in extra) { const v = extra[k]; if (v !== undefined && v !== null && v !== '') datos[k] = v; }
+      if (typeof window.va === 'function') window.va('event', { name: nombre, data: datos });
+    } catch (err) { /* sin analítica el sitio funciona igual */ }
+  }
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="https://wa.me/"]');
+    if (!a) return;
+    const ubicacion = a.id === 'favBarWa' ? 'favoritos' : a.closest('.wa-group') ? 'flotante' : a.closest('.foot-channels') ? 'pie' : 'otro';
+    evento('whatsapp_click', { location: ubicacion, property_id: idFichaAbierta || '' });
+  });
   document.getElementById('acepto').addEventListener('change', e => {
     if (e.target.checked) {
       e.target.closest('.consent').classList.remove('has-error');
@@ -3258,6 +3285,7 @@ main:focus{outline:none;}
     marcarCampo(form.contacto, 'contactoError', !contacto);
     if (!nombre || !contacto) {
       (!nombre ? form.nombre : form.contacto).focus();
+      evento('contact_form_error', { category: 'validation', field: !nombre ? 'name' : 'contact' });
       return;
     }
     // Ley 1581: sin autorización expresa no se guarda ningún dato.
@@ -3268,6 +3296,7 @@ main:focus{outline:none;}
       consentBlock.classList.add('has-error');
       consentError.hidden = false;
       acepto.focus();
+      evento('contact_form_error', { category: 'validation', field: 'consent' });
       return;
     }
     consentBlock.classList.remove('has-error');
@@ -3334,12 +3363,15 @@ main:focus{outline:none;}
       okRef.hidden = !codigo;
       ok.hidden = false;
       requestAnimationFrame(() => ok.classList.add('is-in'));
+      evento('contact_form_success', { role: form.rol.value, property_id: consulta ? consulta.id : '', has_property: !!consulta });   // solo aquí: respuesta confirmada y huella idéntica
       envioId = null; huellaEnvio = null; reemplazaIds = [];
       fijarConsulta(null);
     };
     // Si no se pudo confirmar: no se muestra éxito, se conserva lo escrito y se puede reintentar (mismo envio_id: no se duplica).
     const fallar = (motivo) => {
       console.error('Contacto no confirmado:', motivo);   // sin datos de la persona
+      const categorias = { tiempo: 'timeout', red: 'network', 'respuesta-invalida': 'invalid_response', rechazado: 'server_rejected', 'sin-huella': 'no_confirmation', 'contenido-distinto': 'mismatch', 'sin-configurar': 'not_configured' };
+      evento('contact_form_error', { category: /^http-/.test(motivo) ? 'http_error' : (categorias[motivo] || 'unknown') });
       form.removeAttribute('aria-busy');
       submit.disabled = false;
       submit.textContent = T('Reintentar');
@@ -3372,7 +3404,7 @@ main:focus{outline:none;}
         if (resp.huella !== huella) throw new Error(resp.huella ? 'contenido-distinto' : 'sin-huella');
         marcarEnviado(resp);
       })
-      .catch(err => fallar(err && err.name === 'AbortError' ? 'tiempo' : (err && err.message) || 'error'))
+      .catch(err => fallar(!err ? 'error' : err.name === 'AbortError' ? 'tiempo' : err.name === 'SyntaxError' ? 'respuesta-invalida' : err.name === 'TypeError' ? 'red' : err.message || 'error'))
       .finally(() => clearTimeout(reloj));
   });
 })();

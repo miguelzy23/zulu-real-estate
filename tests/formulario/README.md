@@ -15,7 +15,8 @@ python3 -m http.server 8000
 y abre `http://localhost:8000/tests/formulario/pagina.test.html`. Al terminar, el título de la pestaña dice `TODAS PASAN n`
 o `FALLAN n`, y cada prueba se lista en la página. Cubren: entrada directa a `/<slug>` (español e inglés), validación,
 errores del servidor/red/tiempo, reintento idéntico, cambio de propiedad, `reemplaza` conservado en reintentos de una
-corrección, y que `{ok:true}` sin huella o con otra huella no se muestre como guardado.
+corrección, y que `{ok:true}` sin huella o con otra huella no se muestre como guardado. Incluye las pruebas de los eventos de
+Analytics (`docs/analitica.md`) con `window.va` simulado: un clic = un evento, éxito solo tras confirmación, sin datos personales y sin Analytics.
 
 No cubren (siguen pendientes): la prueba real contra Google y que el navegador pueda leer su respuesta (CORS).
 
