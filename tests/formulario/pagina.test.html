@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Pruebas del formulario (en curso)</title>
+<style>
+  body{font:14px/1.5 system-ui,sans-serif; margin:24px; max-width:900px}
+  .ok{color:#0a6b2d} .mal{color:#b00020; font-weight:600} li{margin:4px 0}
+  iframe{position:fixed; right:0; bottom:0; width:420px; height:300px; border:1px solid #999; background:#fff; opacity:.01; pointer-events:none}
+</style>
+<h1>Pruebas del formulario de contacto</h1>
+<p>Sirve el repositorio desde su raíz (<code>python3 -m http.server 8000</code>) y abre
+<code>http://localhost:8000/tests/formulario/pagina.test.html</code>. Usa <code>fetch</code> simulado y el script de Google simulado:
+no envía ninguna consulta real. Detalles en <code>README.md</code>.</p>
+<ul id="resultados"></ul>
+<p id="resumen"><b>Corriendo…</b></p>
+<script src="hoja-simulada.js"></script>
+<script src="pagina.test.js"></script>

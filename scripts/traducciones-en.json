@@ -1,5 +1,7 @@
 {
  "html": {
+    "Consulta sobre:": "About:",
+    "Quitar": "Remove",
   "Zulu Real Estate — Lotes, fincas y propiedades en Antioquia": "Zulu Real Estate — Land, country homes and properties in Antioquia, Colombia",
   "Saltar al contenido": "Skip to content",
   "Nosotros": "About us",
@@ -200,6 +202,12 @@
   "en Cartagena y Barú": "in Cartagena and Barú"
  },
  "js": {
+    "Enviando…": "Sending…",
+    "Enviado": "Sent",
+    "Reintentar": "Try again",
+    "Código de tu consulta:": "Your inquiry code:",
+    "No pudimos confirmar que tu mensaje se guardó (la conexión tardó demasiado). Tus datos siguen aquí: inténtalo de nuevo en unos segundos o escríbenos por WhatsApp.": "We could not confirm that your message was saved (the connection took too long). Your details are still here: try again in a few seconds or message us on WhatsApp.",
+    "No pudimos guardar tu mensaje. Tus datos siguen aquí: revisa tu conexión e inténtalo de nuevo, o escríbenos por WhatsApp.": "We could not save your message. Your details are still here: check your connection and try again, or message us on WhatsApp.",
   "Cerrar menú": "Close menu",
   "Abrir menú": "Open menu",
   "Cerrar contactos de WhatsApp": "Close WhatsApp contacts",
