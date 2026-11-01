@@ -36,6 +36,7 @@
       if (m === 'otrahuella') return Promise.resolve(new p.w.Response(JSON.stringify({ ok: true, repetido: true, huella: 'hOTRA' }), { status: 200 }));
       if (m === 'cuelga') return new Promise(function (_, rej) { opt.signal.addEventListener('abort', function () { rej(new p.w.DOMException('Aborted', 'AbortError')); }); });
       var r = ZuluSim.post(sim.api, cuerpo);                                  // el script real, con hoja simulada
+      if (m === 'demora') return new Promise(function (res) { est.liberar = function () { res(new p.w.Response(JSON.stringify(r), { status: 200 })); }; });   // se guarda, la respuesta llega cuando el test la libera
       if (m === 'pierde') return Promise.reject(new TypeError('Failed to fetch'));   // se guardó, pero el navegador no vio la respuesta
       return Promise.resolve(new p.w.Response(JSON.stringify(r), { status: 200 }));
     };
@@ -49,7 +50,12 @@
   var enviar = async function (p) { p.$('form').requestSubmit(); await dormir(250); };
   var estado = function (p) { return { exito: !p.$('ok').hidden, error: !p.$('formError').hidden, boton: p.$('submit').textContent, activo: !p.$('submit').disabled }; };
 
-  async function prueba(nombre, fn) { try { await fn(); registrar(nombre); } catch (e) { registrar(nombre, e); } }
+  /* Cada prueba termina limpia aunque falle: se quitan los iframes que quedaron y la marca de modo de prueba. */
+  async function prueba(nombre, fn) {
+    try { await fn(); registrar(nombre); } catch (e) { registrar(nombre, e); }
+    document.querySelectorAll('iframe').forEach(function (f) { f.remove(); });
+    try { sessionStorage.removeItem('zulu-prueba'); } catch (e2) {}
+  }
   var COL = { propId: 8, envio: 11, huella: 13, reemplaza: 14 };
 
   (async function () {
@@ -218,6 +224,37 @@
       try { sessionStorage.removeItem('zulu-prueba'); } catch (e) {}
       var q = await cargar('/index.html'); var ev2 = espiar(q); sinNavegar(q);
       q.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual('test' in ev2[0][1].data, false); q.cerrar();
+    });
+    var salirPrueba = function () { try { sessionStorage.removeItem('zulu-prueba'); } catch (e) {} };
+    await prueba('ANALÍTICA: la marca ?prueba=1 se guarda AL CARGAR: abrir una ficha (que quita el parámetro) antes del primer evento no la pierde', async function () {
+      salirPrueba(); var p = await cargar('/index.html?prueba=1'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] .card-open').click(); await dormir(900);
+      igual(p.w.location.search, '', 'abrir la ficha cambió la dirección y quitó el parámetro');
+      p.d.querySelector('.wa-group a.wa').click(); await dormir(80);
+      igual([ev.length, ev[0][1].data.test], [1, true]); p.cerrar(); salirPrueba();
+    });
+    await prueba('ANALÍTICA: ?prueba=0 sale del modo de prueba; sin marca no hay test; la marca no pasa a otra pestaña de visitas reales', async function () {
+      salirPrueba(); var p = await cargar('/index.html?prueba=1'); p.cerrar();
+      var q = await cargar('/index.html?prueba=0'); var ev = espiar(q); sinNavegar(q);
+      q.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual('test' in ev[0][1].data, false, '?prueba=0 desactiva'); q.cerrar(); salirPrueba();
+    });
+    await prueba('ANALÍTICA: el éxito usa la copia del envío confirmado aunque durante la espera cambien el rol o la propiedad', async function () {
+      var p = await cargar('/index.html'); var s = await servidor(p); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] a.more[href="#contacto"]').click(); await dormir(100);
+      llenar(p, 'a@example.com', 'm'); s.modo = 'demora'; p.$('form').requestSubmit(); await dormir(200);
+      igual(estado(p).exito, false, 'aún sin respuesta');
+      p.d.querySelector('input[name="rol"][value="tengo"]').click(); p.$('consultaQuitar').click(); await dormir(100);
+      s.liberar(); await dormir(300);
+      igual(estado(p).exito, true); var exitos = ev.filter(function (e) { return e[1].name === 'contact_form_success'; });
+      igual(exitos.length, 1); igual(exitos[0][1].data, { lang: 'es', role: 'busco', property_id: 'ZUL-2026-001', has_property: true }, 'atribuido al envío confirmado, no al formulario actual'); p.cerrar();
+    });
+    await prueba('ANALÍTICA: respuesta demorada y el visitante cambia de propiedad: se atribuye la propiedad del envío', async function () {
+      var p = await cargar('/index.html'); var s = await servidor(p); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] a.more[href="#contacto"]').click(); await dormir(100);
+      llenar(p, 'a@example.com', 'm'); s.modo = 'demora'; p.$('form').requestSubmit(); await dormir(200);
+      p.d.querySelector('.card[data-id="ZUL-2026-002"] a.more[href="#contacto"]').click(); await dormir(100);
+      s.liberar(); await dormir(300);
+      igual(ev.filter(function (e) { return e[1].name === 'contact_form_success'; })[0][1].data.property_id, 'ZUL-2026-001'); igual(s.llamadas[0].propiedad_id, 'ZUL-2026-001'); p.cerrar();
     });
     await prueba('SIN ANALÍTICA (ausente o bloqueada): formulario, WhatsApp y botones de propiedad siguen funcionando', async function () {
       var variantes = [['ausente', function (w) { w.va = undefined; }], ['lanza error', function (w) { w.va = function () { throw new Error('bloqueado'); }; }], ['no es función', function (w) { w.va = 'x'; }]];

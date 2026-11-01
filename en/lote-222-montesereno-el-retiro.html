@@ -3246,12 +3246,17 @@ main:focus{outline:none;}
      Solo contexto público: idioma, id público de la propiedad (ZUL-…), ubicación del botón, categoría del error. Nunca nombres,
      contactos, mensajes, códigos de consulta, ids de envío ni URLs. Si la analítica falla o está bloqueada, no pasa nada.
      Ver docs/analitica.md. */
+  /* Modo de prueba del equipo: ?prueba=1 lo activa y ?prueba=0 lo desactiva. Se guarda en sessionStorage (solo esa pestaña, se
+     pierde al cerrarla). Se evalúa al CARGAR la página (ver la llamada de abajo), no al primer evento: abrir una ficha cambia la
+     dirección y quita el parámetro antes de que ocurra cualquier evento. */
   function esPrueba() {
     try {
-      if (/[?&]prueba=1(&|$)/.test(location.search)) sessionStorage.setItem('zulu-prueba', '1');
+      const m = /[?&]prueba=([01])(&|$)/.exec(location.search);
+      if (m) { if (m[1] === '1') sessionStorage.setItem('zulu-prueba', '1'); else sessionStorage.removeItem('zulu-prueba'); }
       return sessionStorage.getItem('zulu-prueba') === '1';
     } catch (err) { return false; }
   }
+  esPrueba();
   function evento(nombre, extra) {
     try {
       const datos = { lang: window.ZULU_LANG || 'es' };
@@ -3347,6 +3352,8 @@ main:focus{outline:none;}
     // cambiar solo de propiedad, por ejemplo, ya cuenta como contenido distinto.
     datos.idioma = window.ZULU_LANG || 'es';
     if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
+    // Copia del contexto de ESTE envío para Analytics: mientras llega la respuesta la persona puede cambiar de rol o quitar la propiedad.
+    const contextoEnvio = { role: form.rol.value, property_id: datos.propiedad_id || '', has_property: !!datos.propiedad_id };
     // Un reintento con el mismo contenido reutiliza el envio_id (el script no lo duplica). Si la persona corrigió algo, es un envío
     // distinto: id nuevo, y los ids anteriores se acumulan en "reemplaza" hasta que haya confirmación (así un reintento de la
     // corrección sigue apuntando a lo que corrige, y nada se descarta en silencio ni se confunde con el original).
@@ -3371,7 +3378,7 @@ main:focus{outline:none;}
       okRef.hidden = !codigo;
       ok.hidden = false;
       requestAnimationFrame(() => ok.classList.add('is-in'));
-      evento('contact_form_success', { role: form.rol.value, property_id: consulta ? consulta.id : '', has_property: !!consulta });   // solo aquí: respuesta confirmada y huella idéntica
+      evento('contact_form_success', contextoEnvio);   // solo aquí: respuesta confirmada y huella idéntica
       envioId = null; huellaEnvio = null; reemplazaIds = [];
       fijarConsulta(null);
     };
