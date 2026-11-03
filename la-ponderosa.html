@@ -974,6 +974,9 @@ p{margin:0; text-wrap:pretty;}
   transition:opacity .5s var(--ease-out), transform .5s var(--ease-out);
 }
 .ok.is-in{opacity:1; transform:none;}
+.modo-prueba{position:fixed; bottom:calc(76px + env(safe-area-inset-bottom)); left:12px; z-index:9000; display:flex; align-items:center; gap:4px; min-height:44px; padding:0 4px 0 14px; border-radius:999px; background:#d8ad6b; color:#0A0A0A; font-size:13px; font-weight:600; letter-spacing:.02em; box-shadow:0 2px 12px rgba(0,0,0,.35);}
+.modo-prueba button{min-height:44px; padding:0 12px; background:none; border:0; border-radius:999px; color:inherit; font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+.modo-prueba button:focus-visible{outline:2px solid #0A0A0A; outline-offset:-4px;}
 .consulta{display:flex; gap:14px; align-items:center; justify-content:space-between; margin:0 0 16px; padding:12px 14px; border:1px solid var(--rule-dark); border-radius:3px; font-size:14px; line-height:1.45; color:var(--on-ink-dim);}
 .consulta[hidden]{display:none;}
 .consulta-txt{margin:0;}
@@ -3261,11 +3264,25 @@ main:focus{outline:none;}
       return sessionStorage.getItem('zulu-prueba') === '1';
     } catch (err) { return false; }
   }
-  esPrueba();
+  let enPrueba = esPrueba();   // se decide UNA vez al cargar: "Salir" lo apaga aunque la dirección siga diciendo ?prueba=1
+  /* Etiqueta visible mientras el modo de prueba está activo (solo el equipo la ve; un visitante normal nunca). "Salir" lo apaga
+     sin recargar. Texto fijo, sin datos; no genera eventos de Analytics. */
+  function mostrarModoPrueba() {
+    if (!enPrueba || document.getElementById('modoPrueba')) return;
+    const caja = document.createElement('div');
+    caja.id = 'modoPrueba'; caja.className = 'modo-prueba'; caja.setAttribute('role', 'status');
+    const texto = document.createElement('span'); texto.textContent = T('Modo de prueba');
+    const salir = document.createElement('button'); salir.type = 'button'; salir.textContent = T('Salir');
+    salir.setAttribute('aria-label', T('Salir del modo de prueba'));
+    salir.addEventListener('click', () => { enPrueba = false; try { sessionStorage.removeItem('zulu-prueba'); } catch (err) {} caja.remove(); });
+    caja.append(texto, salir);
+    document.body.appendChild(caja);
+  }
+  mostrarModoPrueba();
   function evento(nombre, extra) {
     try {
       const datos = { lang: window.ZULU_LANG || 'es' };
-      if (esPrueba()) datos.test = true;   // visitas con ?prueba=1: así las pruebas del equipo no se confunden con visitas reales
+      if (enPrueba) datos.test = true;   // visitas con ?prueba=1: así las pruebas del equipo no se confunden con visitas reales
       for (const k in extra) { const v = extra[k]; if (v !== undefined && v !== null && v !== '') datos[k] = v; }
       if (typeof window.va === 'function') window.va('event', { name: nombre, data: datos });
     } catch (err) { /* sin analítica el sitio funciona igual */ }

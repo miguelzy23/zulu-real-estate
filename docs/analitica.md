@@ -18,7 +18,7 @@ Enterprise**. En Hobby las visitas se miden, pero los eventos no aparecen. Confi
 Categorías de error: `validation`, `timeout`, `network`, `http_error`, `invalid_response`, `server_rejected`, `no_confirmation`
 (respuesta sin huella, p. ej. script viejo), `mismatch` (huella distinta), `not_configured`, `unknown`.
 
-Todos los eventos llevan `lang` (`es` o `en`). **Modo de prueba:** al cargar el sitio con `?prueba=1` (ej. `https://www.zulurealstate.com/?prueba=1`) esa pestaña queda marcada y todos sus eventos llevan `test: true`, aunque después navegues, abras fichas o cambies de idioma (se guarda al cargar, en `sessionStorage`). **Para salir:** abre el sitio con `?prueba=0` en esa pestaña, o cierra la pestaña (la marca no pasa a otras pestañas ni a otros visitantes).
+Todos los eventos llevan `lang` (`es` o `en`). **Modo de prueba:** al cargar el sitio con `?prueba=1` (ej. `https://www.zulurealstate.com/?prueba=1`) esa pestaña queda marcada y todos sus eventos llevan `test: true`, aunque después navegues, abras fichas o cambies de idioma (se guarda al cargar, en `sessionStorage`). **Mientras esté activo se ve una etiqueta "Modo de prueba · Salir"** (abajo a la izquierda; solo la ve quien activó el modo). **Para salir:** pulsa **Salir** en la etiqueta, o abre el sitio con `?prueba=0` en esa pestaña, o cierra la pestaña (la marca no pasa a otras pestañas ni a otros visitantes).
 
 En `contact_form_success`, el rol y la propiedad son los del envío que se confirmó (una copia tomada al enviar), no los que tenga el formulario cuando llega la respuesta.
 
