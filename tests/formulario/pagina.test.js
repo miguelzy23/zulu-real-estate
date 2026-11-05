@@ -256,6 +256,33 @@
       s.liberar(); await dormir(300);
       igual(ev.filter(function (e) { return e[1].name === 'contact_form_success'; })[0][1].data.property_id, 'ZUL-2026-001'); igual(s.llamadas[0].propiedad_id, 'ZUL-2026-001'); p.cerrar();
     });
+    /* ---- Etiqueta visible del modo de prueba ---- */
+    await prueba('ETIQUETA: con ?prueba=1 aparece "Modo de prueba" + "Salir" (es) y "Test mode" + "Exit" (en); sin la marca no aparece', async function () {
+      var p = await cargar('/index.html?prueba=1'); var e = p.$('modoPrueba'); cierto(e, 'debía aparecer');
+      igual([e.querySelector('span').textContent, e.querySelector('button').textContent], ['Modo de prueba', 'Salir']); p.cerrar();
+      var q = await cargar('/en/index.html'); igual(q.$('modoPrueba') && q.$('modoPrueba').querySelector('span').textContent, 'Test mode', 'la marca sigue activa en la pestaña');
+      igual(q.$('modoPrueba').querySelector('button').textContent, 'Exit'); q.cerrar();
+      salirPrueba(); var r = await cargar('/index.html'); igual(r.$('modoPrueba'), null, 'un visitante normal no la ve'); r.cerrar();
+    });
+    await prueba('ETIQUETA: es accesible (role status, botón con nombre, objetivo táctil >= 44 px) y sigue al abrir una ficha', async function () {
+      salirPrueba(); var p = await cargar('/index.html?prueba=1'); var e = p.$('modoPrueba'), b = e.querySelector('button');
+      igual([e.getAttribute('role'), b.getAttribute('aria-label')], ['status', 'Salir del modo de prueba']);
+      cierto(b.getBoundingClientRect().height >= 44, 'el botón debe medir al menos 44 px');
+      p.d.querySelector('.card[data-id="ZUL-2026-001"] .card-open').click(); await dormir(800); cierto(p.d.getElementById('modoPrueba'), 'sigue visible con la ficha abierta'); p.cerrar();
+    });
+    await prueba('ETIQUETA: "Salir" la quita y apaga la marca (sin recargar); el siguiente evento ya no lleva test; salir no genera eventos', async function () {
+      salirPrueba(); var p = await cargar('/index.html?prueba=1'); var ev = espiar(p); sinNavegar(p);
+      p.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual(ev[0][1].data.test, true);
+      p.$('modoPrueba').querySelector('button').click(); await dormir(80);
+      igual([p.$('modoPrueba'), ev.length], [null, 1], 'se quitó y no hubo evento nuevo');
+      p.d.querySelector('.wa-group a.wa').click(); await dormir(80); igual('test' in ev[1][1].data, false, 'ya no es prueba'); p.cerrar();
+    });
+    await prueba('ETIQUETA: ?prueba=0 la quita; el formulario funciona con la etiqueta visible', async function () {
+      salirPrueba(); var p = await cargar('/index.html?prueba=1'); p.cerrar();
+      var q = await cargar('/index.html?prueba=0'); igual(q.$('modoPrueba'), null); q.cerrar();
+      var r = await cargar('/index.html?prueba=1'); var s = await servidor(r); llenar(r, 'a@example.com', 'm'); await enviar(r);
+      igual([estado(r).exito, s.filas().length, !!r.$('modoPrueba')], [true, 1, true]); r.cerrar();
+    });
     await prueba('SIN ANALÍTICA (ausente o bloqueada): formulario, WhatsApp y botones de propiedad siguen funcionando', async function () {
       var variantes = [['ausente', function (w) { w.va = undefined; }], ['lanza error', function (w) { w.va = function () { throw new Error('bloqueado'); }; }], ['no es función', function (w) { w.va = 'x'; }]];
       for (var i = 0; i < variantes.length; i++) {

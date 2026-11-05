@@ -202,6 +202,9 @@
   "en Cartagena y Barú": "in Cartagena and Barú"
  },
  "js": {
+    "Modo de prueba": "Test mode",
+    "Salir": "Exit",
+    "Salir del modo de prueba": "Exit test mode",
     "Enviando…": "Sending…",
     "Enviado": "Sent",
     "Reintentar": "Try again",
