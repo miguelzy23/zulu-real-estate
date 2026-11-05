@@ -236,6 +236,16 @@ p{margin:0; text-wrap:pretty;}
   border-bottom-color:var(--rule-dark);
 }
 .nav.is-hidden{transform:translateY(-130%);}
+/* Celular: la barra ya no cae deslizándose sobre el texto; al volver aparece/desaparece con un desvanecido (sin movimiento) y con
+   fondo más opaco para que no se vea el texto de debajo a través de ella. Computador: igual que antes. */
+@media (max-width:760px){
+  .nav.is-stuck{background:rgba(10,10,10,.94);}
+  .nav{transition:background .4s var(--ease-out), color .4s var(--ease-out), padding .4s var(--ease-out), border-color .4s var(--ease-out),
+                  opacity .28s var(--ease-out), visibility 0s linear 0s;}
+  .nav.is-hidden{transform:none; opacity:0; visibility:hidden; pointer-events:none;
+                 transition:background .4s var(--ease-out), color .4s var(--ease-out), padding .4s var(--ease-out), border-color .4s var(--ease-out),
+                            opacity .28s var(--ease-out), visibility 0s linear .28s;}
+}
 .mark{
   font-family:'Baloo 2',sans-serif; font-weight:800;
   font-size:19px; letter-spacing:.07em; line-height:1;
@@ -2206,7 +2216,7 @@ main:focus{outline:none;}
     // Se oculta solo bajando y ya pasado el hero — así no le quita
     // espacio a la pantalla mientras lees, y vuelve apenas subes.
     if (!nav.classList.contains('is-open')) {
-      const bajando = scrollY > lastScrollY && scrollY > innerHeight * 0.9;
+      const bajando = scrollY > lastScrollY && scrollY > innerHeight * 0.9 && !nav.contains(document.activeElement);   // no se esconde si el teclado/foco está en la barra
       nav.classList.toggle('is-hidden', bajando);
     }
     lastScrollY = scrollY;

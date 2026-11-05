@@ -296,6 +296,36 @@
       }
     });
 
+    /* ---- Barra superior en celular: se desvanece, ya no cae deslizándose sobre el texto ---- */
+    function irA(p, y) { p.d.documentElement.style.scrollBehavior = 'auto'; p.w.scrollTo(0, y); }   // instantáneo (la página usa desplazamiento suave)
+    /* Estas pruebas dependen de que la página se esté pintando (requestAnimationFrame): si la pestaña está oculta, fallan con un aviso claro. */
+    async function pintando(p) { var vivo = await new Promise(function (r) { var t = setTimeout(function () { r(false); }, 800); p.w.requestAnimationFrame(function () { clearTimeout(t); r(true); }); }); if (!vivo) throw new Error('la pestaña no se está pintando (déjala visible y repite)'); }
+    async function bajarSubir(p, ancho, alto) {
+      var st = p.d.createElement('style'); st.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'; p.d.head.appendChild(st);   // estados finales, sin depender del tiempo
+      p.f.style.width = ancho; p.f.style.height = alto; await dormir(400); await pintando(p);
+      irA(p, 300); await dormir(250); irA(p, 1000); await dormir(500);
+      var nav = p.$('nav'), cs = p.w.getComputedStyle(nav), oculta = { clase: nav.classList.contains('is-hidden'), opacidad: cs.opacity, visibilidad: cs.visibility, transform: cs.transform };
+      irA(p, 900); await dormir(500);
+      var cs2 = p.w.getComputedStyle(nav), vuelve = { clase: nav.classList.contains('is-hidden'), opacidad: cs2.opacity, visibilidad: cs2.visibility, transform: cs2.transform, fondo: cs2.backgroundColor };
+      return { oculta: oculta, vuelve: vuelve };
+    }
+    await prueba('BARRA (celular, 420 px): al bajar se desvanece sin deslizarse; al subir reaparece sin deslizarse y con fondo opaco', async function () {
+      var p = await cargar('/index.html'); var r = await bajarSubir(p, '420px', '700px');
+      igual([r.oculta.clase, r.oculta.opacidad, r.oculta.visibilidad, r.oculta.transform], [true, '0', 'hidden', 'none'], 'oculta: sin desplazamiento');
+      igual([r.vuelve.clase, r.vuelve.opacidad, r.vuelve.visibilidad, r.vuelve.transform], [false, '1', 'visible', 'none'], 'visible otra vez, sin desplazamiento');
+      var alfa = parseFloat((r.vuelve.fondo.match(/rgba?\([^)]*?,\s*([\d.]+)\)$/) || [0, 1])[1]); cierto(alfa >= 0.9, 'fondo opaco (alfa ' + alfa + ')'); p.cerrar();
+    });
+    await prueba('BARRA (computador, 1200 px): sin cambios, sigue deslizándose hacia arriba al esconderse', async function () {
+      var p = await cargar('/index.html'); var r = await bajarSubir(p, '1200px', '700px');
+      igual([r.oculta.clase, r.oculta.opacidad, r.oculta.visibilidad], [true, '1', 'visible']); cierto(r.oculta.transform !== 'none', 'en computador se desliza');
+      igual(r.vuelve.clase, false, 'al subir vuelve a mostrarse'); p.cerrar();
+    });
+    await prueba('BARRA: no se esconde mientras el foco (teclado) está dentro de ella', async function () {
+      var p = await cargar('/index.html'); p.f.style.width = '420px'; p.f.style.height = '700px'; await dormir(300); await pintando(p);
+      p.$('navToggle').focus(); irA(p, 300); await dormir(200); irA(p, 2400); await dormir(600);
+      igual(p.$('nav').classList.contains('is-hidden'), false, 'con el foco en la barra no debe esconderse'); p.cerrar();
+    });
+
     document.getElementById('resumen').innerHTML = '<b>' + pasadas + ' pasaron, ' + falladas + ' fallaron</b>';
     document.title = (falladas ? 'FALLAN ' + falladas : 'TODAS PASAN ' + pasadas) + ' · pruebas del formulario';
   })();
