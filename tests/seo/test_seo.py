@@ -2,7 +2,7 @@
 """Pruebas de SEO de las páginas generadas. Solo biblioteca estándar. Correr desde la raíz:  python3 tests/seo/test_seo.py
 Comprueba: descripciones completas (sin cortar), un H1 propio por ficha, títulos únicos, sitemap con fechas reales y URLs coherentes
 con cada página, datos estructurados válidos y la página 404."""
-import json, re, sys, unittest
+import json, re, subprocess, sys, unittest
 from datetime import date
 from pathlib import Path
 
@@ -104,6 +104,33 @@ class Sitemap(unittest.TestCase):
         for p, ruta, en in paginas_propiedad():
             if p.get('operacion') == 'gestionada':
                 self.assertNotIn(p['slug'], self.xml)
+
+
+def es_superficial():
+    return subprocess.run(['git', 'rev-parse', '--is-shallow-repository'], cwd=RAIZ, capture_output=True, text=True).stdout.strip() == 'true'
+
+
+class ComprobacionDelGenerador(unittest.TestCase):
+    """`paginas-lote.py --check` debe detectar páginas desactualizadas y fechas atrasadas del sitemap."""
+
+    def correr_check(self):
+        return subprocess.run([sys.executable, str(RAIZ / 'scripts' / 'paginas-lote.py'), '--check'], cwd=RAIZ, capture_output=True, text=True)
+
+    def test_el_estado_actual_pasa(self):
+        r = self.correr_check()
+        self.assertEqual(r.returncode, 0, r.stdout[-600:] + r.stderr[-300:])
+
+    @unittest.skipIf(es_superficial(), 'repositorio superficial: git no da fechas fiables')
+    def test_una_fecha_atrasada_del_sitemap_hace_fallar_el_check(self):
+        ruta = RAIZ / 'sitemap.xml'; original = ruta.read_text(encoding='utf-8')
+        try:
+            ruta.write_text(re.sub(r'<lastmod>[^<]*</lastmod>', '<lastmod>2020-01-01</lastmod>', original, count=1), encoding='utf-8')   # una sola fecha vieja
+            r = self.correr_check()
+            self.assertNotEqual(r.returncode, 0, 'el check debe fallar con una fecha atrasada')
+            self.assertIn('fecha atrasada', r.stdout)
+        finally:
+            ruta.write_text(original, encoding='utf-8')
+        self.assertEqual(self.correr_check().returncode, 0, 'tras restaurar vuelve a pasar')
 
 
 class Pagina404(unittest.TestCase):

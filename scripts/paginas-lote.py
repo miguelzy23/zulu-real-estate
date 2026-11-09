@@ -281,8 +281,8 @@ def fecha_cambio(*rutas):
 
 
 def sitemap(props):
-    base_c = fecha_cambio('index.html', 'scripts/traducciones-en.json')
-    base_p = fecha_cambio('index.html', 'scripts/traducciones-en.json', 'data/properties.json')
+    base_c = fecha_cambio('index.html', 'scripts/traducciones-en.json', 'scripts/paginas-lote.py')
+    base_p = fecha_cambio('index.html', 'scripts/traducciones-en.json', 'scripts/paginas-lote.py', 'data/properties.json')
     filas = [(f'{DOMINIO}/', 'weekly', '1.0', base_c), (f'{DOMINIO}/en', 'weekly', '0.9', base_c),
              (f'{DOMINIO}/privacidad', 'yearly', '0.2', fecha_cambio('privacidad.html'))]
     for p in props:
@@ -331,9 +331,16 @@ def main():
     urls = lambda s: re.findall(r'<loc>(.*?)</loc>', s)
     actual_sm = ruta_sm.read_text(encoding='utf-8') if ruta_sm.exists() else ''
     cambio_sm = urls(sm) != urls(actual_sm)
+    fechas = lambda x: dict(re.findall(r'<loc>(.*?)</loc>\s*<lastmod>(.*?)</lastmod>', x))
+    superficial = subprocess.run(['git', 'rev-parse', '--is-shallow-repository'], cwd=RAIZ, capture_output=True, text=True).stdout.strip() == 'true'
+    atrasadas = [] if superficial else [u for u, lm in fechas(sm).items() if fechas(actual_sm).get(u, '') < lm]   # lastmod anterior al último cambio real
+    if atrasadas:
+        cambio_sm = True
+    if superficial and SOLO_COMPROBAR:
+        print('Aviso: el repositorio es superficial (clon parcial); no se comprueban las fechas del sitemap.')
     if sm != actual_sm and not SOLO_COMPROBAR:
         ruta_sm.write_text(sm, encoding='utf-8')
-    print('sitemap.xml:', ('DESACTUALIZADO' if SOLO_COMPROBAR else 'actualizado') if cambio_sm else 'al día', f'({len(urls(sm))} URLs)')
+    print('sitemap.xml:', ('DESACTUALIZADO' if SOLO_COMPROBAR else 'actualizado') if cambio_sm else 'al día', f'({len(urls(sm))} URLs)' + (f', {len(atrasadas)} con fecha atrasada' if atrasadas else ''))
     problemas = False
     if pendientes:
         problemas = True
