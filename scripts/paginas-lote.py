@@ -75,16 +75,31 @@ def desc_corta(p, en):
     return TRAD['props'][p['slug']]['descripcion_corta'] if en else p['descripcion_corta']
 
 
+def recortar_frase(base, limite):
+    """Recorta en un límite natural (coma, punto y coma) para que la frase no quede cortada a media idea."""
+    if len(base) <= limite:
+        return base
+    corte = base[:limite]
+    pos = max(corte.rfind(', '), corte.rfind('; '))
+    if pos < limite * 0.45:                       # no hay un límite natural razonable: se corta en una palabra completa
+        corte = corte.rsplit(' ', 1)[0]
+        pos = len(corte)
+    out = corte[:pos].rstrip(' ,;:')
+    for suelta in (' con', ' y', ' e', ' de', ' del', ' en', ' el', ' la', ' los', ' las', ' un', ' una', ' a', ' al', ' and', ' with', ' of', ' the', ' in', ' to', ' for'):
+        if out.endswith(suelta):                   # no dejar la frase terminando en una palabra de enlace
+            out = out[:-len(suelta)].rstrip(' ,;:')
+    return out
+
+
 def descripcion(p, en=False):
+    """Descripción para buscadores y vista previa: <= 155 caracteres, completa (sin '…') y con el precio."""
     base = desc_corta(p, en).strip().rstrip('.')
+    precio = frase_precio(p, en)
     cierre = ' Zulu Real Estate.'
-    texto = f'{base}. {frase_precio(p, en)}{cierre}'
-    if len(texto) > 158:
-        corto = f'{base}. {frase_precio(p, en)}'
-        if len(corto) > 158:
-            corto = corto[:155].rsplit(' ', 1)[0] + '…'
-        texto = corto
-    return texto
+    for tail in (f'. {precio}{cierre}', f'. {precio}'):
+        if len(base) + len(tail) <= 155:
+            return base + tail
+    return recortar_frase(base, 155 - len(f'. {precio}')) + f'. {precio}'
 
 
 def attr(s):
@@ -120,7 +135,7 @@ def datos_estructurados(p, url, imagen, desc, en=False):
 
 
 def reemplazar(texto, patron, nuevo, nombre):
-    resultado, n = re.subn(patron, lambda m: nuevo, texto, count=1, flags=re.S)
+    resultado, n = re.subn(patron, (lambda m: nuevo(m)) if callable(nuevo) else (lambda m: nuevo), texto, count=1, flags=re.S)
     if n != 1:
         sys.exit(f'No encontré "{nombre}" en index.html: el script necesita ajustarse.')
     return resultado
@@ -208,6 +223,8 @@ def generar_pagina(base, p, en=False):
     desc = descripcion(p, en)
     h = base
     h = reemplazar(h, r'<title>.*?</title>', f'<title>{attr(titulo)}</title>', 'title')
+    # H1 propio de la ficha (el texto oculto del título principal); la portada conserva el suyo
+    h = reemplazar(h, r'(<h1 class="word"><span>ZULU</span><i class="sr-only">)[^<]*(</i></h1>)', lambda m: f'{m.group(1)} {attr(tit(p, en))}{m.group(2)}', 'h1')
     h = reemplazar(h, r'<meta name="description" content="[^"]*" />', f'<meta name="description" content="{attr(desc)}" />', 'description')
     h = reemplazar(h, r'<link rel="canonical" href="[^"]*" />', f'<link rel="canonical" href="{url}" />', 'canonical')
     h = reemplazar(h, r'(<link rel="alternate" hreflang="es" href="[^"]*" />\s*<link rel="alternate" hreflang="en" href="[^"]*" />\s*<link rel="alternate" hreflang="x-default" href="[^"]*" />)', alternos(slug), 'alternos')
@@ -250,14 +267,29 @@ def imagen_og(p):
     return True
 
 
+def fecha_cambio(*rutas):
+    """Fecha (AAAA-MM-DD) del último cambio de estos archivos: la del último commit, o hoy si tienen cambios sin guardar."""
+    hoy, fechas = str(date.today()), []
+    for r in rutas:
+        try:
+            sucio = subprocess.run(['git', 'status', '--porcelain', '--', r], cwd=RAIZ, capture_output=True, text=True).stdout.strip()
+            f = subprocess.run(['git', 'log', '-1', '--format=%cs', '--', r], cwd=RAIZ, capture_output=True, text=True).stdout.strip()
+            fechas.append(hoy if sucio else (f or hoy))
+        except Exception:
+            fechas.append(hoy)
+    return max(fechas)
+
+
 def sitemap(props):
-    hoy = str(date.today())
-    filas = [(f'{DOMINIO}/', 'weekly', '1.0'), (f'{DOMINIO}/en', 'weekly', '0.9'), (f'{DOMINIO}/privacidad', 'yearly', '0.2')]
+    base_c = fecha_cambio('index.html', 'scripts/traducciones-en.json', 'scripts/paginas-lote.py')
+    base_p = fecha_cambio('index.html', 'scripts/traducciones-en.json', 'scripts/paginas-lote.py', 'data/properties.json')
+    filas = [(f'{DOMINIO}/', 'weekly', '1.0', base_c), (f'{DOMINIO}/en', 'weekly', '0.9', base_c),
+             (f'{DOMINIO}/privacidad', 'yearly', '0.2', fecha_cambio('privacidad.html'))]
     for p in props:
         if not es_gestionada(p):
-            filas.append((f"{DOMINIO}/{p['slug']}", 'weekly', '0.8'))
-            filas.append((f"{DOMINIO}/en/{p['slug']}", 'weekly', '0.7'))
-    cuerpo = ''.join(f'  <url>\n    <loc>{u}</loc>\n    <lastmod>{hoy}</lastmod>\n    <changefreq>{c}</changefreq>\n    <priority>{pr}</priority>\n  </url>\n' for u, c, pr in filas)
+            filas.append((f"{DOMINIO}/{p['slug']}", 'weekly', '0.8', base_p))
+            filas.append((f"{DOMINIO}/en/{p['slug']}", 'weekly', '0.7', base_p))
+    cuerpo = ''.join(f'  <url>\n    <loc>{u}</loc>\n    <lastmod>{lm}</lastmod>\n    <changefreq>{c}</changefreq>\n    <priority>{pr}</priority>\n  </url>\n' for u, c, pr, lm in filas)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{cuerpo}</urlset>\n'
 
 
@@ -297,10 +329,18 @@ def main():
     sm = sitemap(props)
     ruta_sm = RAIZ / 'sitemap.xml'
     urls = lambda s: re.findall(r'<loc>(.*?)</loc>', s)
-    cambio_sm = urls(sm) != urls(ruta_sm.read_text(encoding='utf-8') if ruta_sm.exists() else '')
-    if cambio_sm and not SOLO_COMPROBAR:
+    actual_sm = ruta_sm.read_text(encoding='utf-8') if ruta_sm.exists() else ''
+    cambio_sm = urls(sm) != urls(actual_sm)
+    fechas = lambda x: dict(re.findall(r'<loc>(.*?)</loc>\s*<lastmod>(.*?)</lastmod>', x))
+    superficial = subprocess.run(['git', 'rev-parse', '--is-shallow-repository'], cwd=RAIZ, capture_output=True, text=True).stdout.strip() == 'true'
+    atrasadas = [] if superficial else [u for u, lm in fechas(sm).items() if fechas(actual_sm).get(u, '') < lm]   # lastmod anterior al último cambio real
+    if atrasadas:
+        cambio_sm = True
+    if superficial and SOLO_COMPROBAR:
+        print('Aviso: el repositorio es superficial (clon parcial); no se comprueban las fechas del sitemap.')
+    if sm != actual_sm and not SOLO_COMPROBAR:
         ruta_sm.write_text(sm, encoding='utf-8')
-    print('sitemap.xml:', ('DESACTUALIZADO' if SOLO_COMPROBAR else 'actualizado') if cambio_sm else 'al día', f'({len(urls(sm))} URLs)')
+    print('sitemap.xml:', ('DESACTUALIZADO' if SOLO_COMPROBAR else 'actualizado') if cambio_sm else 'al día', f'({len(urls(sm))} URLs)' + (f', {len(atrasadas)} con fecha atrasada' if atrasadas else ''))
     problemas = False
     if pendientes:
         problemas = True
