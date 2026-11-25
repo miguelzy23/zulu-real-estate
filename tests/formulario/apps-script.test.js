@@ -59,12 +59,24 @@ prueba('una hoja antigua con 8 columnas recibe los encabezados nuevos', function
 });
 prueba('campo trampa lleno: va a "Spam", no a Contactos, y responde como un envío normal', function () {
   var s = ZuluSim.montar(CODIGO); var r = ZuluSim.post(s.api, con({ control: 'robot' }));
-  igual([r.ok, r.huella], [true, 'h0000000a1']); igual(s.filas.length, 0); igual(s.spam.length, 2); igual(s.spam[1][1], 'campo trampa');
+  igual([r.ok, r.huella], [true, 'h0000000a1']); igual(s.filas.length, 1, 'Contactos solo con el encabezado'); igual(s.spam.length, 2); igual(s.spam[1][15], 'campo trampa');
+  igual([s.spam[1][COL.propId], s.spam[1][COL.envio]], ['ZUL-2026-001', base.envio_id], 'Spam guarda todos los datos');
+});
+prueba('un reintento idéntico apartado no se duplica en "Spam"', function () {
+  var s = ZuluSim.montar(CODIGO); ZuluSim.post(s.api, con({ control: 'x' })); var r = ZuluSim.post(s.api, con({ control: 'x' }));
+  igual([r.ok, r.repetido], [true, true]); igual(s.spam.length, 2);
+});
+prueba('"Spam" llena: responde error, nunca éxito sin guardar; Contactos sigue funcionando', function () {
+  var s = ZuluSim.montar(CODIGO); ZuluSim.post(s.api, con({ control: 'x' }));
+  while (s.spam.length <= 500) s.spam.push(['relleno']);
+  var r = ZuluSim.post(s.api, con({ control: 'x', envio_id: 'cccc3333-0', huella: 'hCCCC' }));
+  igual([r.ok, r.error], [false, 'guardado']); igual(s.spam.length, 501);
+  igual(ZuluSim.post(s.api, base).ok, true); igual(s.filas.length, 2);
 });
 prueba('tres enlaces o más van a "Spam"; uno solo se guarda en Contactos', function () {
   var s = ZuluSim.montar(CODIGO);
-  ZuluSim.post(s.api, con({ notas: 'http://a.com https://b.com www.c.com' })); igual(s.filas.length, 0); igual(s.spam[1][1], 'varios enlaces');
-  ZuluSim.post(s.api, con({ notas: 'vi esto https://www.zulurealstate.com/lote-222' })); igual(s.filas.length, 2); igual(s.spam.length, 2);
+  ZuluSim.post(s.api, con({ notas: 'http://a.com https://b.com www.c.com' })); igual(s.filas.length, 1); igual(s.spam[1][15], 'varios enlaces');
+  ZuluSim.post(s.api, con({ notas: 'vi esto https://www.zulurealstate.com/lote-222' })); igual(s.filas.length, 2, 'encabezado + 1'); igual(s.spam.length, 2);
 });
 
 print('\n' + pasadas + ' pasaron, ' + falladas + ' fallaron');
