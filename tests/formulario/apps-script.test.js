@@ -78,6 +78,30 @@ prueba('tres enlaces o más van a "Spam"; uno solo se guarda en Contactos', func
   ZuluSim.post(s.api, con({ notas: 'http://a.com https://b.com www.c.com' })); igual(s.filas.length, 1); igual(s.spam[1][15], 'varios enlaces');
   ZuluSim.post(s.api, con({ notas: 'vi esto https://www.zulurealstate.com/lote-222' })); igual(s.filas.length, 2, 'encabezado + 1'); igual(s.spam.length, 2);
 });
+prueba('un contacto nuevo avisa UNA vez, con datos, WhatsApp y propiedad; el reintento no repite', function () {
+  var s = ZuluSim.montar(CODIGO), d = con({ contacto: '+57 300 123 4567' }); ZuluSim.post(s.api, d); ZuluSim.post(s.api, d);
+  igual(s.correos.length, 1); var c = s.correos[0];
+  igual(c.to, 'zulurealstate@gmail.com'); igual(c.subject, 'Nuevo contacto: Ana · Lote 222'); igual(c.replyTo, undefined);
+  cierto(c.body.indexOf('https://wa.me/573001234567') > 0 && c.body.indexOf('Mensaje: hola') > 0 && c.body.indexOf('docs.google.com') > 0, c.body);
+});
+prueba('celular colombiano sin indicativo y correo como respuesta directa', function () {
+  var s = ZuluSim.montar(CODIGO);
+  ZuluSim.post(s.api, con({ contacto: '3001234567' })); cierto(s.correos[0].body.indexOf('wa.me/573001234567') > 0);
+  ZuluSim.post(s.api, con({ envio_id: 'dddd', huella: 'hD' })); igual(s.correos[1].replyTo, 'ana@example.com'); cierto(s.correos[1].body.indexOf('wa.me') < 0);
+});
+prueba('spam y datos rechazados no avisan; las pruebas se marcan; sin saltos de línea en el asunto', function () {
+  var s = ZuluSim.montar(CODIGO);
+  ZuluSim.post(s.api, con({ control: 'x' })); ZuluSim.post(s.api, { nombre: 'Ana' }); igual(s.correos.length, 0);
+  ZuluSim.post(s.api, con({ nombre: 'Ana\nBcc: x@y.com', pagina: 'https://www.zulurealstate.com/?prueba=1' }));
+  cierto(s.correos[0].subject.indexOf('[PRUEBA] ') === 0 && s.correos[0].subject.indexOf('\n') < 0, s.correos[0].subject);
+});
+prueba('si el correo falla, la fila se guarda y se responde ok', function () {
+  var s = ZuluSim.montar(CODIGO, { fallaCorreo: true }); var r = ZuluSim.post(s.api, base);
+  igual([r.ok, s.filas.length], [true, 2]);
+});
+prueba('probarAviso envía la muestra sin escribir en la hoja', function () {
+  var s = ZuluSim.montar(CODIGO); s.api.probarAviso(); igual([s.correos.length, s.filas.length], [1, 0]);
+});
 
 print('\n' + pasadas + ' pasaron, ' + falladas + ' fallaron');
 if (falladas) quit(1);

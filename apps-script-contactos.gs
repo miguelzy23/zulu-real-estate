@@ -1,4 +1,5 @@
 /* Contactos de zulurealstate.com -> hoja "Contactos".
+   Versión 2026-11-25.2 (aviso por correo de cada contacto nuevo; para autorizarlo, ejecutar una vez probarAviso)
    Versión 2026-11-25 (filtro de spam: lo sospechoso va a la pestaña "Spam", nada se borra)
    Versión 2026-10-29 (formulario confiable): responde JSON legible desde el navegador, no duplica reintentos
    (mismo "envio_id") y guarda de qué propiedad viene la consulta, sin tocar el mensaje de la persona.
@@ -9,6 +10,7 @@ const ENCABEZADO = ['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propi
 const COL_ID_ENVIO = 12;
 const COL_HUELLA = 14;
 const MAX_TEXTO = 2000;
+const CORREO_AVISOS = 'zulurealstate@gmail.com';   // a dónde llega el aviso de cada contacto nuevo
 const MAX_SPAM = 500;   // tope de filas en "Spam"; al llenarse, revisarla y borrar filas
 
 function motivoSpam(d) {
@@ -32,7 +34,7 @@ function limpiar(v) {
 
 // Abrir la dirección del script en el navegador (GET) sirve para comprobar que está activo; no muestra datos.
 function doGet() {
-  return responder({ ok: true, servicio: 'contactos', version: '2026-11-25', huella: true });
+  return responder({ ok: true, servicio: 'contactos', version: '2026-11-25.2', huella: true });
 }
 
 function doPost(e) {
@@ -100,13 +102,67 @@ function doPost(e) {
     ];
     destino.appendRow(motivo ? fila.concat(motivo) : fila);
     SpreadsheetApp.flush();   // confirma la escritura antes de responder ok
-    if (!motivo) formatearHoja(hoja);
+    if (!motivo) {
+      avisar(fila, libro);   // antes del formato: si el formato fallara, el aviso ya salió
+      formatearHoja(hoja);
+    }
     return responder({ ok: true, codigo: codigo, huella: huella, correccion: !!(reemplaza || correccionDe) });
   } catch (err) {
     return responder({ ok: false, error: 'guardado' });
   } finally {
     lock.releaseLock();
   }
+}
+
+// Aviso por correo de un contacto ya guardado. Nunca hace fallar el envío: si el correo no sale, la fila sigue en la hoja.
+// Lo apartado en "Spam" y los reintentos repetidos no avisan.
+function avisar(fila, libro) {
+  try {
+    MailApp.sendEmail(armarAviso(fila, libro.getUrl()));
+  } catch (err) {
+    console.error('No se pudo enviar el aviso: ' + err.message);
+  }
+}
+
+function armarAviso(fila, enlaceHoja) {
+  // Sin saltos de línea ni el apóstrofe que protege la hoja de las fórmulas
+  const v = fila.map(x => String(x === undefined || x === null ? '' : x).replace(/^'/, ''));
+  const unaLinea = t => t.replace(/\s+/g, ' ').trim();
+  const nombre = unaLinea(v[1]), contacto = unaLinea(v[2]);
+  const esCorreo = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(contacto);
+  let numero = /^[\d\s().+\-]+$/.test(contacto) ? contacto.replace(/\D/g, '') : '';
+  if (/^3\d{9}$/.test(numero)) numero = '57' + numero;   // celular colombiano sin indicativo
+  const esPrueba = /[?&]prueba=1/.test(v[7]) || /^\W*prueba/i.test(nombre);
+  const lineas = [
+    'Nuevo contacto desde la página web.',
+    '',
+    'Nombre: ' + nombre,
+    'Contacto: ' + contacto,
+    numero.length >= 10 && numero.length <= 15 ? 'Escribirle por WhatsApp: https://wa.me/' + numero : '',
+    v[9] ? 'Propiedad: ' + unaLinea(v[9]) + ' ' + v[10] : '',
+    v[3] ? 'Presupuesto: ' + v[3] : '',
+    v[4] ? 'Tipo: ' + v[4] : '',
+    v[5] ? 'Zona: ' + v[5] : '',
+    v[6] ? 'Mensaje: ' + v[6] : '',
+    v[12] === 'en' ? 'Escribió desde la versión en inglés.' : '',
+    '',
+    'Ver la hoja: ' + enlaceHoja
+  ];
+  const correo = {
+    to: CORREO_AVISOS,
+    subject: (esPrueba ? '[PRUEBA] ' : '') + 'Nuevo contacto: ' + nombre.slice(0, 80) + (v[9] ? ' · ' + unaLinea(v[9]).slice(0, 60) : ''),
+    body: lineas.filter((l, i) => l || i === 1 || i === lineas.length - 2).join('\n'),
+    name: 'Zulu Real Estate (web)'
+  };
+  if (esCorreo) correo.replyTo = contacto;   // "Responder" le escribe directo a la persona
+  return correo;
+}
+
+// Ejecutar UNA vez desde el editor (botón "Ejecutar"): pide el permiso para enviar correos y manda un aviso de muestra.
+// No escribe nada en la hoja.
+function probarAviso() {
+  const muestra = [new Date(), 'PRUEBA aviso', '300 000 0000', '', 'Lote', '', 'Correo de muestra: el aviso funciona.', '', '', '', '', '', 'es'];
+  MailApp.sendEmail(armarAviso(muestra, SpreadsheetApp.getActiveSpreadsheet().getUrl()));
 }
 
 // Crea el encabezado si la hoja es nueva, o agrega las columnas nuevas a una hoja que ya tenía las 8 originales.
