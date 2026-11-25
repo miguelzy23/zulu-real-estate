@@ -1,4 +1,5 @@
 /* Contactos de zulurealstate.com -> hoja "Contactos".
+   Versión 2026-11-25 (filtro de spam: lo sospechoso va a la pestaña "Spam", nada se borra)
    Versión 2026-10-29 (formulario confiable): responde JSON legible desde el navegador, no duplica reintentos
    (mismo "envio_id") y guarda de qué propiedad viene la consulta, sin tocar el mensaje de la persona.
    Después de pegar este código hay que crear una NUEVA VERSIÓN de la implementación (ver CONTACTOS.md). */
@@ -8,6 +9,14 @@ const ENCABEZADO = ['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propi
 const COL_ID_ENVIO = 12;
 const COL_HUELLA = 14;
 const MAX_TEXTO = 2000;
+const MAX_SPAM = 500;   // tope de filas guardadas en "Spam" para que un ataque no llene la hoja
+
+function motivoSpam(d) {
+  if (d.control) return 'campo trampa';
+  const texto = [d.nombre, d.contacto, d.zona, d.notas].join(' ');
+  if ((texto.match(/https?:\/\/|www\./gi) || []).length >= 3) return 'varios enlaces';
+  return '';
+}
 
 function responder(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
@@ -23,7 +32,7 @@ function limpiar(v) {
 
 // Abrir la dirección del script en el navegador (GET) sirve para comprobar que está activo; no muestra datos.
 function doGet() {
-  return responder({ ok: true, servicio: 'contactos', version: '2026-10-29.2', huella: true });
+  return responder({ ok: true, servicio: 'contactos', version: '2026-11-25', huella: true });
 }
 
 function doPost(e) {
@@ -47,6 +56,18 @@ function doPost(e) {
   if (!lock.tryLock(15000)) return responder({ ok: false, error: 'ocupado' });
   try {
     const libro = SpreadsheetApp.getActiveSpreadsheet();
+    // Spam (campo trampa lleno o 3 enlaces o más): no entra a "Contactos", pero se conserva en "Spam" por si fuera una persona.
+    // Se responde como un envío normal para no darle pistas al robot.
+    const motivo = motivoSpam(datos);
+    if (motivo) {
+      const apartados = libro.getSheetByName('Spam') || libro.insertSheet('Spam');
+      if (apartados.getLastRow() === 0) apartados.appendRow(['Fecha', 'Motivo', 'Nombre', 'Contacto', 'Notas', 'Página']);
+      if (apartados.getLastRow() <= MAX_SPAM) {
+        apartados.appendRow([new Date(), motivo, nombre, contacto, limpiar(datos.notas), limpiar(datos.pagina)]);
+        SpreadsheetApp.flush();
+      }
+      return responder({ ok: true, codigo: codigo, huella: huella });
+    }
     const hoja = libro.getSheetByName('Contactos') || libro.insertSheet('Contactos');
     asegurarEncabezado(hoja);
 

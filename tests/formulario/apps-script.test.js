@@ -57,6 +57,15 @@ prueba('una hoja antigua con 8 columnas recibe los encabezados nuevos', function
   var s = ZuluSim.montar(CODIGO); s.hoja.appendRow(['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propiedad', 'Zona de interés', 'Notas', 'Página']);
   ZuluSim.post(s.api, base); igual(s.filas[0][8], 'ID propiedad'); igual(s.filas[0][14], 'Reemplaza a');
 });
+prueba('campo trampa lleno: va a "Spam", no a Contactos, y responde como un envío normal', function () {
+  var s = ZuluSim.montar(CODIGO); var r = ZuluSim.post(s.api, con({ control: 'robot' }));
+  igual([r.ok, r.huella], [true, 'h0000000a1']); igual(s.filas.length, 0); igual(s.spam.length, 2); igual(s.spam[1][1], 'campo trampa');
+});
+prueba('tres enlaces o más van a "Spam"; uno solo se guarda en Contactos', function () {
+  var s = ZuluSim.montar(CODIGO);
+  ZuluSim.post(s.api, con({ notas: 'http://a.com https://b.com www.c.com' })); igual(s.filas.length, 0); igual(s.spam[1][1], 'varios enlaces');
+  ZuluSim.post(s.api, con({ notas: 'vi esto https://www.zulurealstate.com/lote-222' })); igual(s.filas.length, 2); igual(s.spam.length, 2);
+});
 
 print('\n' + pasadas + ' pasaron, ' + falladas + ' fallaron');
 if (falladas) quit(1);

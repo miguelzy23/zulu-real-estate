@@ -142,5 +142,26 @@ class Pagina404(unittest.TestCase):
         self.assertIn('lang="es"', h)
 
 
+class PreguntasYRuta(unittest.TestCase):
+    def bloques(self, ruta):
+        return [json.loads(b) for b in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', leer(ruta), re.S)]
+
+    def test_preguntas_en_la_portada_iguales_a_las_visibles(self):
+        for ruta in ('index.html', 'en/index.html'):
+            faq = [d for d in self.bloques(ruta) if d.get('@type') == 'FAQPage']
+            with self.subTest(ruta):
+                self.assertEqual(len(faq), 1)
+                visibles = re.findall(r'<button class="q-btn"[^>]*><span>(.*?)</span>', leer(ruta))
+                self.assertEqual(len(faq[0]['mainEntity']), len(visibles))
+                self.assertGreaterEqual(len(visibles), 5)
+
+    def test_fichas_con_ruta_y_sin_preguntas(self):
+        for p, ruta, en in paginas_propiedad():
+            tipos = [d.get('@type') for d in self.bloques(ruta)]
+            with self.subTest(ruta):
+                self.assertIn('BreadcrumbList', tipos)
+                self.assertNotIn('FAQPage', tipos)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=1)
