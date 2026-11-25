@@ -1,4 +1,5 @@
 /* Contactos de zulurealstate.com -> hoja "Contactos".
+   Versión 2026-11-25 (filtro de spam: lo sospechoso va a la pestaña "Spam", nada se borra)
    Versión 2026-10-29 (formulario confiable): responde JSON legible desde el navegador, no duplica reintentos
    (mismo "envio_id") y guarda de qué propiedad viene la consulta, sin tocar el mensaje de la persona.
    Después de pegar este código hay que crear una NUEVA VERSIÓN de la implementación (ver CONTACTOS.md). */
@@ -8,6 +9,14 @@ const ENCABEZADO = ['Fecha', 'Nombre', 'Contacto', 'Presupuesto', 'Tipo de propi
 const COL_ID_ENVIO = 12;
 const COL_HUELLA = 14;
 const MAX_TEXTO = 2000;
+const MAX_SPAM = 500;   // tope de filas en "Spam"; al llenarse, revisarla y borrar filas
+
+function motivoSpam(d) {
+  if (d.control) return 'campo trampa';
+  const texto = [d.nombre, d.contacto, d.zona, d.notas].join(' ');
+  if ((texto.match(/https?:\/\/|www\./gi) || []).length >= 3) return 'varios enlaces';
+  return '';
+}
 
 function responder(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
@@ -23,7 +32,7 @@ function limpiar(v) {
 
 // Abrir la dirección del script en el navegador (GET) sirve para comprobar que está activo; no muestra datos.
 function doGet() {
-  return responder({ ok: true, servicio: 'contactos', version: '2026-10-29.2', huella: true });
+  return responder({ ok: true, servicio: 'contactos', version: '2026-11-25', huella: true });
 }
 
 function doPost(e) {
@@ -50,20 +59,29 @@ function doPost(e) {
     const hoja = libro.getSheetByName('Contactos') || libro.insertSheet('Contactos');
     asegurarEncabezado(hoja);
 
+    // Spam (campo trampa lleno o 3 enlaces o más): no entra a "Contactos" sino a "Spam", con las MISMAS columnas más el motivo,
+    // por si fuera una persona. Solo se responde "ok" si la fila quedó guardada (o ya lo estaba).
+    const motivo = motivoSpam(datos);
+    const destino = motivo ? libro.getSheetByName('Spam') || libro.insertSheet('Spam') : hoja;
+    if (motivo) asegurarEncabezado(destino, ENCABEZADO.concat('Motivo'));
+
     // Reintento del mismo envío con el MISMO contenido (el navegador no alcanzó a leer la respuesta): no se guarda otra fila.
     // Si el id ya existe pero el contenido es distinto, no se descarta ni se da por repetido: se guarda como fila nueva marcada.
     let correccionDe = '';
-    if (envio && hoja.getLastRow() > 1) {
-      const hallados = hoja.getRange(2, COL_ID_ENVIO, hoja.getLastRow() - 1, 1).createTextFinder(envio).matchEntireCell(true).findAll();
+    if (envio && destino.getLastRow() > 1) {
+      const hallados = destino.getRange(2, COL_ID_ENVIO, destino.getLastRow() - 1, 1).createTextFinder(envio).matchEntireCell(true).findAll();
       for (let i = 0; i < hallados.length; i++) {
-        if (String(hoja.getRange(hallados[i].getRow(), COL_HUELLA).getValue()) === huella) {
+        if (String(destino.getRange(hallados[i].getRow(), COL_HUELLA).getValue()) === huella) {
           return responder({ ok: true, repetido: true, codigo: codigo, huella: huella });
         }
       }
       if (hallados.length) correccionDe = envio;
     }
 
-    hoja.appendRow([
+    // "Spam" tiene tope para que un ataque no llene la hoja. Lleno: se responde error (la persona ve que no se guardó y puede usar WhatsApp).
+    if (motivo && destino.getLastRow() > MAX_SPAM) return responder({ ok: false, error: 'guardado' });
+
+    const fila = [
       new Date(),
       nombre,
       contacto,
@@ -79,9 +97,10 @@ function doPost(e) {
       limpiar(datos.idioma),
       huella,
       reemplaza || correccionDe
-    ]);
+    ];
+    destino.appendRow(motivo ? fila.concat(motivo) : fila);
     SpreadsheetApp.flush();   // confirma la escritura antes de responder ok
-    formatearHoja(hoja);
+    if (!motivo) formatearHoja(hoja);
     return responder({ ok: true, codigo: codigo, huella: huella, correccion: !!(reemplaza || correccionDe) });
   } catch (err) {
     return responder({ ok: false, error: 'guardado' });
@@ -91,12 +110,13 @@ function doPost(e) {
 }
 
 // Crea el encabezado si la hoja es nueva, o agrega las columnas nuevas a una hoja que ya tenía las 8 originales.
-function asegurarEncabezado(hoja) {
+function asegurarEncabezado(hoja, titulos) {
+  const encabezado = titulos || ENCABEZADO;
   if (hoja.getLastRow() === 0) {
-    hoja.appendRow(ENCABEZADO);
+    hoja.appendRow(encabezado);
   } else {
-    const actual = hoja.getRange(1, 1, 1, ENCABEZADO.length).getValues()[0];
-    ENCABEZADO.forEach((t, i) => { if (!actual[i]) hoja.getRange(1, i + 1).setValue(t); });
+    const actual = hoja.getRange(1, 1, 1, encabezado.length).getValues()[0];
+    encabezado.forEach((t, i) => { if (!actual[i]) hoja.getRange(1, i + 1).setValue(t); });
   }
 }
 

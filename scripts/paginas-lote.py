@@ -134,6 +134,28 @@ def datos_estructurados(p, url, imagen, desc, en=False):
     return json.dumps(d, ensure_ascii=False, indent=2)
 
 
+BLOQUE_FAQ = r'<script type="application/ld\+json" id="ld-faq">.*?</script>\n'
+
+
+def faq_estructurada(h):
+    """FAQPage construido con las preguntas visibles de la página (así nunca dicen algo distinto)."""
+    limpio = lambda t: html.unescape(re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', t))).strip()
+    pares = re.findall(r'<button class="q-btn"[^>]*><span>(.*?)</span>.*?<div class="q-a"><div>(.*?)</div></div>', h, re.S)
+    if not pares:
+        sys.exit('No encontré las preguntas frecuentes en index.html: el script necesita ajustarse.')
+    d = {'@context': 'https://schema.org', '@type': 'FAQPage', 'inLanguage': 'en' if '<html lang="en">' in h else 'es-CO',
+         'mainEntity': [{'@type': 'Question', 'name': limpio(q), 'acceptedAnswer': {'@type': 'Answer', 'text': limpio(a)}} for q, a in pares]}
+    return '<script type="application/ld+json" id="ld-faq">\n' + json.dumps(d, ensure_ascii=False, indent=2) + '\n</script>\n'
+
+
+def ruta_estructurada(p, url, en=False):
+    """Ruta de navegación (Inicio > propiedad)."""
+    d = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+        {'@type': 'ListItem', 'position': 1, 'name': 'Home' if en else 'Inicio', 'item': DOMINIO + ('/en' if en else '/')},
+        {'@type': 'ListItem', 'position': 2, 'name': tit(p, en), 'item': url}]}
+    return json.dumps(d, ensure_ascii=False, indent=2)
+
+
 def reemplazar(texto, patron, nuevo, nombre):
     resultado, n = re.subn(patron, (lambda m: nuevo(m)) if callable(nuevo) else (lambda m: nuevo), texto, count=1, flags=re.S)
     if n != 1:
@@ -204,6 +226,7 @@ def a_ingles(base):
     h = re.sub(r'("@type": "RealEstateAgent".*?"description": ")[^"]*(")', lambda mm: mm.group(1) + m['ld_description'] + mm.group(2), h, count=1, flags=re.S)
     dic = '<script>window.ZULU_EN = ' + json.dumps(diccionario_js(), ensure_ascii=False) + ';</script>\n'
     h = reemplazar(h, r'(<link rel="preconnect" href="https://fonts\.googleapis\.com" />)', dic + '<link rel="preconnect" href="https://fonts.googleapis.com" />', 'preconnect fonts')
+    h = reemplazar(h, BLOQUE_FAQ, faq_estructurada(h), 'ld-faq')
     return h, usados
 
 
@@ -221,7 +244,7 @@ def generar_pagina(base, p, en=False):
     imagen = f'{DOMINIO}/assets/og/{slug}.jpg'
     titulo = f"{tit(p, en)} | Zulu Real Estate"
     desc = descripcion(p, en)
-    h = base
+    h = reemplazar(base, BLOQUE_FAQ, '', 'ld-faq')   # las preguntas solo se declaran en la portada
     h = reemplazar(h, r'<title>.*?</title>', f'<title>{attr(titulo)}</title>', 'title')
     # H1 propio de la ficha (el texto oculto del título principal); la portada conserva el suyo
     h = reemplazar(h, r'(<h1 class="word"><span>ZULU</span><i class="sr-only">)[^<]*(</i></h1>)', lambda m: f'{m.group(1)} {attr(tit(p, en))}{m.group(2)}', 'h1')
@@ -240,6 +263,7 @@ def generar_pagina(base, p, en=False):
     if es_gestionada(p):
         extra += '<meta name="robots" content="noindex, follow" />\n'   # ya arrendada: se comparte, pero Google no la ofrece
     extra += '<script type="application/ld+json">\n' + datos_estructurados(p, url, imagen, desc, en) + '\n</script>\n'
+    extra += '<script type="application/ld+json">\n' + ruta_estructurada(p, url, en) + '\n</script>\n'
     h = reemplazar(h, r'(<link rel="preconnect" href="https://fonts\.googleapis\.com" />)', extra + '<link rel="preconnect" href="https://fonts.googleapis.com" />', 'preconnect fonts')
     titulo_portada = html.unescape(re.search(r'<title>(.*?)</title>', base, re.S).group(1))
     h = reemplazar(h, r'<body>', f'<body data-abrir="{attr(p["id"])}" data-titulo="{attr(titulo_portada)}">', 'body')
@@ -295,6 +319,11 @@ def sitemap(props):
 
 def main():
     base = (RAIZ / 'index.html').read_text(encoding='utf-8')
+    al_dia = reemplazar(base, BLOQUE_FAQ, faq_estructurada(base), 'ld-faq')
+    faq_vieja = al_dia != base
+    if faq_vieja and not SOLO_COMPROBAR:
+        (RAIZ / 'index.html').write_text(al_dia, encoding='utf-8')
+    base = al_dia
     props = [p for p in json.loads((RAIZ / 'data' / 'properties.json').read_text(encoding='utf-8')) if p.get('estado') == 'publicado']
     falta_trad = [p['slug'] for p in props if p['slug'] not in TRAD['props']]
     if falta_trad:
@@ -341,7 +370,9 @@ def main():
     if sm != actual_sm and not SOLO_COMPROBAR:
         ruta_sm.write_text(sm, encoding='utf-8')
     print('sitemap.xml:', ('DESACTUALIZADO' if SOLO_COMPROBAR else 'actualizado') if cambio_sm else 'al día', f'({len(urls(sm))} URLs)' + (f', {len(atrasadas)} con fecha atrasada' if atrasadas else ''))
-    problemas = False
+    problemas = faq_vieja and SOLO_COMPROBAR
+    if problemas:
+        print('\nLas preguntas frecuentes de index.html cambiaron: corre el script para actualizar sus datos estructurados.')
     if pendientes:
         problemas = True
         print('\nTEXTOS FIJOS SIN TRADUCIR (agrégalos en scripts/traducciones-en.json → "html"):')

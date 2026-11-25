@@ -87,6 +87,26 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Inicio",
+      "item": "https://www.zulurealstate.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "La Clarita — Rionegro",
+      "item": "https://www.zulurealstate.com/la-clarita"
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" />
@@ -901,6 +921,8 @@ p{margin:0; text-wrap:pretty;}
   display:block; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
   color:var(--on-ink-dim); margin-bottom:9px;
 }
+/* Campo trampa contra spam: ninguna persona lo ve ni llega a él con el teclado; si llega lleno, lo llenó un robot. */
+.trampa{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;}
 .field input,.field select,.field textarea{
   width:100%; background:transparent; border:0;
   border-bottom:1px solid var(--rule-dark);
@@ -1796,6 +1818,7 @@ main:focus{outline:none;}
         <label for="notas" id="l-notas">Cuéntanos más</label>
         <textarea id="notas" name="notas" rows="3" placeholder="Qué buscas, para cuándo, cualquier detalle que nos ayude."></textarea>
       </div>
+      <div class="trampa" aria-hidden="true"><input type="text" name="zl_control" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore></div>
       <div class="consent">
         <label class="consent-row" for="acepto">
           <input type="checkbox" id="acepto" name="acepto" aria-describedby="aceptoError">
@@ -3370,6 +3393,7 @@ main:focus{outline:none;}
     // Datos para identificar la consulta (no tocan el mensaje de la persona). Van COMPLETOS antes de calcular la huella:
     // cambiar solo de propiedad, por ejemplo, ya cuenta como contenido distinto.
     datos.idioma = window.ZULU_LANG || 'es';
+    if (form.zl_control.value) datos.control = form.zl_control.value;   // campo trampa: el script lo aparta en la pestaña "Spam"
     if (consulta) { datos.propiedad_id = consulta.id; datos.propiedad_titulo = consulta.titulo; datos.propiedad_url = consulta.url; }
     // Copia del contexto de ESTE envío para Analytics: mientras llega la respuesta la persona puede cambiar de rol o quitar la propiedad.
     const contextoEnvio = { role: form.rol.value, property_id: datos.propiedad_id || '', has_property: !!datos.propiedad_id };
@@ -3500,7 +3524,7 @@ main:focus{outline:none;}
 
   function montar() {
     forzar = true; sucio = true;
-    const dpr = Math.min(devicePixelRatio || 1, 2), W = innerWidth, H = innerHeight;
+    const dpr = Math.min(devicePixelRatio || 1, 2), W = Math.max(1, innerWidth), H = Math.max(1, innerHeight);
     cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const mob = W < 760 || H > W * 1.1, rx = mob ? W * .04 : W * .42, ry = mob ? H * .13 : H * .09, rw = mob ? W * .92 : W * .55, rh = mob ? H * .46 : H * .80;
     const lons = POLY.map(p => p[0]), lats = POLY.map(p => p[1]);
@@ -3819,7 +3843,7 @@ main:focus{outline:none;}
 
   function montar() {
     forzar = true; sucio = true;
-    const W = innerWidth, H = innerHeight;
+    const W = Math.max(1, innerWidth), H = Math.max(1, innerHeight);   // nunca 0 (pestaña oculta): evita NaN
     sv.setAttribute('viewBox', `0 0 ${W} ${H}`);
     [mr, cr].forEach(e => { e.setAttribute('width', W); e.setAttribute('height', H); });
     zt.setAttribute('font-size', 100); zt.setAttribute('x', 0); zt.setAttribute('y', 0);

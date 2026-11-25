@@ -59,6 +59,16 @@
   var COL = { propId: 8, envio: 11, huella: 13, reemplaza: 14 };
 
   (async function () {
+    await prueba('campo trampa: invisible, fuera del teclado y no se envía vacío; lleno viaja como "control"', async function () {
+      var p = await cargar('/index.html'), s = await servidor(p), campo = p.$('form').zl_control;
+      cierto(campo.tabIndex === -1 && campo.getBoundingClientRect().right < 0, 'el campo trampa se ve o recibe foco');
+      llenar(p, 'a@example.com', 'hola'); await enviar(p);
+      cierto(!('control' in s.llamadas[0]), 'un envío normal no debe llevar "control"'); igual(s.filas().length, 1);
+      var q = await cargar('/index.html'), t = await servidor(q);
+      q.$('form').zl_control.value = 'robot'; llenar(q, 'b@example.com', 'hola'); await enviar(q);
+      igual(t.llamadas[0].control, 'robot'); igual(t.filas().length, 0); cierto(estado(q).exito);
+    });
+
     await prueba('entrada directa a /<slug>: "Quiero saber más" cierra la ficha, deja el formulario y conserva la propiedad (es)', async function () {
       var p = await cargar('/lote-222-montesereno-el-retiro.html');
       for (var i = 0; i < 40 && !p.$('ficha-contacto'); i++) await dormir(100);
