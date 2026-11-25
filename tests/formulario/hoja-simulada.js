@@ -25,15 +25,18 @@ var ZuluSim = (function () {
     };
     }
     var hoja = crearHoja(filas), hojaSpam = null;
+    var correos = [];
+    var MailApp = { sendEmail: function (m) { if (opc.fallaCorreo) throw new Error('sin permiso'); correos.push(m); } };
     var libro = {
+      getUrl: function () { return 'https://docs.google.com/spreadsheets/d/simulada'; },
       getSheetByName: function (n) { return n === 'Spam' ? hojaSpam : hoja; },
       insertSheet: function (n) { if (n !== 'Spam') return hoja; hojaSpam = crearHoja(spam); return hojaSpam; }
     };
     var SpreadsheetApp = { getActiveSpreadsheet: function () { return libro; }, flush: function () {}, BorderStyle: { SOLID_MEDIUM: 1, SOLID: 2 } };
     var LockService = { getScriptLock: function () { return { tryLock: function () { return !opc.ocupado; }, releaseLock: function () {} }; } };
     var ContentService = { createTextOutput: function (t) { return { t: t, setMimeType: function () { return this; } }; }, MimeType: { JSON: 'json' } };
-    var api = new Function('SpreadsheetApp', 'LockService', 'ContentService', codigo + '\nreturn { doPost: doPost, doGet: doGet, limpiar: limpiar };')(SpreadsheetApp, LockService, ContentService);
-    return { api: api, filas: filas, hoja: hoja, spam: spam };
+    var api = new Function('SpreadsheetApp', 'LockService', 'ContentService', 'MailApp', 'console', codigo + '\nreturn { doPost: doPost, doGet: doGet, limpiar: limpiar, probarAviso: probarAviso };')(SpreadsheetApp, LockService, ContentService, MailApp, { error: function () {} });
+    return { api: api, filas: filas, hoja: hoja, spam: spam, correos: correos };
   }
   /* Respuesta como la daría la web app (JSON ya convertido) */
   function post(api, cuerpo) {
