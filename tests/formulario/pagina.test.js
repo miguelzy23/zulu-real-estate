@@ -59,6 +59,24 @@
   var COL = { propId: 8, envio: 11, huella: 13, reemplaza: 14 };
 
   (async function () {
+    await prueba('aviso de idioma: no tapa la ficha abierta por enlace directo; aparece y responde al cerrarla', async function () {
+      var slug = (await (await fetch('/data/properties.json')).json()).filter(function (x) { return x.estado === 'publicado'; })[0].slug;
+      localStorage.removeItem('zulu-idioma'); sessionStorage.removeItem('zulu-idioma-visto');
+      var f = document.createElement('iframe'); document.body.appendChild(f);
+      await new Promise(function (r) { f.onload = r; f.src = '/' + slug; });
+      var w = f.contentWindow, d = w.document;
+      for (var i = 0; i < 80 && d.getElementById('ficha-backdrop').hidden; i++) await dormir(100);
+      await dormir(1900);
+      var caja = d.getElementById('idiomaAviso'), ver = function () { return w.getComputedStyle(caja).display !== 'none'; };
+      cierto(!d.getElementById('ficha-backdrop').hidden, 'la ficha no se abrió');
+      cierto(!ver(), 'el aviso se ve encima de la ficha');
+      d.getElementById('ficha-close').click(); await dormir(500);
+      cierto(ver() && !caja.inert, 'tras cerrar la ficha el aviso debe verse y responder');
+      caja.querySelector('[data-i="es"]').click(); await dormir(100);
+      cierto(!ver(), 'elegir Español cierra el aviso'); igual(w.localStorage.getItem('zulu-idioma'), 'es');
+      f.remove();
+    });
+
     await prueba('campo trampa: invisible, fuera del teclado y no se envía vacío; lleno viaja como "control"', async function () {
       var p = await cargar('/index.html'), s = await servidor(p), campo = p.$('form').zl_control;
       cierto(campo.tabIndex === -1 && campo.getBoundingClientRect().right < 0, 'el campo trampa se ve o recibe foco');
