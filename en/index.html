@@ -1404,6 +1404,11 @@ main:focus{outline:none;}
 .sheet .lang-sel,.foot-nav .lang-sel{display:inline-block; width:auto; align-self:flex-start; letter-spacing:.06em; font-size:14px;}
 .idioma-aviso{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:70; display:flex; align-items:center; gap:14px 18px; flex-wrap:wrap; justify-content:center; max-width:min(560px,calc(100vw - 32px)); padding:14px 44px 14px 18px; background:rgba(10,10,10,.94); border:1px solid #d8ad6b; border-radius:14px; color:var(--cream); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow:0 14px 40px -12px rgba(0,0,0,.7);}
 .idioma-aviso[hidden]{display:none;}
+/* Con una propiedad o la galería abierta, el resto queda inerte: el aviso de idioma y la etiqueta de prueba esperan a que se
+   cierren (si no, se verían encima sin poder tocarse). La etiqueta de prueba tampoco tapa el aviso. */
+body:has(#ficha-backdrop:not([hidden])) :is(.idioma-aviso,.modo-prueba),
+body:has(#lightbox:not([hidden])) :is(.idioma-aviso,.modo-prueba),
+body:has(#idiomaAviso:not([hidden])) .modo-prueba{display:none;}
 .idioma-aviso p{margin:0; font-size:14px; line-height:1.4;}
 .idioma-bot{display:flex; gap:8px;}
 .idioma-bot button{min-height:44px; padding:0 18px; border-radius:99px; border:1px solid rgba(250,238,218,.45); background:transparent; color:var(--cream); font:600 13.5px/1 Inter,sans-serif; cursor:pointer;}
@@ -3972,7 +3977,8 @@ main:focus{outline:none;}
     guardar(b.dataset.i);
     if (b.dataset.i === 'en') location.href = ruta(true) + location.search; else cerrar();
   });
-  addEventListener('keydown', function (e) { if (e.key === 'Escape' && !caja.hidden) cerrar(); });
+  // En fase de captura: así se sabe si había una ficha abierta ANTES de que Escape la cierre (con ficha abierta el aviso no se ve).
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && !caja.hidden && document.getElementById('ficha-backdrop').hidden) cerrar(); }, true);
   setTimeout(function () { caja.hidden = false; }, 1500);
 })();
 </script>
